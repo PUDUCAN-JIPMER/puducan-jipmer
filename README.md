@@ -2,6 +2,8 @@
 
 A modern healthcare dashboard built with **Next.js**, **Firebase**, and **Tailwind CSS**. This platform is designed to help ASHA workers, nurses, and doctors manage patient records efficiently as part of the **PuduCan project**, a national study led by JIPMER to improve cancer care.
 
+This project was spondered by ICMR and is going to be launched soon. It is going to be utilized by 100's of doctors and 1000's of patients from all over India.
+
 This README provides a deep dive into the technical architecture, optimizations, and features of the application.
 
 
