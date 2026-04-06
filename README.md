@@ -1,4 +1,4 @@
-# 🩺 PuduCan - Patient Management Dashboard
+# 🩺 PuduCan - PUDUcherry CANcer Patient Management Dashboard
 
 A modern healthcare dashboard built with **Next.js**, **Firebase**, and **Tailwind CSS**. This platform is designed to help ASHA workers, nurses, and doctors manage patient records efficiently as part of the **PuduCan project**, a national study led by JIPMER to improve cancer care.
 
