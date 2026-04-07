@@ -67,6 +67,7 @@ export function GenericTable({
     const searchFields = SEARCH_FIELDS[activeTab]
 
     const isPatientTab = activeTab === 'patients'
+    const isHospitalTab = activeTab =='hospitals'
     const patients = (data as Patient[]) ?? []
     const filteredPatients = useFilteredPatients(isPatientTab ? patients : [])
 
@@ -89,7 +90,7 @@ export function GenericTable({
 
     const tableStats = useStats({
         TableData: searchedData ?? [],
-        isPatientTab,
+        isPatientTab, isHospitalTab
     })
 
     useEffect(() => {

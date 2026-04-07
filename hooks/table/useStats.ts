@@ -2,11 +2,13 @@ import { useMemo } from 'react'
 
 export function useStats<TableDataType>({
     TableData = [], // default to empty array
-    isPatientTab,
+    isPatientTab, isHospitalTab
 }: {
     TableData?: TableDataType[]
     isPatientTab: boolean
+    isHospitalTab: boolean
 }) {
+
     return useMemo(() => {
         let stats = {
             total: 0,
@@ -29,16 +31,17 @@ export function useStats<TableDataType>({
                 if ((row.status || '').toLowerCase() === 'alive') stats.alive++
                 else if ((row.status || '').toLowerCase() === 'death') stats.deceased++
             }
-
-            switch ((row.sex || '').toLowerCase()) {
-                case 'male':
-                    stats.male++
-                    break
-                case 'female':
-                    stats.female++
-                    break
-                default:
-                    stats.others++
+            if (!isHospitalTab) {
+                switch ((row.sex || '').toLowerCase()) {
+                    case 'male':
+                        stats.male++
+                        break
+                    case 'female':
+                        stats.female++
+                        break
+                    default:
+                        stats.others++
+                }
             }
         })
 
