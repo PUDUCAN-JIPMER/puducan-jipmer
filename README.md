@@ -140,5 +140,18 @@ It contains a sample excel file that showcase how the importing data should look
 Thanks goes to these wonderful people:
 
 <!-- ALL-CONTRIBUTORS-LIST:START -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="http://www.lourduradjou.xyz"><img src="https://avatars.githubusercontent.com/u/131673216?v=4?s=100" width="100px;" alt="Lourdu Radjou🎶"/><br /><sub><b>Lourdu Radjou🎶</b></sub></a><br /><a href="#code-lourduradjou" title="Code">💻</a> <a href="#doc-lourduradjou" title="Documentation">📖</a> <a href="#maintenance-lourduradjou" title="Maintenance">🚧</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
