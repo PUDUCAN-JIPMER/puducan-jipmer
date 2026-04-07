@@ -6,7 +6,7 @@ Thank you for your interest in contributing! Please take a moment to read these 
 
 ## 🧭 Getting Started
 
-1) Maybe lets keep marking this repo a star as first the step🚀
+1) Maybe lets keep marking this repo a star as first step🚀
 2. **Fork** the repository and clone your fork locally.
 3. Go into the folder 
 ```
@@ -21,6 +21,28 @@ pnpm install
 cp .env.example .env.local
 ```
 6. You need a firebase account to have firebase functionality and database from GCP (Google cloud provider) So try to create an account and get the credentials that were required in the env file that you copied above. They are changing the UI of the firebase so you can use AI or latest youtube tutorials to get this.
+- A typical step could be to have a firebase account
+- Create a project (No need of gemini or analytics support for this project, so you can disenable them while you create)
+- A basic plan (free version) is enough to get started and contribute to this project we are only gonna use the authentication and firestore.
+- Go into the settings -> general -> scroll down and select the web icon and give a name to it (ex: jipmer-web)
+- Click register the app (No need to select the hosting option)
+- Then you can see the required credentials in the NPM section (take those and put it in your .env.local file)
+
+7) Now starts the main setup of the app
+- We need users who have the access to the application (doctors, asha's, nurses and admins) so we need to create users in the authentication section of the firebase.
+- Go to the security field (in the left sidebar) and click the authentication.
+- Here you need to click the Sign-In method to enable sign in via email and password.
+- Now you can add users with your preferred email and password, the deployed site use something like below
+<img width="1368" height="606" alt="image" src="https://github.com/user-attachments/assets/d1c3a8ad-2351-4dbd-8f39-ddba80fcea2a" />
+
+8) Now as we have the user who is having a email and password we provided, we need to give them a user-level access either they are doctor or nurse or asha or admin, the way that was achieved is through connecting the user from auth to the firestore database which will tell the user level.
+9) Go the Databases & Storages and click the Firestore, click the create database.
+10 Select the standard database and then select your server place, wherever you are you can select that, in my case Mumbai India.
+11) Select the start in production mode and create it.
+
+9) We need to populate some values in the firestore to get started.
+10) Run this command to populate some data in the firestore you can see.
+
 7. Run the development server with `pnpm dev`.
 ```
 pnpm dev
