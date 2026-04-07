@@ -9,7 +9,11 @@
         "start": "next start",
         "lint": "next lint",
         "test": "vitest",
-        "prepare": "husky"
+        "prepare": "husky",
+        "seed:users": "node scripts/seedUsers.mjs",
+        "seed:patients": "node scripts/seedPatients.mjs",
+        "seed:hospitals": "node scripts/seedHospitals.mjs",
+        "seed:all": "npm run seed:hospitals && npm run seed:users && npm run seed:patients"
     },
     "dependencies": {
         "@hookform/resolvers": "^5.2.0",
@@ -36,6 +40,7 @@
         "date-fns": "^4.1.0",
         "file-saver": "^2.0.5",
         "firebase": "^11.10.0",
+        "firebase-admin": "^13.7.0",
         "husky": "^9.1.7",
         "jspdf": "^3.0.1",
         "jspdf-autotable": "^5.0.2",
