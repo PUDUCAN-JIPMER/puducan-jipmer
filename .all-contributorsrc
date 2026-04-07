@@ -1,6 +1,24 @@
 {
-  "files": ["README.md"],
-  "contributors": [],
+  "files": [
+    "README.md"
+  ],
+  "contributors": [
+    {
+      "login": "lourduradjou",
+      "name": "Lourdu Radjou🎶",
+      "avatar_url": "https://avatars.githubusercontent.com/u/131673216?v=4",
+      "profile": "http://www.lourduradjou.xyz",
+      "contributions": [
+        "code",
+        "doc",
+        "maintenance"
+      ]
+    }
+  ],
   "contributorsPerLine": 7,
-  "skipCi": true
+  "skipCi": true,
+  "commitType": "docs",
+  "commitConvention": "angular",
+  "projectName": "cancer-tracker-jipmer",
+  "projectOwner": "lourduradjou"
 }
