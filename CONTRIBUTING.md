@@ -40,14 +40,25 @@ cp .env.example .env.local
 10 Select the standard database and then select your server place, wherever you are you can select that, in my case Mumbai India.
 11) Select the start in production mode and create it.
 
-9) We need to populate some values in the firestore to get started.
-10) Run this command to populate some data in the firestore you can see.
-
-7. Run the development server with `pnpm dev`.
+12) We need to populate some values in the firestore to get started.
+13) Run this command to populate some data in the firestore you can see.
+- To populate users use (Change the data in the data/users.mjs to match your user email you created with password, you can change the role here too)
+  ```
+  pnpm run seed:users
+  ```
+- To populate patients data
+  ```
+  pnpm run seed:patients
+  ```
+- To populate hospitals data
+  ```
+  pnpm run seed:hospitals
+  ```
+14. Run the development server with `pnpm dev`.
 ```
 pnpm dev
 ```
-8. There are multiple pages in this project.
+15. There are multiple pages in this project. (sample data were provided you have check what you populated and what data you have in your firestore & authentication places)
 - Homepage (No need of login)
 - Doctor Page
 ```
@@ -69,7 +80,7 @@ password: jipmer
 email: admin@gmail.com
 password: jipmer
 ```
-
+16) You are ready to explore it now, all the best. If you feel this docs could be improved, we are happy to see your PR💫
 
 ---
 
