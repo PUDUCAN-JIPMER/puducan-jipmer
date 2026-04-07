@@ -10,7 +10,7 @@ Thank you for your interest in contributing! Please take a moment to read these 
 2. **Fork** the repository and clone your fork locally.
 3. Go into the folder 
 ```
-cd cancer-tracker-jipmer
+cd puducan-jipmer
 ```
 4. Install dependencies using 
 ```
@@ -38,7 +38,17 @@ cp .env.example .env.local
 8) Now as we have the user who is having a email and password we provided, we need to give them a user-level access either they are doctor or nurse or asha or admin, the way that was achieved is through connecting the user from auth to the firestore database which will tell the user level.
 9) Go the Databases & Storages and click the Firestore, click the create database.
 10 Select the standard database and then select your server place, wherever you are you can select that, in my case Mumbai India.
-11) Select the start in production mode and create it.
+11) Select the start in production mode and create it and now you can go into the rules section to add this rule
+```
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
+```
+You just have to make sure you have that "allow,read,write: if request.auth != null" to be there, yes it not a good way but for local testing this is fine, we will change the structure soon.
 
 12) We need to populate some values in the firestore to get started.
 13) Run this command to populate some data in the firestore you can see.
