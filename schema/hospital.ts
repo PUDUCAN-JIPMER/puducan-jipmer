@@ -5,6 +5,7 @@ export const HospitalSchema = z.object({
     id: z.string().optional(),
     name: z
         .string()
+        .trim()
         .min(1, 'Hospital name is required.')
         .regex(
             /^[a-zA-Z\s\-&.']+$/,
@@ -12,6 +13,7 @@ export const HospitalSchema = z.object({
         ),
     address: z
         .string()
+        .trim()
         .min(1, 'Address is required.')
         .refine(
             (val) => !/^\d+$/.test(val),
