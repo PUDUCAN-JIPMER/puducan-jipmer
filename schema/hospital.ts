@@ -8,7 +8,7 @@ export const HospitalSchema = z.object({
         .trim()
         .min(1, 'Hospital name is required.')
         .regex(
-            /^[a-zA-Z\s\-&.']+$/,
+            /^[a-zA-Z\s\-&.'(),/]+$/,
             'Hospital name can only contain letters, spaces, hyphens, ampersands, and apostrophes'
         ),
     address: z
