@@ -22,7 +22,15 @@ export const HospitalSchema = z.object({
     contactNumber: z
         .string()
         .trim()
-        .regex(/^(\+)?91[1-9]\d{9}$/, "Phone number must be exactly 10 digits")
+        .transform((val) => {
+            // Convert +91 or 91 alone to empty string
+            if (val === '+91' || val === '91') return ''
+            return val
+        })
+        .refine(
+            (val) => val === '' || /^(\+)?91[1-9]\d{9}$/.test(val),
+            "Phone number must be exactly 10 digits"
+        )
         .optional(),
 })
 
