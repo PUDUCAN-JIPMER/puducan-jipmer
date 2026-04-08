@@ -146,6 +146,7 @@ Thanks goes to these wonderful people:
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="http://www.lourduradjou.xyz"><img src="https://avatars.githubusercontent.com/u/131673216?v=4?s=100" width="100px;" alt="Lourdu Radjou🎶"/><br /><sub><b>Lourdu Radjou🎶</b></sub></a><br /><a href="#code-lourduradjou" title="Code">💻</a> <a href="#doc-lourduradjou" title="Documentation">📖</a> <a href="#maintenance-lourduradjou" title="Maintenance">🚧</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/MozamilS"><img src="https://avatars.githubusercontent.com/u/70207400?v=4?s=100" width="100px;" alt="Sayed Subhan Shah Sadat"/><br /><sub><b>Sayed Subhan Shah Sadat</b></sub></a><br /><a href="#code-MozamilS" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
