@@ -19,7 +19,11 @@ export const HospitalSchema = z.object({
             (val) => !/^\d+$/.test(val),
             'Address cannot be only numbers'
         ),
-    contactNumber: z.string().max(10, "Phone number has more than 10 digits").optional(),
+    contactNumber: z
+        .string()
+        .trim()
+        .regex(/^\d{10}$/, "Phone number must be exactly 10 digits")
+        .optional(),
 })
 
 export type HospitalFormInputs = z.infer<typeof HospitalSchema>
