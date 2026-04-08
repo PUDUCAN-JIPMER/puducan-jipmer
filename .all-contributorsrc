@@ -13,12 +13,21 @@
         "doc",
         "maintenance"
       ]
+    },
+    {
+      "login": "MozamilS",
+      "name": "Sayed Subhan Shah Sadat",
+      "avatar_url": "https://avatars.githubusercontent.com/u/70207400?v=4",
+      "profile": "https://github.com/MozamilS",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
   "skipCi": true,
   "commitType": "docs",
   "commitConvention": "angular",
-  "projectName": "cancer-tracker-jipmer",
+  "projectName": "puducan-jipmer",
   "projectOwner": "lourduradjou"
 }
