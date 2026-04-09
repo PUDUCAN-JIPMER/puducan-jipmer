@@ -42,7 +42,7 @@
         "firebase": "^11.10.0",
         "firebase-admin": "^13.7.0",
         "husky": "^9.1.7",
-        "jspdf": "^3.0.1",
+        "jspdf": "^4.2.1",
         "jspdf-autotable": "^5.0.2",
         "lucide": "^0.525.0",
         "lucide-react": "^0.525.0",
