@@ -14,7 +14,7 @@ We actively support the latest `main` branch.
 Please do not open public issues for security vulnerabilities.
 
 Instead, report vulnerabilities privately via:
-- Email: nikhilbhatia2004@gmail.com
+- Email: rajlourdu15@gmail.com
 
 Please include:
 - A clear description of the issue
