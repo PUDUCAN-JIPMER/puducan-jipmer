@@ -54,7 +54,7 @@ export function GenericPagination({
                                     Unassigned: {stats.unassigned}
                                 </div>
                                 <div className="border px-2 py-1">Alive: {stats.alive}</div>
-                                <div className="border px-2 py-1">Death: {stats.deceased}</div>
+                                <div className="border px-2 py-1">Not Alive: {stats.deceased}</div>
                             </section>
                         )}
                     </div>

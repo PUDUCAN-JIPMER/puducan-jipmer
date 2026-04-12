@@ -29,7 +29,10 @@ export function useStats<TableDataType>({
                 else stats.unassigned++
 
                 if ((row.status || '').toLowerCase() === 'alive') stats.alive++
-                else if ((row.status || '').toLowerCase() === 'death') stats.deceased++
+                else if (
+                    (row.status || '').toLowerCase() === 'death' ||
+                    (row.status || '').toLowerCase() === 'not alive'
+                ) stats.deceased++
             }
             if (!isHospitalTab) {
                 switch ((row.sex || '').toLowerCase()) {
