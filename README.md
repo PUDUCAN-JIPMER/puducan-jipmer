@@ -5,6 +5,9 @@
 
 A modern healthcare platform built for ASHA workers, nurses, and doctors to manage cancer patient data efficiently — part of a national study led by JIPMER and sponsored by ICMR.
 
+🔗 **[View Live Demo →](https://cancer-tracker-jipmer.vercel.app)**
+
+
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-red.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Framework: Next.js](https://img.shields.io/badge/Framework-Next.js%2015-000000?logo=nextdotjs)](https://nextjs.org/)
