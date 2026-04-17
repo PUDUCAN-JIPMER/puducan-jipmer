@@ -18,59 +18,46 @@ A modern healthcare platform built for ASHA workers, nurses, and doctors to mana
 </div>
 
 ## Screenshots
-
-#### HomePage
-
-![App Screenshot](https://github.com/lourduradjou/cancer-tracker-jipmer/blob/main/screenshots/add-doctor-admin.png)
-
-#### Admin Patients View Page (Dark theme)
-
-![App Screenshot](https://github.com/lourduradjou/cancer-tracker-jipmer/blob/main/screenshots/patients-view-admin.png)
-
-#### Admin Patients View Page (Light theme)
-
-![App Screenshot](https://github.com/lourduradjou/cancer-tracker-jipmer/blob/main/screenshots/admin-view-hospital-light-theme.png)
-
-
-#### Patients Report
-
-![App Screenshot](https://github.com/lourduradjou/cancer-tracker-jipmer/blob/main/screenshots/disease-report.png)
-
-
-#### Add Doctor
-
-![App Screenshot](https://github.com/lourduradjou/cancer-tracker-jipmer/blob/main/screenshots/add-doctor-admin.png)
-
-#### Add Doctor, (Same for Nurse and Asha with field name changed)
-
-![App Screenshot](https://github.com/lourduradjou/cancer-tracker-jipmer/blob/main/screenshots/add-hospital-admin.png)
-
-#### Admin Patient Recover Page
-
-![App Screenshot](https://github.com/lourduradjou/cancer-tracker-jipmer/blob/main/screenshots/recover-patient-view-admin.png)
-
-#### Doctor View Patients Page
-
-![App Screenshot](https://github.com/lourduradjou/cancer-tracker-jipmer/blob/main/screenshots/doctor-view-patients.png)
-
-#### Nurse View Patients Page
-
-![App Screenshot](https://github.com/lourduradjou/cancer-tracker-jipmer/blob/main/screenshots/nurse-view-patients.png)
-
-#### Add Patients Form
-
-![App Screenshot](https://github.com/lourduradjou/cancer-tracker-jipmer/blob/main/screenshots/add-patient-form.png)
-
-#### Asha View Patients Page (Mobile View)
-
-![App Screenshot](https://github.com/lourduradjou/cancer-tracker-jipmer/blob/main/screenshots/asha-view-patients.png)
-
-#### Delete Patient View
-
-![App Screenshot](https://github.com/lourduradjou/cancer-tracker-jipmer/blob/main/screenshots/delete-patient-admin-view.png)
-
-
-
+ 
+#### 🏠 Home Page
+![Home Page](screenshots/home-page.png)
+ 
+#### 🧑‍💼 Admin — Patients View (Dark theme)
+![Admin Patients View Dark](screenshots/patients-view-admin.png)
+ 
+#### 🧑‍💼 Admin — Patients View (Light theme)
+![Admin Patients View Light](screenshots/admin-view-hospital-light-theme.png)
+ 
+#### 📊 Patient Disease Report
+![Patient Report](screenshots/disease-report.png)
+ 
+#### ➕ Add Doctor / Nurse / ASHA
+> The same form is used for all staff types — field labels change based on role.
+ 
+![Add Doctor](screenshots/add-doctor-admin.png)
+ 
+#### 🏥 Add Hospital
+![Add Hospital](screenshots/add-hospital-admin.png)
+ 
+#### ♻️ Admin — Recover Deleted Patient
+![Recover Patient](screenshots/recover-patient-view-admin.png)
+ 
+#### 👨‍⚕️ Doctor — Patients View
+![Doctor View](screenshots/doctor-view-patients.png)
+ 
+#### 👩‍⚕️ Nurse — Patients View
+![Nurse View](screenshots/nurse-view-patients.png)
+ 
+#### 📋 Add Patient Form
+![Add Patient Form](screenshots/add-patient-form.png)
+ 
+#### 📱 ASHA Worker — Patients View (Mobile)
+![ASHA Mobile View](screenshots/asha-view-patients.png)
+ 
+#### 🗑️ Delete Patient View
+![Delete Patient](screenshots/delete-patient-admin-view.png)
+ 
+---
 ## ✨ Core Features
 
 * **Role-Based Access Control (RBAC):** Dedicated dashboards and permissions for different user roles (Admin, Doctor, Nurse, ASHA Worker) to ensure data security and a tailored user experience.
@@ -144,7 +131,17 @@ The codebase is designed to be modular, maintainable, and scalable, following mo
 ## Assets Folder
 It contains a sample excel file that showcase how the importing data should look like.
 
-## Contributors ✨
+## 🤝 Contributing
+ 
+We welcome contributors of all experience levels! PuduCan is a real-world healthcare tool — your contribution will matter to actual patients and doctors across India.
+ 
+**New to open source?** Start here →  
+[![Good First Issues](https://img.shields.io/github/issues/lourduradjou/puducan-jipmer/good%20first%20issue?color=7057ff&label=good%20first%20issues&logo=github)](https://github.com/lourduradjou/puducan-jipmer/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+ 
+These are hand-picked issues that are well-scoped, clearly explained, and don't require deep knowledge of the codebase. A great place to make your first PR.
+ 
+Read the full [Contributing Guide →](CONTRIBUTING.md) | View [Architecture →](ARCHITECTURE.md)
+
 
 Thanks goes to these wonderful people:
 
