@@ -1,12 +1,18 @@
-# 🩺 PuduCan - PUDUcherry CANcer Patient Management Dashboard
+<div align="center">
 
-A modern healthcare dashboard built with **Next.js**, **Firebase**, and **Tailwind CSS**. This platform is designed to help ASHA workers, nurses, and doctors manage patient records efficiently as part of the **PuduCan project**, a national study led by JIPMER to improve cancer care.
+# 🩺 PuduCan
+**PUDUcherry CANcer Patient Management Dashboard**
 
-This project was sponsored by ICMR and will launch soon. It is expected to be used by 100+ doctors and 1,000+ patients across India.
+A modern healthcare platform built for ASHA workers, nurses, and doctors to manage cancer patient data efficiently — part of a national study led by JIPMER and sponsored by ICMR.
 
-This README provides a deep dive into the technical architecture, optimizations, and features of the application.
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-red.svg)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Framework: Next.js](https://img.shields.io/badge/Framework-Next.js%2015-000000?logo=nextdotjs)](https://nextjs.org/)
+[![DB: Firebase](https://img.shields.io/badge/DB-Firebase%20Firestore-FFCA28?logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![Styling: Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Testing: Vitest](https://img.shields.io/badge/Testing-Vitest-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
 
-
+</div>
 
 ## Screenshots
 
