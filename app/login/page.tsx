@@ -122,6 +122,7 @@ export default function LoginPage() {
             {/* Form Container */}
             <div className="relative z-20 flex min-h-screen items-center justify-center px-4">
                 <form
+                    aria-label="login form"
                     onSubmit={handleSubmit(onSubmit)} // Use handleSubmit from react-hook-form
                     className="bg-background w-full max-w-md space-y-6 rounded-lg p-6 opacity-90 shadow-md backdrop-blur-sm"
                 >
