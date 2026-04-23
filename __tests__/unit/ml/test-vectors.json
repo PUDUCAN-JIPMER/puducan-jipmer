@@ -1,0 +1,87 @@
+[
+  {
+    "rawFeatures": {
+      "age": 55,
+      "sex_encoded": 1,
+      "cancer_stage_ordinal": 3,
+      "days_since_registration": 200,
+      "treatment_duration_days": 100,
+      "follow_up_count": 0,
+      "days_since_last_follow_up": 200,
+      "insurance_type_encoded": 0,
+      "has_asha_assigned": 0,
+      "is_transferred": 0,
+      "ration_card_encoded": 2,
+      "patient_status_encoded": 0
+    },
+    "expectedScore": 0.7171402772
+  },
+  {
+    "rawFeatures": {
+      "age": 35,
+      "sex_encoded": 0,
+      "cancer_stage_ordinal": 1,
+      "days_since_registration": 60,
+      "treatment_duration_days": 45,
+      "follow_up_count": 4,
+      "days_since_last_follow_up": 10,
+      "insurance_type_encoded": 1,
+      "has_asha_assigned": 1,
+      "is_transferred": 0,
+      "ration_card_encoded": 1,
+      "patient_status_encoded": 0
+    },
+    "expectedScore": 0.1248102325
+  },
+  {
+    "rawFeatures": {
+      "age": 70,
+      "sex_encoded": 1,
+      "cancer_stage_ordinal": 4,
+      "days_since_registration": 350,
+      "treatment_duration_days": 250,
+      "follow_up_count": 1,
+      "days_since_last_follow_up": 150,
+      "insurance_type_encoded": 2,
+      "has_asha_assigned": 1,
+      "is_transferred": 1,
+      "ration_card_encoded": 0,
+      "patient_status_encoded": 0
+    },
+    "expectedScore": 0.6397680150
+  },
+  {
+    "rawFeatures": {
+      "age": 45,
+      "sex_encoded": 0.5,
+      "cancer_stage_ordinal": 2,
+      "days_since_registration": 120,
+      "treatment_duration_days": 80,
+      "follow_up_count": 3,
+      "days_since_last_follow_up": 30,
+      "insurance_type_encoded": 1,
+      "has_asha_assigned": 1,
+      "is_transferred": 0,
+      "ration_card_encoded": 1,
+      "patient_status_encoded": 0
+    },
+    "expectedScore": 0.1941323110
+  },
+  {
+    "rawFeatures": {
+      "age": 62,
+      "sex_encoded": 1,
+      "cancer_stage_ordinal": 0,
+      "days_since_registration": 30,
+      "treatment_duration_days": 15,
+      "follow_up_count": 2,
+      "days_since_last_follow_up": 5,
+      "insurance_type_encoded": 2,
+      "has_asha_assigned": 1,
+      "is_transferred": 0,
+      "ration_card_encoded": 0,
+      "patient_status_encoded": 0
+    },
+    "expectedScore": 0.1103131609
+  }
+]

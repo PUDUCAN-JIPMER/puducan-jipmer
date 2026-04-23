@@ -128,6 +128,39 @@ users/
 
 ---
 
+## 🤖 ML Pipeline — Risk Scoring
+
+PuduCan includes a predictive analytics feature that computes a **follow-up adherence risk score** for each patient. The architecture uses an offline-trained model with client-side inference:
+
+```
+Offline Training                        Client-Side Inference
+┌──────────────┐                       ┌──────────────────────┐
+│ Firestore    │  exportPatients       │ model-weights.json   │
+│ patient data │───────────────────▶   │ (2KB, checked in)    │
+│              │  ToCSV.mjs            │         │            │
+└──────────────┘                       │         ▼            │
+       │                               │ featureExtractor.ts  │
+       ▼                               │ riskScoreEngine.ts   │
+┌──────────────┐                       │         │            │
+│ Python       │  train_risk_model.py  │         ▼            │
+│ Scikit-learn │──────────────────▶    │ RiskScoreBadge.tsx   │
+│              │  model-weights.json   │ (in ViewDetailsDialog)│
+└──────────────┘                       └──────────────────────┘
+```
+
+**Key files:**
+- `lib/ml/riskScoreEngine.ts` — pure TypeScript logistic regression inference (zero dependencies)
+- `lib/ml/featureExtractor.ts` — converts Patient records to numeric feature vectors
+- `lib/ml/model-weights.json` — trained model coefficients + categorical encoding maps
+- `scripts/ml/train_risk_model.py` — offline training script
+- `hooks/useRiskScore.ts` — React hook wrapping the inference engine
+
+**Risk factor attribution:** Each feature's contribution is computed as `standardized_feature × weight`. The top 3 contributors are shown in the UI tooltip with direction indicators (↑ increases risk, ↓ decreases risk).
+
+**Retraining:** See `scripts/ml/README.md` for the full retraining guide.
+
+---
+
 ## 💡 Tips for New Contributors
 
 - **Not sure where your code belongs?** Follow the pattern of existing code nearby and ask in Issues.

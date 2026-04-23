@@ -57,3 +57,8 @@ storybook-static
 
 # firebase
 serviceAccountKey.json
+
+# ML pipeline — exported patient data (may contain real PII)
+data/patients_export.csv
+scripts/ml/__pycache__/
+scripts/ml/*.pyc

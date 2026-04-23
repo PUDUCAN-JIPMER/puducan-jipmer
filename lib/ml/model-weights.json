@@ -1,0 +1,71 @@
+{
+  "version": "1.0.0-baseline",
+  "trainedAt": "2026-04-23T18:00:00Z",
+  "features": [
+    "age",
+    "sex_encoded",
+    "cancer_stage_ordinal",
+    "days_since_registration",
+    "treatment_duration_days",
+    "follow_up_count",
+    "days_since_last_follow_up",
+    "insurance_type_encoded",
+    "has_asha_assigned",
+    "is_transferred",
+    "ration_card_encoded",
+    "patient_status_encoded"
+  ],
+  "weights": [
+    0.018,
+    -0.05,
+    0.42,
+    0.012,
+    -0.008,
+    -0.35,
+    0.28,
+    -0.15,
+    -0.22,
+    0.10,
+    -0.12,
+    0.30
+  ],
+  "intercept": -0.85,
+  "scaler": {
+    "mean": [52.0, 0.50, 2.0, 180.0, 90.0, 2.0, 45.0, 1.0, 0.65, 0.08, 1.0, 0.15],
+    "std":  [15.0, 0.50, 1.5, 120.0, 75.0, 2.5, 40.0, 0.8, 0.48, 0.27, 0.8, 0.36]
+  },
+  "categoricalMaps": {
+    "sex": {
+      "male": 1,
+      "female": 0,
+      "other": 0.5
+    },
+    "stageOfTheCancer": {
+      "In Situ": 0,
+      "Stage I": 1,
+      "Stage II": 2,
+      "Stage III": 3,
+      "Stage IV": 4
+    },
+    "insuranceType": {
+      "none": 0,
+      "Government": 1,
+      "Private": 2
+    },
+    "rationCardColor": {
+      "none": 0,
+      "yellow": 1,
+      "red": 2
+    },
+    "patientStatus": {
+      "Alive": 0,
+      "Not Available": 0.5,
+      "Not Alive": 1
+    }
+  },
+  "metrics": {
+    "accuracy": 0.0,
+    "f1": 0.0,
+    "samplesUsed": 5
+  }
+}

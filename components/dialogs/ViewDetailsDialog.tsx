@@ -2,6 +2,8 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import RiskScoreBadge from '@/components/ui/RiskScoreBadge'
+import { useRiskScore } from '@/hooks/useRiskScore'
 import { Patient } from '@/schema/patient'
 import { UserDoc } from '@/schema/user'
 import { Hospital } from '@/schema/hospital'
@@ -21,6 +23,10 @@ export default function ViewDetailsDialog({
     rowData: RowDataType
     fieldsToDisplay: FieldToDisplay[]
 }) {
+    // Determine if this is a patient record (has 'dob' field) for risk scoring
+    const isPatientRecord = 'dob' in rowData
+    const risk = useRiskScore(isPatientRecord ? (rowData as Patient) : null)
+
     // Helper function to render specific data types
     function renderValue(key: string, value: any): string {
         if (value == null) return 'N/A'
@@ -54,6 +60,12 @@ export default function ViewDetailsDialog({
                     <DialogTitle className="text-lg font-semibold">
                         Details of {rowData['name']}
                     </DialogTitle>
+                    {/* Show ML risk score badge for patient records */}
+                    {risk && (
+                        <div className="mt-2">
+                            <RiskScoreBadge risk={risk} />
+                        </div>
+                    )}
                 </DialogHeader>
                 <ScrollArea className="max-h-[70vh] pr-2">
                     <div className="grid gap-6 text-sm md:grid-cols-2">

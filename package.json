@@ -17,7 +17,8 @@
         "seed:users": "node scripts/seedUsers.mjs",
         "seed:patients": "node scripts/seedPatients.mjs",
         "seed:hospitals": "node scripts/seedHospitals.mjs",
-        "seed:all": "npm run seed:hospitals && npm run seed:users && npm run seed:patients"
+        "seed:all": "npm run seed:hospitals && npm run seed:users && npm run seed:patients",
+        "export:patients": "node scripts/exportPatientsToCSV.mjs"
     },
     "dependencies": {
         "@hookform/resolvers": "^5.2.0",
