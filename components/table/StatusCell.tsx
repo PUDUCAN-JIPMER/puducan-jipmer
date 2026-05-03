@@ -9,14 +9,17 @@ export function StatusCell({ status }: StatusCellProps) {
 
     const colorClass =
         statusLower === 'alive'
-            ? 'bg-border text-green-500'
+            ? 'bg-green-100 text-green-800'
             : statusLower === 'not alive'
-              ? 'bg-border text-red-400'
+              ? 'bg-red-100 text-red-800'
               : statusLower === 'ongoing'
-                ? 'bg-border text-blue-600'
+                ? 'bg-blue-100 text-blue-800'
                 : statusLower === 'followup'
-                  ? 'bg-border text-yellow-600'
-                  : 'text-muted-foreground'
+                  ? 'bg-yellow-100 text-yellow-800'
+                  : statusLower === 'not available'
+                    ? 'bg-blue-100 text-blue-800'
+                    : 'text-muted-foreground'
+                   
 
     return (
         <span className={`rounded px-2 py-1 font-medium tracking-wider capitalize ${colorClass}`}>
