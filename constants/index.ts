@@ -1,5 +1,6 @@
 export * from './auth'
 export * from './diseases'
+export * from './footer'
 export * from './form-fields'
 export * from './headers'
 export * from './hospital'
