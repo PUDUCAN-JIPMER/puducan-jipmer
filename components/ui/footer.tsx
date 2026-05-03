@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Linkedin, Mail } from 'lucide-react'
+import { Link as LinkIcon, Mail } from 'lucide-react'
 import Link from 'next/link'
 
 export default function Footer() {
@@ -69,7 +69,7 @@ export default function Footer() {
                                     target="_blank"
                                     rel="noreferrer"
                                 >
-                                    <Linkedin className="h-5 w-5" />
+                                   <LinkIcon className="h-5 w-5" />
                                 </Link>
                             </Button>
                             <Button
