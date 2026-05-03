@@ -16,7 +16,10 @@ export function StatusCell({ status }: StatusCellProps) {
                 ? 'bg-blue-100 text-blue-800'
                 : statusLower === 'followup'
                   ? 'bg-yellow-100 text-yellow-800'
-                  : 'text-muted-foreground'
+                  : statusLower === 'not available'
+                    ? 'bg-blue-100 text-blue-800'
+                    : 'text-muted-foreground'
+                   
 
     return (
         <span className={`rounded px-2 py-1 font-medium tracking-wider capitalize ${colorClass}`}>
