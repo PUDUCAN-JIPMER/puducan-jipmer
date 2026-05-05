@@ -11,7 +11,7 @@
         "dev": "next dev --webpack",
         "build": "next build --webpack",
         "start": "next start",
-        "lint": "next lint",
+        "lint": "eslint .",
         "test": "vitest",
         "prepare": "husky",
         "seed:users": "node scripts/seedUsers.mjs",
