@@ -93,8 +93,8 @@ importers:
         specifier: ^5.0.2
         version: 5.0.7(jspdf@4.2.1)
       lucide:
-        specifier: ^0.525.0
-        version: 0.525.0
+        specifier: ^1.14.0
+        version: 1.14.0
       lucide-react:
         specifier: ^1.8.0
         version: 1.8.0(react@19.2.4)
@@ -4507,8 +4507,8 @@ packages:
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  lucide@0.525.0:
-    resolution: {integrity: sha512-sfehWlaE/7NVkcEQ4T9JD3eID8RNMIGJBBUq9wF3UFiJIrcMKRbU3g1KGfDk4svcW7yw8BtDLXaXo02scDtUYQ==}
+  lucide@1.14.0:
+    resolution: {integrity: sha512-IoRC3lHwemJWvsXKcHK90hkgY4h1HGztBL63w2XwFtIu8gFDPp4/kiuqVtlN3vaM9bxsLQ4ZUBJfGsbKFaB2IA==}
 
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
@@ -10764,7 +10764,7 @@ snapshots:
     dependencies:
       react: 19.2.4
 
-  lucide@0.525.0: {}
+  lucide@1.14.0: {}
 
   lz-string@1.5.0: {}
 
