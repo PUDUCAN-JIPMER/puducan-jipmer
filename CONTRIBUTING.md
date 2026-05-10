@@ -1,34 +1,150 @@
-# Contributing to PuduCan — Cancer Tracker JIPMER
+# <div align="center">🌟 CONTRIBUTING TO PUDUCAN 🌟</div>
 
-> 🎉 First off — thank you for being here! PuduCan is a healthcare tool built to help real patients and medical workers across India. Every contribution, no matter how small, makes a difference. Welcome aboard!
+<div align="center">
 
----
+### *Cancer Tracker — JIPMER*
 
-## 📋 Table of Contents
+<img src="https://img.shields.io/badge/Open%20Source-Welcoming-blue?style=for-the-badge" />
+<img src="https://img.shields.io/badge/Contributions-Always%20Welcome-success?style=for-the-badge" />
+<img src="https://img.shields.io/badge/Built%20for-Healthcare-red?style=for-the-badge" />
+<img src="https://img.shields.io/badge/Made%20with-TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
+<img src="https://img.shields.io/badge/Beginner-Friendly-Yes-brightgreen?style=for-the-badge" />
 
-- [Getting Started](#-getting-started)
-  - [1. Fork & Clone](#1-fork--clone)
-  - [2. Install Dependencies](#2-install-dependencies)
-  - [3. Set Up Firebase](#3-set-up-firebase)
-  - [4. Configure Firestore Rules](#4-configure-firestore-rules)
-  - [5. Seed the Database](#5-seed-the-database)
-  - [6. Run the App](#6-run-the-app)
-- [Branching Strategy](#-branching-strategy)
-- [Before You Submit a PR](#-before-you-submit-a-pr)
-- [Commit Message Convention](#-commit-message-convention)
-- [Pull Request Guidelines](#-pull-request-guidelines)
-- [Reporting Issues](#-reporting-issues)
-- [Code of Conduct](#-code-of-conduct)
+</div>
 
 ---
 
-## 🚀 Getting Started
+<div align="center">
 
-### 1. Fork & Clone
+# ❤️ Welcome, Contributor
 
-Start by giving the repo a ⭐ — it helps others discover the project!
+</div>
 
-Then fork and clone your copy:
+PuduCan is not just another software project.
+
+It is a healthcare initiative built to support **real patients, doctors, nurses, ASHA workers, and hospitals across India**.
+
+Every contribution — whether it's:
+
+- fixing a typo,
+- improving UI,
+- writing tests,
+- improving accessibility,
+- refactoring code,
+- or building features,
+
+helps improve a real healthcare workflow.
+
+And that makes your contribution meaningful.
+
+We genuinely appreciate your time and effort.
+
+---
+
+<div align="center">
+
+## 🌱 New to Open Source?
+
+</div>
+
+You are absolutely welcome here.
+
+You do **not** need to be an expert developer to contribute.
+
+Small contributions matter.
+
+Asking questions is encouraged.
+
+Learning publicly is encouraged.
+
+Everyone starts somewhere ❤️
+
+---
+
+# 📚 Table of Contents
+
+- [🌍 Project Philosophy](#-project-philosophy)
+- [🚀 Local Development Setup](#-local-development-setup)
+  - [1️⃣ Fork & Clone](#1️⃣-fork--clone)
+  - [2️⃣ Install Dependencies](#2️⃣-install-dependencies)
+  - [3️⃣ Configure Firebase](#3️⃣-configure-firebase)
+  - [4️⃣ Configure Firestore](#4️⃣-configure-firestore)
+  - [5️⃣ Seed Database](#5️⃣-seed-database)
+  - [6️⃣ Run Individual Services](#6️⃣-run-individual-services)
+  - [7️⃣ Run the Full Application](#7️⃣-run-the-full-application)
+- [🧠 Using `.claude/agents/`](#-using-claudeagents)
+- [🌿 Branching Strategy](#-branching-strategy)
+- [📝 Commit Convention](#-commit-convention)
+- [🧪 Testing Workflow](#-testing-workflow)
+- [🔀 Pull Request Process](#-pull-request-process)
+- [📌 Issue Claiming Workflow](#-issue-claiming-workflow)
+- [🧹 Contributor Expectations](#-contributor-expectations)
+- [🟢 Beginner-Safe Contribution Areas](#-beginner-safe-contribution-areas)
+- [🚫 Restricted Architectural Areas](#-restricted-architectural-areas)
+- [🤖 ML & AI Feature Discussions](#-ml--ai-feature-discussions)
+- [🐛 Reporting Bugs](#-reporting-bugs)
+- [🛡️ Code of Conduct](#️-code-of-conduct)
+- [📬 Need Help?](#-need-help)
+
+---
+
+# 🌍 Project Philosophy
+
+<div align="center">
+
+```mermaid
+flowchart LR
+    A[Doctors] --> D[PuduCan]
+    B[Nurses] --> D
+    C[ASHA Workers] --> D
+    E[Patients] --> D
+    D --> F[Better Healthcare Workflow]
+```
+
+</div>
+
+PuduCan exists to simplify healthcare workflows and improve accessibility in medical systems.
+
+This means:
+
+- Reliability matters
+- Accessibility matters
+- Simplicity matters
+- Performance matters
+- Empathy matters
+
+When contributing, try to think not only like a developer — but also like a healthcare worker using the product during a busy shift.
+
+---
+
+# 🚀 Local Development Setup
+
+<div align="center">
+
+```mermaid
+flowchart TD
+    A[Fork Repository] --> B[Clone Repository]
+    B --> C[Install Dependencies]
+    C --> D[Configure Firebase]
+    D --> E[Configure Firestore]
+    E --> F[Seed Database]
+    F --> G[Run Services]
+    G --> H[Start Contributing 🚀]
+```
+
+</div>
+
+---
+
+# 1️⃣ Fork & Clone
+
+Fork the repository to your GitHub account.
+
+If you like the project, consider giving it a ⭐
+
+It helps the project grow and motivates contributors.
+
+Clone your fork locally:
 
 ```bash
 git clone https://github.com/<your-username>/puducan-jipmer.git
@@ -37,76 +153,96 @@ cd puducan-jipmer
 
 ---
 
-### 2. Install Dependencies
+# 2️⃣ Install Dependencies
 
-We use `pnpm` as our package manager. Install dependencies with:
+We use **pnpm** as the package manager.
+
+Install dependencies:
 
 ```bash
 pnpm install
 ```
 
-Then copy the environment file:
+Create environment file:
 
 ```bash
 cp .env.example .env.local
 ```
 
-You'll fill in your Firebase credentials in `.env.local` in the next step.
-
 ---
 
-### 3. Set Up Firebase
+# 3️⃣ Configure Firebase
 
-This project uses **Firebase Authentication** and **Firestore** as its backend. You'll need a free Firebase account to run it locally.
+<div align="center">
 
-> 💡 Firebase's UI changes often — if any step looks different, a quick YouTube search or asking an AI assistant will help.
-
-**Step-by-step:**
-
-1. Go to [firebase.google.com](https://firebase.google.com) and create an account.
-2. Click **Add Project**. You can disable Google Analytics and Gemini — they're not needed here.
-3. The free **Spark plan** is enough for local development.
-
-**Get your credentials:**
-
-4. Inside your project, go to **Project Settings → General**, scroll down, and click the **Web (`</>`)** icon.
-5. Register your app with a name like `jipmer-web` (no need to enable hosting).
-6. Copy the config values shown under the **npm** section and paste them into your `.env.local` file.
-
-**Enable Authentication:**
-
-7. In the left sidebar, go to **Build → Authentication**.
-8. Click **Get Started**, then under **Sign-in method**, enable **Email/Password**.
-9. Under the **Users** tab, create users for local testing. Here's what the setup looks like:
-
-<img width="1368" height="606" alt="Firebase authentication users setup" src="https://github.com/user-attachments/assets/d1c3a8ad-2351-4dbd-8f39-ddba80fcea2a" />
-
-> Use these emails and passwords when creating users — they match the seed data:
->
-> | Role  | Email              | Password |
-> |-------|--------------------|----------|
-> | Admin | admin@gmail.com    | jipmer   |
-> | Doctor | doctor@gmail.com  | jipmer   |
-> | Nurse | nurse@gmail.com    | jipmer   |
-> | ASHA  | asha@gmail.com     | jipmer   |
-
----
-
-### 4. Configure Firestore
-
-Each user in Firebase Auth needs to be linked to a role in Firestore — that's how the app knows whether someone is a doctor, nurse, ASHA worker, or admin.
-
-**Set up Firestore:**
-
-1. In the sidebar, go to **Build → Firestore Database** and click **Create Database**.
-2. Choose **Standard database** and select a server region (Mumbai works well for India).
-3. Start in **Production mode**.
-
-**Set security rules:**
-
-4. Go to the **Rules** tab and replace the default rules with:
-
+```mermaid
+flowchart TD
+    A[Create Firebase Project] --> B[Create Web App]
+    B --> C[Copy Firebase Config]
+    C --> D[Paste into .env.local]
+    D --> E[Enable Authentication]
+    E --> F[Create Users]
 ```
+
+</div>
+
+PuduCan uses Firebase for:
+
+- Authentication
+- Firestore Database
+- User Management
+
+Use the free Spark Plan for development.
+
+---
+
+## Create Firebase Project
+
+Visit:
+
+```text
+https://firebase.google.com
+```
+
+Then:
+
+1. Create project
+2. Create web app
+3. Copy Firebase credentials
+4. Paste credentials into `.env.local`
+
+---
+
+## Enable Authentication
+
+Enable:
+
+```text
+Email/Password Authentication
+```
+
+Create the following development users:
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@gmail.com | jipmer |
+| Doctor | doctor@gmail.com | jipmer |
+| Nurse | nurse@gmail.com | jipmer |
+| ASHA | asha@gmail.com | jipmer |
+
+---
+
+# 4️⃣ Configure Firestore
+
+Go to:
+
+```text
+Build → Firestore Database
+```
+
+Create database and replace rules with:
+
+```js
 service cloud.firestore {
   match /databases/{database}/documents {
     match /{document=**} {
@@ -116,124 +252,431 @@ service cloud.firestore {
 }
 ```
 
-> ⚠️ These are simplified rules for local development only. We'll be improving the security rules soon — contributions welcome!
+> ⚠️ Development-only rules.
+>
+> Production security rules are intentionally stricter and still evolving.
 
 ---
 
-### 5. Seed the Database
+# 5️⃣ Seed Database
 
-Before running the app, populate Firestore with some test data. Make sure the emails in `data/users.mjs` match the users you created in Firebase Auth.
+Run:
 
 ```bash
-# Seed user roles (edit data/users.mjs first to match your Firebase Auth users)
 pnpm run seed:users
-
-# Seed patient records
 pnpm run seed:patients
-
-# Seed hospital data
 pnpm run seed:hospitals
 ```
 
 ---
 
-### 6. Run the App
+# 6️⃣ Run Individual Services
+
+You do **not** need Docker for local development.
+
+Individual services can be run independently.
+
+Example:
 
 ```bash
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) and log in using one of the seeded credentials:
-
-| Role   | Email              | Password | What you'll see                        |
-|--------|--------------------|----------|----------------------------------------|
-| Admin  | admin@gmail.com    | jipmer   | Full dashboard, user & hospital management |
-| Doctor | doctor@gmail.com   | jipmer   | Patient records assigned to the doctor |
-| Nurse  | nurse@gmail.com    | jipmer   | Nurse-specific patient view            |
-| ASHA   | asha@gmail.com     | jipmer   | Mobile-friendly ASHA worker view       |
-
-🎉 You're all set! Feel free to explore and start contributing.
-
-> If something in this setup guide is unclear or outdated, please open a PR to improve it — that counts as a contribution too!
-
----
-
-## 🌿 Branching Strategy
-
-Always branch off from `main`. Use this naming convention:
-
-| Prefix | When to use |
-|--------|-------------|
-| `feat/` | New features — e.g. `feat/export-to-pdf` |
-| `fix/` | Bug fixes — e.g. `fix/pagination-reset` |
-| `chore/` | Maintenance tasks — e.g. `chore/upgrade-deps` |
-| `docs/` | Documentation updates — e.g. `docs/improve-setup-guide` |
-
----
-
-## ✅ Before You Submit a PR
-
-Run these checks before opening your pull request:
+Or run specific apps/services:
 
 ```bash
-pnpm lint      # Check for linting issues
-pnpm format    # Auto-format your code
-pnpm test      # Run the test suite
+pnpm --filter web dev
+pnpm --filter api dev
 ```
 
-> Husky pre-commit hooks will also run linting automatically on every commit, so you'll catch issues early.
+This makes debugging and development faster for contributors.
 
 ---
 
-## 📝 Commit Message Convention
+# 7️⃣ Run the Full Application
 
-We follow the [Conventional Commits](https://www.conventionalcommits.org/) format:
+Start the application:
 
+```bash
+pnpm dev
 ```
+
+Open:
+
+```text
+http://localhost:3000
+```
+
+---
+
+# 🧠 Using `.claude/agents/`
+
+This repository may contain reusable AI workflow agents inside:
+
+```text
+.claude/agents/
+```
+
+These agents are used to:
+
+- standardize development workflows,
+- assist with repetitive tasks,
+- improve contributor productivity,
+- maintain consistency across changes.
+
+If contributing to workflows or automation:
+
+- review existing agents first,
+- avoid duplicating behavior,
+- follow the established structure and naming patterns.
+
+---
+
+# 🌿 Branching Strategy
+
+Always branch from:
+
+```text
+main
+```
+
+Use the following naming conventions:
+
+| Prefix | Purpose | Example |
+|---|---|---|
+| `feat/` | New features | `feat/patient-export` |
+| `fix/` | Bug fixes | `fix/login-redirect` |
+| `docs/` | Documentation | `docs/update-contributing` |
+| `refactor/` | Refactors | `refactor/firebase-hooks` |
+| `test/` | Tests | `test/patient-service` |
+| `chore/` | Maintenance | `chore/update-eslint` |
+
+---
+
+# 📝 Commit Convention
+
+We follow **Conventional Commits**.
+
+Format:
+
+```text
 type(scope): short description
 ```
 
-**Examples:**
+Examples:
 
+```text
+feat(auth): add role redirects
+fix(table): resolve sorting issue
+docs(contributing): improve setup guide
+refactor(api): simplify patient queries
 ```
-feat(auth): add role-based redirect on login
-fix(table): resolve pagination reset on filter change
-chore(deps): upgrade TanStack Query to v5
-docs(contributing): clarify firebase setup steps
+
+Valid types:
+
+- feat
+- fix
+- docs
+- style
+- refactor
+- test
+- chore
+
+---
+
+# 🧪 Testing Workflow
+
+Before opening a PR, run:
+
+```bash
+pnpm lint
+pnpm format
+pnpm test
 ```
 
-**Valid types:** `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+Run individual test suites when needed:
+
+```bash
+pnpm test --filter api
+pnpm test --filter web
+```
+
+Please ensure:
+
+- new logic includes tests,
+- existing tests continue passing,
+- changes do not introduce regressions.
+
+> ✅ Husky hooks may automatically run checks before commits.
 
 ---
 
-## 🔀 Pull Request Guidelines
+# 🔀 Pull Request Process
 
-- **One thing per PR** — keep it focused on a single feature or fix.
-- **Write in your own words** — describe *what* you changed and *why*. Grammar mistakes are fine — we genuinely love reading how contributors think!
-- **Reference related issues** using `Closes #<issue-number>`.
-- **Add or update tests** if your change affects logic.
-- **Never commit `.env` files** or any credentials.
-- Keep the PR title short and descriptive — avoid long, overflowing titles.
+<div align="center">
 
----
+```mermaid
+flowchart TD
+    A[Claim Issue] --> B[Create Branch]
+    B --> C[Make Changes]
+    C --> D[Run Tests]
+    D --> E[Commit Changes]
+    E --> F[Open PR]
+    F --> G[Code Review]
+    G --> H[Merge 🎉]
+```
 
-## 🐛 Reporting Issues
+</div>
 
-When opening an issue, please include:
+## 📌 Keep PRs Focused
 
-- A **clear title and description**
-- **Steps to reproduce** (for bugs)
-- **Screenshots** if applicable
-- Your **environment** (OS, browser, Node version)
+One PR should ideally solve one issue or add one feature.
 
----
-
-## 🗣️ Code of Conduct
-
-Be kind, constructive, and respectful. This is a healthcare project — reliability and empathy matter, both in the code and in how we work together.
+Smaller PRs are easier to review and merge.
 
 ---
 
-## 📬 Questions?
+## 📌 Explain Changes Clearly
 
-Open a [GitHub Discussion](../../discussions) or reach out via [Issues](../../issues). We're happy to help you get started! 💫
+In your PR description:
+
+- explain what changed,
+- explain why it changed,
+- mention anything reviewers should pay attention to.
+
+Perfect grammar is NOT required.
+
+Clarity matters more.
+
+---
+
+## 📌 Add Tests Where Necessary
+
+Changes affecting logic or behavior should include tests.
+
+---
+
+## 📌 Never Commit Sensitive Files
+
+Never commit:
+
+- `.env`
+- API keys
+- Firebase credentials
+- secrets
+
+---
+
+# 📌 Issue Claiming Workflow
+
+<div align="center">
+
+```mermaid
+flowchart TD
+    A[Claim Issue] --> B{Already Working on Another Issue?}
+    B -->|Yes| C[Finish or Leave Current Issue]
+    B -->|No| D[Issue Available?]
+    D -->|Yes| E[Assigned]
+    D -->|No| F[Pick Another Issue]
+```
+
+</div>
+
+Before starting work:
+
+1. Check if the issue is already assigned
+2. Comment on the issue expressing interest
+3. Wait for maintainers to assign/approve if required
+
+Example:
+
+```text
+I'd like to work on this issue.
+```
+
+---
+
+## ⚠️ One Issue at a Time Policy
+
+To ensure fair contribution opportunities and avoid abandoned work:
+
+- contributors may work on **only ONE issue at a time**,
+- you must either:
+  - finish your currently assigned issue,
+  - OR leave/unassign it,
+  before claiming another one.
+
+Please do not claim multiple issues simultaneously.
+
+---
+
+## ⏳ Reclaiming Long-Unfinished Issues
+
+If an issue has:
+
+- been inactive for a long time,
+- received no progress updates,
+- or appears abandoned,
+
+maintainers may reopen/reassign the issue to keep project progress healthy.
+
+---
+
+# 🧹 Contributor Expectations
+
+We value:
+
+- kindness,
+- collaboration,
+- consistency,
+- maintainability,
+- respectful communication.
+
+Please:
+
+- communicate clearly,
+- ask questions when unsure,
+- avoid unnecessary complexity,
+- follow existing architecture patterns,
+- be respectful during reviews.
+
+We care more about thoughtful contributions than perfect code.
+
+---
+
+# 🟢 Beginner-Safe Contribution Areas
+
+These areas are generally safe for new contributors:
+
+- documentation improvements,
+- UI polishing,
+- accessibility improvements,
+- adding tests,
+- fixing small bugs,
+- improving error states,
+- improving loading states,
+- refactoring isolated components,
+- improving developer experience.
+
+Look for labels like:
+
+```text
+good first issue
+beginner friendly
+documentation
+```
+
+---
+
+# 🚫 Restricted Architectural Areas
+
+The following areas are considered advanced/core infrastructure:
+
+- Redis Streams
+- orchestration systems
+- async workflow internals
+- distributed event processing
+- background job pipelines
+- low-level infrastructure abstractions
+
+Please avoid modifying these areas unless:
+
+- specifically assigned,
+- discussed with maintainers,
+- or you fully understand the architecture implications.
+
+These systems are critical to application stability.
+
+---
+
+# 🤖 ML & AI Feature Discussions
+
+At the moment, the project is **not heavily focusing on ML/AI integrations or experimental AI workflows**.
+
+This is because such systems require:
+
+- careful architectural decisions,
+- long-term maintenance planning,
+- healthcare safety considerations,
+- and deeper technical discussions.
+
+However:
+
+> 💡 Suggestions, ideas, discussions, and architectural feedback related to ML/AI are absolutely welcome.
+
+Please use the:
+
+```text
+GitHub Discussions
+```
+
+section for:
+
+- proposing ML ideas,
+- discussing feasibility,
+- sharing research,
+- suggesting future AI directions,
+- or brainstorming healthcare AI applications.
+
+We genuinely appreciate thoughtful discussions and community insights in this area.
+
+---
+
+# 🐛 Reporting Bugs
+
+Please include:
+
+- clear title,
+- expected behavior,
+- actual behavior,
+- reproduction steps,
+- screenshots if applicable,
+- environment details.
+
+Good bug reports save maintainers significant debugging time ❤️
+
+---
+
+# 🛡️ Code of Conduct
+
+Please be:
+
+- respectful,
+- constructive,
+- patient,
+- collaborative,
+- kind.
+
+This is a healthcare-focused project.
+
+Empathy matters both in the product and the community.
+
+---
+
+# 📬 Need Help?
+
+If you're stuck:
+
+- open a GitHub Issue,
+- start a GitHub Discussion,
+- ask questions in PR threads.
+
+Nobody is expected to know everything.
+
+Asking questions is part of contributing ❤️
+
+---
+
+<div align="center">
+
+# ❤️ Final Note
+
+Thank you for contributing to PuduCan.
+
+Every contribution — no matter how small — helps improve healthcare technology for real people.
+
+We appreciate you.
+
+### Happy Building 🚀
+
+</div>
