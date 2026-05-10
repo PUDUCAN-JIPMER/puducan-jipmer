@@ -7,8 +7,8 @@
 <img src="https://img.shields.io/badge/Open%20Source-Welcoming-blue?style=for-the-badge" />
 <img src="https://img.shields.io/badge/Contributions-Always%20Welcome-success?style=for-the-badge" />
 <img src="https://img.shields.io/badge/Built%20for-Healthcare-red?style=for-the-badge" />
-<img src="https://img.shields.io/badge/Made%20with-TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
-<img src="https://img.shields.io/badge/Beginner-Friendly-Yes-brightgreen?style=for-the-badge" />
+<img src="https://img.shields.io/badge/Beginner Friendly%20-Project-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
+
 
 </div>
 
