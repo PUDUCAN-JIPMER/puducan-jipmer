@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "jipmer-927ae"
-  }
+    "default": "puducan-jipmer-dev",
+    "dev": "puducan-jipmer-dev"
+  },
+  "targets": {},
+  "etags": {}
 }
