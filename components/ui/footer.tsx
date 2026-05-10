@@ -33,6 +33,17 @@ export default function Footer() {
                     ))}
                 </div>
 
+                <div className="mt-3 flex justify-center">
+                    <a
+                        href="https://www.websitecarbon.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 rounded-full border border-green-300 bg-green-50 px-3 py-1 text-xs text-green-700 dark:border-green-700 dark:bg-green-950 dark:text-green-300"
+                    >
+                        🌿 93% cleaner than other websites
+                    </a>
+                </div>
+
                 <div className="mt-2 border-t border-gray-200 pt-2 text-center text-xs text-gray-500 dark:border-gray-800 dark:text-gray-100">
                     &copy; {new Date().getFullYear()} PUDUCAN. All rights reserved.
                 </div>
