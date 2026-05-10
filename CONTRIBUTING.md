@@ -81,6 +81,7 @@ Everyone starts somewhere ❤️
 - [🧹 Contributor Expectations](#-contributor-expectations)
 - [🟢 Beginner-Safe Contribution Areas](#-beginner-safe-contribution-areas)
 - [🚫 Restricted Architectural Areas](#-restricted-architectural-areas)
+- [🤖 ML & AI Feature Discussions](#-ml--ai-feature-discussions)
 - [🐛 Reporting Bugs](#-reporting-bugs)
 - [🛡️ Code of Conduct](#️-code-of-conduct)
 - [📬 Need Help?](#-need-help)
@@ -468,6 +469,19 @@ Never commit:
 
 # 📌 Issue Claiming Workflow
 
+<div align="center">
+
+```mermaid
+flowchart TD
+    A[Claim Issue] --> B{Already Working on Another Issue?}
+    B -->|Yes| C[Finish or Leave Current Issue]
+    B -->|No| D[Issue Available?]
+    D -->|Yes| E[Assigned]
+    D -->|No| F[Pick Another Issue]
+```
+
+</div>
+
 Before starting work:
 
 1. Check if the issue is already assigned
@@ -480,9 +494,31 @@ Example:
 I'd like to work on this issue.
 ```
 
-This helps prevent duplicate work and keeps contribution flow organized.
+---
 
-If you become inactive for extended periods without updates, maintainers may reassign the issue.
+## ⚠️ One Issue at a Time Policy
+
+To ensure fair contribution opportunities and avoid abandoned work:
+
+- contributors may work on **only ONE issue at a time**,
+- you must either:
+  - finish your currently assigned issue,
+  - OR leave/unassign it,
+  before claiming another one.
+
+Please do not claim multiple issues simultaneously.
+
+---
+
+## ⏳ Reclaiming Long-Unfinished Issues
+
+If an issue has:
+
+- been inactive for a long time,
+- received no progress updates,
+- or appears abandoned,
+
+maintainers may reopen/reassign the issue to keep project progress healthy.
 
 ---
 
@@ -550,6 +586,39 @@ Please avoid modifying these areas unless:
 - or you fully understand the architecture implications.
 
 These systems are critical to application stability.
+
+---
+
+# 🤖 ML & AI Feature Discussions
+
+At the moment, the project is **not heavily focusing on ML/AI integrations or experimental AI workflows**.
+
+This is because such systems require:
+
+- careful architectural decisions,
+- long-term maintenance planning,
+- healthcare safety considerations,
+- and deeper technical discussions.
+
+However:
+
+> 💡 Suggestions, ideas, discussions, and architectural feedback related to ML/AI are absolutely welcome.
+
+Please use the:
+
+```text
+GitHub Discussions
+```
+
+section for:
+
+- proposing ML ideas,
+- discussing feasibility,
+- sharing research,
+- suggesting future AI directions,
+- or brainstorming healthcare AI applications.
+
+We genuinely appreciate thoughtful discussions and community insights in this area.
 
 ---
 
