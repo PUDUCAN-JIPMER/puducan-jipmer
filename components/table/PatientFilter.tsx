@@ -14,11 +14,11 @@ import {
     SheetFooter,
 } from '@/components/ui/sheet'
 import {
-    DISEASE_OPTIONS,
     HEALTH_STATUS_OPTIONS,
     RATION_COLORS_OPTIONS,
     SEX_OPTIONS,
 } from '@/constants/form-fields'
+import { AVAILABLE_DISEASES_LIST } from '@/constants/diseases'
 import { usePatientFilterStore } from '@/store/patient-filter-store'
 import { ListFilter, X, RotateCcw } from 'lucide-react'
 import { useMemo } from 'react'
@@ -128,7 +128,9 @@ export function PatientFilter() {
                                 </h4>
                                 <FilterSection
                                     label="Disease"
-                                    options={DISEASE_OPTIONS.map((opt) => ({ label: opt, value: opt }))}
+                                    options={Object.values(AVAILABLE_DISEASES_LIST)
+                                        .flat()
+                                        .map((d) => ({ label: d.label, value: d.label.toLowerCase() }))}
                                     selected={filters.diseases}
                                     onToggle={(val) => toggleFilterItem('diseases', val)}
                                     onClear={() => setFilter('diseases', [])}
