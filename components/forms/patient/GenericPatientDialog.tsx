@@ -62,8 +62,7 @@ export default function GenericPatientDialog({
             diagnosedDate: '',
             treatmentStartDate: null,
             treatmentEndDate: null,
-            patientStatus: 'Alive',
-            status: 'Active'
+            patientStatus: 'Active',
             patientDeathDate: '',
             hasAadhaar: true,
             suspectedCase: false,
@@ -129,7 +128,7 @@ export default function GenericPatientDialog({
                     Object.entries(data).filter(([_, value]) => value !== undefined)
                 )
 
-                if (data.status === 'Cured') {
+                if (data.patientStatus === 'Cured') {
                     const curedRef = doc(db, 'cured_patients', patientData.id)
                     batch.set(curedRef, {
                         ...cleanData,

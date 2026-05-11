@@ -49,8 +49,8 @@ export const PatientSchema = z
             .optional()
             .nullable(),
         followUps: z.array(FollowUpSchema).optional(),
-        patientStatus: z.enum(['Active', 'Inactive', 'Cured', 'Alive', 'Not Alive', 'Not Available']).optional(),
-        status: z.enum(['Active', 'Inactive', 'Cured']).optional(),
+        
+        patientStatus: z.enum(['Active', 'Inactive', 'Cured']).optional(),
         patientDeathDate: z.string().optional(),
         // treatmentStatus: z.enum(['Ongoing', 'FollowUp', 'Stopped', 'Not Available']).optional(),
         aabhaId: z.string().optional(),
