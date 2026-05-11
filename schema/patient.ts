@@ -49,7 +49,8 @@ export const PatientSchema = z
             .optional()
             .nullable(),
         followUps: z.array(FollowUpSchema).optional(),
-        patientStatus: z.enum(['Alive', 'Not Alive', 'Not Available']).optional(),
+        patientStatus: z.enum(['Active', 'Inactive', 'Cured', 'Alive', 'Not Alive', 'Not Available']).optional(),
+        status: z.enum(['Active', 'Inactive', 'Cured']).optional(),
         patientDeathDate: z.string().optional(),
         // treatmentStatus: z.enum(['Ongoing', 'FollowUp', 'Stopped', 'Not Available']).optional(),
         aabhaId: z.string().optional(),
@@ -138,4 +139,10 @@ export type PatientFormInputs = z.infer<typeof PatientSchema>
 // This type is for fetched data from the database, which always has an ID
 export type Patient = PatientFormInputs & {
     id: string
+}
+
+export type CuredPatient = PatientFormInputs & {
+    id: string
+    patientStatus: 'Cured'
+    curedAt: string | Date
 }

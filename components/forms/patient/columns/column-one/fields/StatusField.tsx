@@ -22,7 +22,7 @@ const StatusField: React.FC<StatusFieldProps> = ({ form: { control }, isEdit = f
     return (
         <Controller
             control={control}
-            name="patientStatus"
+            name="status"
             render={({ field }) => {
                 const extraOption = field.value && !options.includes(field.value) ? field.value : undefined
 
