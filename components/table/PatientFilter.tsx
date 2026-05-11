@@ -3,9 +3,16 @@
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+    SheetFooter,
+} from '@/components/ui/sheet'
 import {
     DISEASE_OPTIONS,
     HEALTH_STATUS_OPTIONS,
@@ -50,9 +57,9 @@ export function PatientFilter() {
 
     return (
         <div className="flex flex-col gap-4 md:flex-row md:items-center">
-            <Popover>
-                <PopoverTrigger asChild>
-                    <Button className="relative cursor-pointer" variant="outline">
+            <Sheet>
+                <SheetTrigger asChild>
+                    <Button className="cursor-pointer" variant="outline">
                         <ListFilter className="mr-1 h-4 w-4" />
                         <span className="hidden md:inline">Filters</span>
                         {activeFilterCount > 0 && (
@@ -61,35 +68,39 @@ export function PatientFilter() {
                             </span>
                         )}
                     </Button>
-                </PopoverTrigger>
+                </SheetTrigger>
 
-                <PopoverContent className="w-[320px] sm:w-[480px] p-0 shadow-xl" align="end">
-                    <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/30">
-                        <h3 className="font-semibold text-sm flex items-center gap-2">
-                            <ListFilter className="h-4 w-4" />
-                            Filters
-                        </h3>
-                        {activeFilterCount > 0 && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={reset}
-                                className="h-8 px-2 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                            >
-                                <RotateCcw className="mr-1.5 h-3 w-3" />
-                                Clear All
-                            </Button>
-                        )}
-                    </div>
+                <SheetContent side="right" className="w-full sm:max-w-md flex flex-col p-0 overflow-hidden border-l shadow-2xl">
+                    <SheetHeader className="px-6 py-5 border-b bg-muted/30">
+                        <div className="flex items-center justify-between">
+                            <SheetTitle className="text-xl flex items-center gap-2">
+                                <ListFilter className="h-5 w-5" />
+                                Patient Filters
+                            </SheetTitle>
+                            {activeFilterCount > 0 && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={reset}
+                                    className="h-8 px-3 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                                >
+                                    <RotateCcw className="mr-2 h-3.5 w-3.5" />
+                                    Clear All
+                                </Button>
+                            )}
+                        </div>
+                    </SheetHeader>
 
-                    <ScrollArea className="h-[400px] sm:h-[500px]">
-                        <div className="p-4 space-y-8">
+                    <ScrollArea className="flex-1 overflow-y-auto">
+                        <div className="px-6 py-8 space-y-10">
                             {/* Demographics Group */}
-                            <div className="space-y-4">
-                                <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 px-1">
+                            <div className="space-y-5">
+                                <h4 className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
+                                    <span className="h-px flex-1 bg-border/40" />
                                     Demographics
+                                    <span className="h-px flex-1 bg-border/40" />
                                 </h4>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
+                                <div className="space-y-8">
                                     <FilterSection
                                         label="Sex"
                                         options={SEX_OPTIONS.map((opt) => ({ label: opt, value: opt }))}
@@ -108,12 +119,12 @@ export function PatientFilter() {
                                 </div>
                             </div>
 
-                            <div className="h-px bg-border/50 mx-1" />
-
                             {/* Medical Group */}
-                            <div className="space-y-4">
-                                <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 px-1">
+                            <div className="space-y-5">
+                                <h4 className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
+                                    <span className="h-px flex-1 bg-border/40" />
                                     Medical
+                                    <span className="h-px flex-1 bg-border/40" />
                                 </h4>
                                 <FilterSection
                                     label="Disease"
@@ -125,22 +136,22 @@ export function PatientFilter() {
                                 />
                             </div>
 
-                            <div className="h-px bg-border/50 mx-1" />
-
                             {/* Status Group */}
-                            <div className="space-y-4">
-                                <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 px-1">
-                                    Patient Status
+                            <div className="space-y-5">
+                                <h4 className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
+                                    <span className="h-px flex-1 bg-border/40" />
+                                    Care Status
+                                    <span className="h-px flex-1 bg-border/40" />
                                 </h4>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
+                                <div className="space-y-8">
                                     <FilterSection
-                                        label="Status"
+                                        label="Patient Status"
                                         options={HEALTH_STATUS_OPTIONS.map((opt) => ({ label: opt, value: opt }))}
                                         selected={filters.statuses}
                                         onToggle={(val) => toggleFilterItem('statuses', val)}
                                         onClear={() => setFilter('statuses', [])}
                                     />
-                                    <div className="space-y-6">
+                                    <div className="grid grid-cols-2 gap-6">
                                         <FilterSection
                                             label="Assignment"
                                             type="radio"
@@ -161,12 +172,12 @@ export function PatientFilter() {
                                 </div>
                             </div>
 
-                            <div className="h-px bg-border/50 mx-1" />
-
                             {/* Government Group */}
-                            <div className="space-y-4 pb-2">
-                                <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/70 px-1">
+                            <div className="space-y-5 pb-4">
+                                <h4 className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
+                                    <span className="h-px flex-1 bg-border/40" />
                                     Government
+                                    <span className="h-px flex-1 bg-border/40" />
                                 </h4>
                                 <FilterSection
                                     label="Ration Card"
@@ -178,15 +189,16 @@ export function PatientFilter() {
                             </div>
                         </div>
                     </ScrollArea>
-                    <div className="p-3 border-t bg-muted/10 flex justify-end">
-                        <PopoverTrigger asChild>
-                            <Button size="sm" className="h-8 px-4 text-xs font-medium">
-                                Apply Filters
+
+                    <SheetFooter className="p-6 border-t bg-muted/10 gap-3 sm:flex-col">
+                        <SheetTrigger asChild>
+                            <Button className="w-full font-semibold">
+                                Apply & Close
                             </Button>
-                        </PopoverTrigger>
-                    </div>
-                </PopoverContent>
-            </Popover>
+                        </SheetTrigger>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
         </div>
     )
 }
