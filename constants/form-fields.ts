@@ -12,6 +12,6 @@ export const DISEASE_OPTIONS = [
     'oral cancer',
 ]
 
-export const HEALTH_STATUS_OPTIONS = ['alive', 'not alive', 'ongoing', 'followup']
+export const PATIENT_STATUS_OPTIONS = ['Active', 'Inactive', 'Cured']
 
 export const RATION_COLORS_OPTIONS = ['red', 'yellow', 'none']

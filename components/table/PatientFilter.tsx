@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
     DISEASE_OPTIONS,
-    HEALTH_STATUS_OPTIONS,
+    PATIENT_STATUS_OPTIONS,
     RATION_COLORS_OPTIONS,
     SEX_OPTIONS,
 } from '@/constants/form-fields'
@@ -61,7 +61,7 @@ export function PatientFilter() {
                         {/* Status */}
                         <FilterGroup
                             label="Status"
-                            options={HEALTH_STATUS_OPTIONS}
+                            options={PATIENT_STATUS_OPTIONS}
                             selected={filters.statuses}
                             onToggle={(val) => toggleFilterItem('statuses', val)}
                         />
