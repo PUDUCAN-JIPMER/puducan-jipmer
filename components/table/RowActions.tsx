@@ -199,7 +199,10 @@ export function RowActions({
                     {isRemovedPatientsTab && (
                         <>
                             <DropdownMenuItem
-                                onClick={() => setOpen(true)}
+                                onSelect={(e) => {
+                                    e.preventDefault()
+                                    setOpen(true)
+                                }}
                                 className="text-green-600"
                             >
                                 <RotateCcw className="mr-2 h-4 w-4" />
