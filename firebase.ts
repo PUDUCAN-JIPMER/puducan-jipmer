@@ -14,9 +14,11 @@ const requiredEnvVars = {
   NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
-for (const [key, value] of Object.entries(requiredEnvVars)) {
-  if (!value) {
-    throw new Error(`Missing required Firebase environment variable: ${key}`)
+if (process.env.NODE_ENV !== 'test') {
+  for (const [key, value] of Object.entries(requiredEnvVars)) {
+    if (!value) {
+      throw new Error(`Missing required Firebase environment variable: ${key}`)
+    }
   }
 }
 
