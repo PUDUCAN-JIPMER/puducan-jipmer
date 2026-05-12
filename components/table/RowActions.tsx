@@ -1,16 +1,37 @@
 // components/RowActions.tsx
 'use client'
 
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/AuthContext'
 import { db } from '@/firebase'
 import { HospitalFormInputs, UserDoc } from '@/schema'
 import type { Patient } from '@/schema/patient'
+
 import { useQueryClient } from '@tanstack/react-query'
 import { deleteDoc, doc, setDoc, updateDoc } from 'firebase/firestore'
-import { Eye, Pencil, RotateCcw, Trash2 } from 'lucide-react'
+
+import {
+    Eye,
+    MoreVertical,
+    Pencil,
+    RotateCcw,
+    Trash2,
+    Repeat2,
+    UserCheck,
+    UserPlus,
+} from 'lucide-react'
+
 import { useState } from 'react'
 import { toast } from 'sonner'
+
 import AshaSearchDialog from '../dialogs/AshaSearchDialog'
 import TransferDialog from '../dialogs/TransferDialog'
 import GenericHospitalDialog from '../forms/hospital/GenericHospitalDialog'
@@ -41,7 +62,9 @@ export function RowActions({
     onDelete,
 }: RowActionsProps) {
     const [assignedAshaId, setAssignedAshaId] = useState((rowData as Patient).assignedAsha || '')
+
     const [open, setOpen] = useState(false)
+
     const queryClient = useQueryClient()
     const { role } = useAuth()
 
@@ -51,13 +74,11 @@ export function RowActions({
 
             const patientId = rowData.id.toString()
 
-            // move patient back to "patients"
             await setDoc(doc(db, 'patients', patientId), {
                 ...rowData,
                 restoredAt: new Date().toISOString(),
             })
 
-            // delete from "removedPatients"
             await deleteDoc(doc(db, 'removedPatients', patientId))
 
             queryClient.invalidateQueries({ queryKey: ['patients'] })
@@ -71,110 +92,138 @@ export function RowActions({
     }
 
     return (
-        <div className="flex flex-col sm:justify-center items-center gap-2 sm:flex-row">
-            {/* View */}
-            <Button size="icon" variant="outline" onClick={() => onView(rowData)} title="View">
-                <Eye className="h-4 w-4" />
-            </Button>
-
-            {/* Patient Edit */}
-            {isPatientTab && (
-                <GenericPatientDialog
-                    mode="edit"
-                    patientData={rowData as Patient}
-                    trigger={
-                        <Button size="icon" variant="outline" title="Update">
-                            <Pencil className="h-4 w-4" />
-                        </Button>
-                    }
-                />
-            )}
-
-            {/* User Edit */}
-            {['ashas', 'doctors', 'nurses'].includes(activeTab) && (
-                <GenericUserDialog
-                    mode="edit"
-                    userType={activeTab}
-                    userData={rowData as UserDoc}
-                    trigger={
-                        <Button size="icon" variant="outline" title="Update">
-                            <Pencil className="h-4 w-4" />
-                        </Button>
-                    }
-                />
-            )}
-
-            {/* Hospital Edit */}
-            {activeTab === 'hospitals' && (
-                <GenericHospitalDialog
-                    mode="edit"
-                    hospitalData={rowData as HospitalFormInputs & { id: string }}
-                />
-            )}
-
-            {/* Transfer Patient */}
-            {isPatientTab && (
-                <TransferDialog
-                    patient={rowData as Patient}
-                    onTransfer={async (hospitalId, hospitalName) => {
-                        try {
-                            if (!rowData.id) throw new Error('Missing patient document ID')
-                            const patientRef = doc(db, 'patients', rowData.id.toString())
-                            await updateDoc(patientRef, {
-                                assignedHospital: { id: hospitalId, name: hospitalName },
-                                assignedAsha: '',
-                            })
-                            toast.success(`Transferred ${rowData.name} to new PHC.`)
-                        } catch (err) {
-                            toast.error('Transfer failed. See console for details.' + err)
-                        }
-                    }}
-                />
-            )}
-
-            {/* Assign ASHA */}
-            {isPatientTab && (
-                <AshaSearchDialog
-                    patientId={rowData.id.toString()}
-                    assignedAshaId={assignedAshaId}
-                    onAssigned={(ashaId: string | null) => setAssignedAshaId(ashaId ?? '')}
-                />
-            )}
-
-            {/* Retrieve Patient */}
-            {isRemovedPatientsTab && (
-                <>
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                     <Button
                         size="icon"
-                        variant="outline"
-                        className="text-green-600"
-                        onClick={() => setOpen(true)}
-                        title="Retrieve Patient"
+                        variant="ghost"
+                        onClick={(e) => e.stopPropagation()}
+                        aria-label="Open actions menu"
                     >
-                        <RotateCcw className="h-4 w-4" />
+                        <MoreVertical className="h-4 w-4" />
                     </Button>
+                </DropdownMenuTrigger>
 
-                    <ConfirmRetrieveDialog
-                        open={open}
-                        onOpenChange={setOpen}
-                        patientName={rowData.name as string}
-                        onConfirm={handleRetrieve}
-                    />
-                </>
-            )}
+                <DropdownMenuContent align="end">
+                    {/* View */}
+                    <DropdownMenuItem onClick={() => onView(rowData)}>
+                        <Eye className="mr-2 h-4 w-4" />
+                        View Patient
+                    </DropdownMenuItem>
 
-            {/* Delete */}
-            {role !== 'nurse' && (
-                <Button
-                    size="icon"
-                    variant="destructive"
-                    className="text-white"
-                    onClick={() => onDelete(rowData)}
-                    title="Delete"
-                >
-                    <Trash2 className="h-4 w-4" />
-                </Button>
-            )}
-        </div>
+                    {/* Edit Patient */}
+                    {isPatientTab && (
+                        <GenericPatientDialog
+                            mode="edit"
+                            patientData={rowData as Patient}
+                            trigger={
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Edit Patient
+                                </DropdownMenuItem>
+                            }
+                        />
+                    )}
+
+                    {/* Edit User */}
+                    {['ashas', 'doctors', 'nurses'].includes(activeTab) && (
+                        <GenericUserDialog
+                            mode="edit"
+                            userType={activeTab}
+                            userData={rowData as UserDoc}
+                            trigger={
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Edit User
+                                </DropdownMenuItem>
+                            }
+                        />
+                    )}
+
+                    {/* Transfer Patient */}
+                    {isPatientTab && (
+                        <TransferDialog
+                            patient={rowData as Patient}
+                            trigger={
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                    <Repeat2 className="mr-2 h-4 w-4" />
+                                    Transfer Patient
+                                </DropdownMenuItem>
+                            }
+                            onTransfer={async (hospitalId, hospitalName) => {
+                                try {
+                                    if (!rowData.id) throw new Error('Missing patient document ID')
+
+                                    const patientRef = doc(db, 'patients', rowData.id.toString())
+
+                                    await updateDoc(patientRef, {
+                                        assignedHospital: {
+                                            id: hospitalId,
+                                            name: hospitalName,
+                                        },
+                                        assignedAsha: '',
+                                    })
+
+                                    toast.success(`Transferred ${rowData.name} to new PHC.`)
+                                } catch (err) {
+                                    toast.error('Transfer failed. See console for details.')
+                                    console.error(err)
+                                }
+                            }}
+                        />
+                    )}
+
+                    {/* Assign ASHA */}
+                    {isPatientTab && (
+                        <AshaSearchDialog
+                            patientId={rowData.id.toString()}
+                            assignedAshaId={assignedAshaId}
+                            onAssigned={(ashaId: string | null) => setAssignedAshaId(ashaId ?? '')}
+                            trigger={
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                    {assignedAshaId !== 'none' && assignedAshaId ? (
+                                        <UserCheck className="mr-2 h-4 w-4 text-green-600" />
+                                    ) : (
+                                        <UserPlus className="mr-2 h-4 w-4" />
+                                    )}
+                                    Assign ASHA
+                                </DropdownMenuItem>
+                            }
+                        />
+                    )}
+
+                    <DropdownMenuSeparator />
+
+                    {/* Retrieve */}
+                    {isRemovedPatientsTab && (
+                        <>
+                            <DropdownMenuItem
+                                onClick={() => setOpen(true)}
+                                className="text-green-600"
+                            >
+                                <RotateCcw className="mr-2 h-4 w-4" />
+                                Retrieve Patient
+                            </DropdownMenuItem>
+
+                            <ConfirmRetrieveDialog
+                                open={open}
+                                onOpenChange={setOpen}
+                                patientName={rowData.name as string}
+                                onConfirm={handleRetrieve}
+                            />
+                        </>
+                    )}
+
+                    {/* Delete */}
+                    {role !== 'nurse' && (
+                        <DropdownMenuItem variant="destructive" onClick={() => onDelete(rowData)}>
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                        </DropdownMenuItem>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </>
     )
 }
