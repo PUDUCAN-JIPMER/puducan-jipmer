@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { Plus, Pencil } from 'lucide-react'
 import { db } from '@/firebase'
-import { addDoc, collection, doc, serverTimestamp, updateDoc } from 'firebase/firestore'
+import { addDoc, collection, doc, serverTimestamp, updateDoc, writeBatch } from 'firebase/firestore'
 import { toast } from 'sonner'
 import { useEffect, useState } from 'react'
 import { checkAadhaarDuplicateUtil } from '@/lib/patient/checkPatientRecord'
@@ -62,7 +62,7 @@ export default function GenericPatientDialog({
             diagnosedDate: '',
             treatmentStartDate: null,
             treatmentEndDate: null,
-            patientStatus: 'Alive',
+            patientStatus: 'Active',
             patientDeathDate: '',
             hasAadhaar: true,
             suspectedCase: false,
@@ -122,8 +122,26 @@ export default function GenericPatientDialog({
     const onSubmit = async (data: PatientFormInputs) => {
         try {
             if (isEdit && patientData?.id) {
-                // Update existing patient
-                await updateDoc(doc(db, 'patients', patientData.id), data)
+                const batch = writeBatch(db)
+                const patientRef = doc(db, 'patients', patientData.id)
+                const cleanData = Object.fromEntries(
+                    Object.entries(data).filter(([_, value]) => value !== undefined)
+                )
+
+                if (data.patientStatus === 'Cured') {
+                    const curedRef = doc(db, 'cured_patients', patientData.id)
+                    batch.set(curedRef, {
+                        ...cleanData,
+                        status: 'Cured',
+                        patientStatus: 'Cured',
+                        curedAt: serverTimestamp(),
+                    })
+                    batch.delete(patientRef)
+                } else {
+                    batch.update(patientRef, cleanData)
+                }
+
+                await batch.commit()
                 toast.success('Patient updated successfully.')
             } else {
                 // Add new patient

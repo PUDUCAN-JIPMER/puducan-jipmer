@@ -39,9 +39,9 @@ export default function PatientStatusSelect({ control, form }: Props) {
                                       className={cn(
                                         'font-medium px-2 py-1 rounded',
                                          {
-                                          'text-green-800 bg-green-100': field.value === 'Alive',
-                                          'text-red-800 bg-red-100': field.value === 'Not Alive',
-                                          'text-blue-800 bg-blue-100': field.value === 'Not Available',
+                                          'text-green-800 bg-green-100': field.value === 'Active',
+                                          'text-red-800 bg-red-100': field.value === 'Inactive',
+                                          'text-blue-800 bg-blue-100': field.value === 'Cured',
                                          }
                                        )}
                                      >
@@ -53,19 +53,19 @@ export default function PatientStatusSelect({ control, form }: Props) {
                             </SelectValue>
                         </SelectTrigger>
                         <SelectContent className="tracking-wider">
-                            <SelectItem value="Alive">
+                            <SelectItem value="Active">
                                <span className="text-green-800 bg-green-100 px-2 py-1 rounded">
-                              Alive
+                              Active
                               </span>
                             </SelectItem>
-                            <SelectItem value="Not Alive">
+                            <SelectItem value="Inactive">
                                 <span className="text-red-800 bg-red-100 px-2 py-1 rounded">
-                              Not Alive
+                              Not Active
                               </span>
                             </SelectItem>
-                            <SelectItem value="Not Available">
+                            <SelectItem value="Cured">
                                <span className="text-blue-800 bg-blue-100 px-2 py-1 rounded">
-                              Not Available
+                              Cured
                               </span>
                             </SelectItem>
                         </SelectContent>
@@ -73,7 +73,7 @@ export default function PatientStatusSelect({ control, form }: Props) {
                 )}
             />
 
-            {patientStatus === 'Not Alive' && (
+            {patientStatus === 'Inactive' && (
                 <FormField
                     control={control}
                     name="patientDeathDate"

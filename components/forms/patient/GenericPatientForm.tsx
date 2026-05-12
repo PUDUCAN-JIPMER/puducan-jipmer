@@ -39,7 +39,7 @@ export default function GenericPatientForm({
             >
                 <div className="flex w-full flex-col gap-6 md:flex-row ">
                     {/* COLUMN ONE*/}
-                    <ColumnOne form={form} />
+                    <ColumnOne form={form} isEdit={isEdit} />
 
                     {/* COLUMN TWO */}
                     <ColumnTwo form={form} />

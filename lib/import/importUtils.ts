@@ -98,7 +98,7 @@ const preprocessPatientRow = async (
         aadhaarId: row.aadhaarId ?? '',
         bloodGroup: row.bloodGroup ?? '',
         religion: row.religion ?? '',
-        patientStatus: row.patientStatus ?? 'Alive',
+        patientStatus: row.patientStatus ?? 'Active',
         // treatmentStatus: row.treatmentStatus ?? 'Ongoing',
         diagnosedDate: String(row.diagnosedDate) ?? '',
         diagnosedYearsAgo: row.diagnosedYearsAgo ?? '',
