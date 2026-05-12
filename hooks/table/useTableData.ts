@@ -1,3 +1,4 @@
+// hooks/table/useTableData.ts
 import { db } from '@/firebase'
 import { Patient } from '@/schema/patient'
 import { Hospital } from '@/schema/hospital'
@@ -35,17 +36,10 @@ export const useTableData = ({
     enabled = true,
     requiredData,
 }: UsePatientsProps) => {
-    // console.log('inside custom user hook')
-    const isPatientsEnabled = requiredData === 'patients' ? true : enabled && (!!orgId || !!ashaId)
-    const isHospitalsEnabled = enabled && requiredData === 'hospitals'
-    const isUsersEnabled =
-        enabled &&
-        (requiredData === 'ashas' ||
-            requiredData === 'doctors' ||
-            requiredData === 'nurses')
-
     // Now you return the appropriate query result based on the props.
     if (requiredData === 'hospitals') {
+        const isHospitalsEnabled = enabled && requiredData === 'hospitals'
+        
         const hospitalsQuery = useQuery<Hospital[], Error>({
             queryKey: ['hospitals'],
             queryFn: async () => {
@@ -61,11 +55,17 @@ export const useTableData = ({
         })
         return hospitalsQuery
     }
+    
     if (
         requiredData === 'ashas' ||
         requiredData === 'doctors' ||
         requiredData === 'nurses'
     ) {
+        const isUsersEnabled = enabled &&
+            (requiredData === 'ashas' ||
+                requiredData === 'doctors' ||
+                requiredData === 'nurses')
+        
         const usersQuery = useQuery<UserDoc[], Error>({
             queryKey: ['users', requiredData],
             queryFn: async () => {
@@ -95,6 +95,9 @@ export const useTableData = ({
             queryKeyValue = ['patients']
         }
 
+        // ✅ FIX: Define isPatientsEnabled inside this block
+        const isPatientsEnabled = enabled && (!!orgId || !!ashaId)
+
         const patientsQuery = useQuery<Patient[], Error>({
             queryKey: queryKeyValue,
 
@@ -110,8 +113,6 @@ export const useTableData = ({
                         collection(db, 'patients'),
                         where('assignedAsha', '==', ashaId)
                     )
-                } else if (requiredData === 'patients') {
-                    patientsQuery = query(collection(db, 'patients'))
                 } else {
                     throw new Error('No organization Id or Asha email provided to fetch patients')
                 }
@@ -128,18 +129,11 @@ export const useTableData = ({
     }
 
     if (requiredData === 'removedPatients') {
-        let queryKeyValue
-
-        queryKeyValue = ['removedPatients']
-
         const patientsQuery = useQuery<Patient[], Error>({
-            queryKey: queryKeyValue,
+            queryKey: ['removedPatients'],
 
             queryFn: async () => {
-                let removedPatientsQuery
-
-                removedPatientsQuery = query(collection(db, 'removedPatients'))
-
+                const removedPatientsQuery = query(collection(db, 'removedPatients'))
                 const removedPatientsSnap = await getDocs(removedPatientsQuery)
                 return removedPatientsSnap.docs.map((doc) => ({
                     id: doc.id,
@@ -150,4 +144,11 @@ export const useTableData = ({
         })
         return patientsQuery
     }
+    
+    // Return empty query if no requiredData matches
+    return useQuery({
+        queryKey: ['empty'],
+        queryFn: async () => [],
+        enabled: false,
+    })
 }
