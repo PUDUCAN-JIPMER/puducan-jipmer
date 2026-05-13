@@ -14,11 +14,13 @@ export default function ViewDetailsDialog({
     onOpenChange,
     rowData,
     fieldsToDisplay,
+    variant = 'vertical',
 }: {
     open: boolean
     onOpenChange: (open: boolean) => void
     rowData: RowDataType
     fieldsToDisplay: FieldToDisplay[]
+    variant?: 'vertical' | 'grid'
 }) {
     function renderValue(key: string, value: any): string {
         if (value == null) return 'N/A'
@@ -51,16 +53,27 @@ export default function ViewDetailsDialog({
                     </DialogTitle>
                 </DialogHeader>
                 <ScrollArea className="max-h-[70vh] pr-2">
-                    <div className="flex flex-col">
-                        {fieldsToDisplay.map(({ label, key }, index) => (
-                            <Info
-                                key={key}
-                                label={label}
-                                value={renderValue(key, rowData[key as keyof typeof rowData])}
-                                last={index === fieldsToDisplay.length - 1}
-                            />
-                        ))}
-                    </div>
+                    {variant === 'vertical' ? (
+                        <div className="flex flex-col">
+                            {fieldsToDisplay.map(({ label, key }, index) => (
+                                <Info
+                                    key={key}
+                                    label={label}
+                                    value={renderValue(key, rowData[key as keyof typeof rowData])}
+                                    last={index === fieldsToDisplay.length - 1}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="grid gap-4 text-sm md:grid-cols-2">
+                            {fieldsToDisplay.map(({ label, key }) => (
+                                <p key={key}>
+                                    <span className="text-muted-foreground font-medium">{label}:</span>{' '}
+                                    <span>{renderValue(key, rowData[key as keyof typeof rowData])}</span>
+                                </p>
+                            ))}
+                        </div>
+                    )}
                     {'followUps' in rowData && (rowData.followUps?.length ?? 0) > 0 && (
                         <div className="mt-4">
                             <p className="text-muted-foreground mb-2 text-xs font-semibold uppercase tracking-wide">

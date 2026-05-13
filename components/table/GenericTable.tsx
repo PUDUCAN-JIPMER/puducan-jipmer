@@ -198,7 +198,6 @@ export function GenericTable({
                     isPatientTab={isPatientTab}
                 />
             </div>
-
             {selectedRow && modal === 'view' && (
                 <>
                     <ViewDetailsDialog
@@ -206,6 +205,7 @@ export function GenericTable({
                         onOpenChange={(open) => !open && closeModal()}
                         rowData={selectedRow}
                         fieldsToDisplay={fieldsToDisplay}
+                        variant={activeTab === 'patients' || activeTab === 'removedPatients' ? 'grid' : 'vertical'}
                     />
                 </>
             )}
