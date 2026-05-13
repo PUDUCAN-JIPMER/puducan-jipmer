@@ -24,6 +24,7 @@ import { useResponsiveRows } from '@/hooks/table/useResponsiveRows'
 import { TabDataMap, RowDataBase, ModalType } from '@/types/table/types'
 import { GenericMobileRow } from './GenericMobileRow'
 import { Skeleton } from '@/components/ui/skeleton'
+import { FileSearch } from 'lucide-react'
 
 export function GenericTable({
     headers,
@@ -36,7 +37,9 @@ export function GenericTable({
     activeTab: 'ashas' | 'doctors' | 'nurses' | 'hospitals' | 'patients' | 'removedPatients'
 }) {
     const stableHeaders = useMemo(() => headers, [headers])
+
     const rowsPerPage = useResponsiveRows()
+
     const { user, role, orgId, isLoadingAuth } = useAuth() as {
         user: UserDoc | null
         role: string
@@ -44,7 +47,8 @@ export function GenericTable({
         isLoadingAuth: boolean
     }
 
-    const { selectedRow, modal, setSelectedRow, openModal, closeModal } = useTableStore()
+    const { selectedRow, modal, setSelectedRow, openModal, closeModal } =
+        useTableStore()
 
     const queryProps = {
         orgId,
@@ -63,6 +67,7 @@ export function GenericTable({
     } as const
 
     const fieldsToDisplay = fieldsMap[activeTab]
+
     const {
         data = [],
         isLoading,
@@ -72,12 +77,17 @@ export function GenericTable({
 
     const isPatientTab = activeTab === 'patients'
     const isHospitalTab = activeTab === 'hospitals'
-    const patients = (data as Patient[]) ?? []
-    const filteredPatients = useFilteredPatients(isPatientTab ? patients : [])
 
-    // ✅ Choose correct baseData (patients → filtered first, others → raw data)
+    const patients = (data as Patient[]) ?? []
+
+    const filteredPatients = useFilteredPatients(
+        isPatientTab ? patients : []
+    )
+
+    // ✅ Choose correct baseData
     const baseData = isPatientTab ? filteredPatients : (data ?? [])
-    type ActiveDataType = TabDataMap[typeof activeTab] // infer based on activeTab
+
+    type ActiveDataType = TabDataMap[typeof activeTab]
 
     const {
         filteredRows: searchedData,
@@ -88,13 +98,22 @@ export function GenericTable({
     // ✅ Use searchedData for pagination
     const dataToPaginate = useMemo(() => searchedData, [searchedData])
 
-    const tableData = usePagination<(typeof dataToPaginate)[number]>(dataToPaginate, rowsPerPage)
+    const tableData = usePagination<(typeof dataToPaginate)[number]>(
+        dataToPaginate,
+        rowsPerPage
+    )
 
-    const { paginated: paginatedData, currentPage, totalPages, setCurrentPage } = tableData
+    const {
+        paginated: paginatedData,
+        currentPage,
+        totalPages,
+        setCurrentPage,
+    } = tableData
 
     const tableStats = useStats({
         TableData: searchedData ?? [],
-        isPatientTab, isHospitalTab
+        isPatientTab,
+        isHospitalTab,
     })
 
     useEffect(() => {
@@ -124,7 +143,9 @@ export function GenericTable({
             <GenericToolbar
                 loading={isLoading}
                 activeTab={activeTab}
-                getExportData={() => getExportData(activeTab, data, filteredPatients)}
+                getExportData={() =>
+                    getExportData(activeTab, data, filteredPatients)
+                }
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 searchFields={SEARCH_FIELDS[activeTab]}
@@ -136,11 +157,16 @@ export function GenericTable({
                         <TableHead className="border-border w-12 border-r text-center">
                             S/NO
                         </TableHead>
+
                         {headers.map((header, id) => (
-                            <TableHead className="border-border w-12 border-r text-center" key={id}>
+                            <TableHead
+                                className="border-border w-12 border-r text-center"
+                                key={id}
+                            >
                                 {header.name}
                             </TableHead>
                         ))}
+
                         <TableHead className="border-border w-12 border-r text-center">
                             Actions
                         </TableHead>
@@ -151,7 +177,9 @@ export function GenericTable({
                     {isLoading ? (
                         Array.from({ length: 6 }).map((_, index) => (
                             <TableRow key={index}>
-                                {Array.from({ length: headers.length + 2 }).map((_, cellIndex) => (
+                                {Array.from({
+                                    length: headers.length + 2,
+                                }).map((_, cellIndex) => (
                                     <TableCell key={cellIndex}>
                                         <Skeleton className="h-8 w-full" />
                                     </TableCell>
@@ -164,22 +192,42 @@ export function GenericTable({
                                 key={data.id}
                                 activeTab={activeTab}
                                 isPatientTab={isPatientTab}
-                                isRemovedPatientsTab={activeTab === 'removedPatients'}
+                                isRemovedPatientsTab={
+                                    activeTab === 'removedPatients'
+                                }
                                 rowData={data}
-                                index={(currentPage - 1) * rowsPerPage + index}
-                                onView={(row) => handleRowAction(row, 'view')}
-                                onUpdate={(row) => handleRowAction(row, 'update')}
-                                onDelete={(row) => handleRowAction(row, 'delete')}
+                                index={
+                                    (currentPage - 1) * rowsPerPage + index
+                                }
+                                onView={(row) =>
+                                    handleRowAction(row, 'view')
+                                }
+                                onUpdate={(row) =>
+                                    handleRowAction(row, 'update')
+                                }
+                                onDelete={(row) =>
+                                    handleRowAction(row, 'delete')
+                                }
                                 headers={stableHeaders}
                             />
                         ))
                     ) : (
                         <TableRow>
                             <TableCell
-                                colSpan={8}
-                                className="text-muted-foreground py-10 text-center text-sm"
+                                colSpan={headers.length + 2}
+                                className="h-40 text-center"
                             >
-                                No matching patients found.
+                                <div className="flex flex-col items-center justify-center">
+                                    <FileSearch className="mb-3 h-12 w-12 text-gray-400" />
+
+                                    <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+                                        No results found
+                                    </h2>
+
+                                    <p className="mt-2 text-sm text-gray-500">
+                                        Try adjusting your search keywords.
+                                    </p>
+                                </div>
                             </TableCell>
                         </TableRow>
                     )}
@@ -199,48 +247,69 @@ export function GenericTable({
                             <Skeleton className="h-4 w-2/3" />
                         </div>
                     ))
-                ) : (
+                ) : paginatedData.length > 0 ? (
                     paginatedData.map((data, index) => (
                         <GenericMobileRow
                             key={data.id + '-mobile'}
                             activeTab={activeTab}
                             isPatientTab={isPatientTab}
-                            isRemovedPatientsTab={activeTab === 'removedPatients'}
+                            isRemovedPatientsTab={
+                                activeTab === 'removedPatients'
+                            }
                             rowData={data}
-                            index={(currentPage - 1) * rowsPerPage + index}
-                            onView={(row) => handleRowAction(row, 'view')}
-                            onUpdate={(row) => handleRowAction(row, 'update')}
-                            onDelete={(row) => handleRowAction(row, 'delete')}
+                            index={
+                                (currentPage - 1) * rowsPerPage + index
+                            }
+                            onView={(row) =>
+                                handleRowAction(row, 'view')
+                            }
+                            onUpdate={(row) =>
+                                handleRowAction(row, 'update')
+                            }
+                            onDelete={(row) =>
+                                handleRowAction(row, 'delete')
+                            }
                             headers={stableHeaders}
                         />
                     ))
+                ) : (
+                    <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
+                        <FileSearch className="mb-3 h-12 w-12 text-gray-400" />
+
+                        <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+                            No results found
+                        </h2>
+
+                        <p className="mt-2 text-sm text-gray-500">
+                            Try adjusting your search keywords.
+                        </p>
+                    </div>
                 )}
             </div>
 
-            <div className="">
+            <div>
                 <GenericPagination
                     currentPage={currentPage}
                     totalPages={totalPages}
                     onPageChange={setCurrentPage}
-                    stats={tableStats} // only show stats for patients
+                    stats={tableStats}
                     isPatientTab={isPatientTab}
                 />
             </div>
 
             {selectedRow && modal === 'view' && (
-                <>
-                    <ViewDetailsDialog
-                        open={modal === 'view'}
-                        onOpenChange={(open) => !open && closeModal()}
-                        rowData={selectedRow}
-                        fieldsToDisplay={fieldsToDisplay}
-                    />
-                </>
+                <ViewDetailsDialog
+                    open={modal === 'view'}
+                    onOpenChange={(open) => !open && closeModal()}
+                    rowData={selectedRow}
+                    fieldsToDisplay={fieldsToDisplay}
+                />
             )}
+
             <DeleteEntityDialog
                 open={modal === 'delete'}
                 entityData={selectedRow}
-                collectionName={activeTab} // 'patients' | 'hospitals' | 'doctors' | 'nurses' | 'ashas' | 'removedPatients'
+                collectionName={activeTab}
                 onClose={closeModal}
             />
         </div>
