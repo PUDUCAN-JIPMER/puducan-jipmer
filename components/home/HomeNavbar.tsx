@@ -1,138 +1,114 @@
 'use client'
 
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { ChevronDown, ChevronRight, ChevronUp, Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { NAV_LINKS } from '@/constants/navbar'
 import { useState } from 'react'
+import { Menu, X } from 'lucide-react'
 import Image from 'next/image'
+import { ModeToggle } from '@/components/ui/toggle'
 
 export default function HomeNavbar() {
     const pathname = usePathname()
     const [mobileOpen, setMobileOpen] = useState(false)
-    const [mobileDataEntryOpen, setMobileDataEntryOpen] = useState(false)
 
-    const navItem = (label: string, href: string, exact = false) => {
-        const isActive = exact ? pathname === href : pathname.startsWith(href)
-        return (
-            <Link
-                href={href}
-                onClick={() => setMobileOpen(false)} // close on click
-                className={`group relative block rounded px-4 py-2 ${
-                    isActive ? 'font-semibold text-blue-600' : ''
-                }`}
-            >
-                <span className="hover:bg-accent relative z-10 p-2 sm:hover:bg-transparent">
-                    {label}
-                </span>
-                {/* underline animation */}
-                <span className="absolute bottom-0 left-0 hidden h-0.5 w-0 bg-blue-400 transition-all duration-300 group-hover:w-full sm:block"></span>
-            </Link>
-        )
-    }
+    const isActive = (href: string) => pathname === href
 
     return (
-        <nav className="border-b-2 px-6 py-3 bg-accent">
-            <div className="container mx-auto flex items-center justify-between ">
-                {/* Logo / Title */}
-                <div className="flex place-items-center">
-                    <div className="sm:hidden">
+        <nav className="border-b border-border bg-white dark:bg-slate-950 sticky top-0 z-50 shadow-sm">
+            <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+                {/* Left: Logo and branding */}
+                <div className="flex items-center gap-3">
+                    <div className="hidden sm:flex items-center gap-2">
                         <Image
                             src="/jipmer-logo.png"
-                            alt="JIPMER Logo"
-                            width={60}
+                            alt="JIPMER"
+                            width={40}
                             height={40}
                             className="object-contain"
                         />
                     </div>
-                    <div className="text-lg font-bold">PuduCan</div>
+                    <div className="flex flex-col">
+                        <div className="font-semibold text-base text-primary">PuduCan</div>
+                        <div className="text-xs text-muted hidden sm:block">JIPMER • Puducherry</div>
+                    </div>
                 </div>
 
-                {/* Desktop Nav */}
-                <div className="hidden items-center space-x-4 sm:flex">
-                    {navItem('Home', '/home', true)}
-                    {navItem('About', '/home/about')}
-                    {navItem('Reports', '/home/reports')}
-
-                    <DropdownMenu>
-                        <DropdownMenuTrigger className="group relative flex items-center rounded px-4 py-2 focus:outline-none">
-                            <span className="relative z-10">Data Entry</span>
-                            <ChevronDown className="ml-1 h-4 w-4" />
-                            {/* underline animation */}
-                            <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-blue-400 transition-all duration-300 group-hover:w-full"></span>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-44">
-                            {NAV_LINKS.map((link) => (
-                                <DropdownMenuItem asChild key={link.name}>
-                                    <Link href={link.path}>{link.name}</Link>
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    {navItem('Contact', '/home/contact')}
+                {/* Right: Navigation and theme toggle (desktop) */}
+                <div className="hidden sm:flex items-center gap-1">
+                    <NavLink href="/home" label="Home" isActive={isActive('/home')} />
+                    <NavLink href="/home/about" label="About" isActive={isActive('/home/about')} />
+                    <NavLink href="/home/reports" label="Reports" isActive={isActive('/home/reports')} />
+                    <NavLink href="/home/contact" label="Contact" isActive={isActive('/home/contact')} />
+                    <div className="ml-2 pl-2 border-l border-border">
+                        <ModeToggle />
+                    </div>
                 </div>
 
-                {/* Mobile Hamburger */}
+                {/* Mobile menu button */}
                 <button
-                    className="flex items-center p-2 sm:hidden"
                     onClick={() => setMobileOpen(!mobileOpen)}
+                    className="sm:hidden p-2 hover:bg-accent/10 rounded"
                 >
-                    {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+                    {mobileOpen ? <X size={20} /> : <Menu size={20} />}
                 </button>
             </div>
 
-            {/* Mobile Menu */}
-            <div
-                className={`overflow-hidden transition-all duration-300 sm:hidden ${
-                    mobileOpen ? 'mt-2 max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                }`}
-            >
-                <div className="flex flex-col space-y-1  pt-2">
-                    {navItem('Home', '/home', true)}
-                    {navItem('About', '/home/about')}
-                    {navItem('Reports', '/home/reports')}
-
-                    {/* Data Entry toggle in mobile */}
-                    <button
-                        onClick={() => setMobileDataEntryOpen(!mobileDataEntryOpen)}
-                        className="flex items-center gap-2 px-6"
-                    >
-                        <span>Data Entry</span>
-                        {mobileDataEntryOpen ? (
-                            <ChevronUp className="h-4 w-4" />
-                        ) : (
-                            <ChevronRight className="h-4 w-4" />
-                        )}
-                    </button>
-
-                    <div
-                        className={`mt-1 ml-4 space-y-2 overflow-hidden transition-all duration-300 ${
-                            mobileDataEntryOpen ? 'max-h-60' : 'max-h-0'
-                        }`}
-                    >
-                        {NAV_LINKS.map((link) => (
-                            <Link
-                                key={link.name}
-                                href={link.path}
-                                onClick={() => setMobileOpen(false)}
-                                className="ml-2 block pl-4 hover:bg-amber-100"
-                            >
-                                <span className="relative z-10">{link.name}</span>
-                                {/* underline animation */}
-                            </Link>
-                        ))}
+            {/* Mobile menu */}
+            {mobileOpen && (
+                <div className="sm:hidden border-t border-border bg-white dark:bg-slate-950 px-4 py-3 space-y-2">
+                    <MobileNavLink href="/home" label="Home" onClick={() => setMobileOpen(false)} />
+                    <MobileNavLink href="/home/about" label="About" onClick={() => setMobileOpen(false)} />
+                    <MobileNavLink href="/home/reports" label="Reports" onClick={() => setMobileOpen(false)} />
+                    <MobileNavLink href="/home/contact" label="Contact" onClick={() => setMobileOpen(false)} />
+                    <div className="pt-2 flex items-center justify-between">
+                        <span className="text-sm text-muted">Theme</span>
+                        <ModeToggle />
                     </div>
-
-                    {navItem('Contact', '/home/contact')}
                 </div>
-            </div>
+            )}
         </nav>
+    )
+}
+
+function NavLink({
+    href,
+    label,
+    isActive,
+}: {
+    href: string
+    label: string
+    isActive: boolean
+}) {
+    return (
+        <Link
+            href={href}
+            className={`px-3 py-2 text-sm font-medium rounded transition-colors ${
+                isActive
+                    ? 'text-primary bg-accent/10'
+                    : 'text-foreground hover:bg-accent/5'
+            }`}
+        >
+            {label}
+        </Link>
+    )
+}
+
+function MobileNavLink({
+    href,
+    label,
+    onClick,
+}: {
+    href: string
+    label: string
+    onClick: () => void
+}) {
+    return (
+        <Link
+            href={href}
+            onClick={onClick}
+            className="block px-3 py-2 text-sm font-medium text-foreground hover:text-primary hover:bg-accent/10 rounded transition-colors"
+        >
+            {label}
+        </Link>
     )
 }
