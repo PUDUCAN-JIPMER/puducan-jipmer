@@ -21,6 +21,9 @@ vi.mock('sonner', () => ({
 
 vi.mock('next/navigation', () => ({
   useRouter: vi.fn(),
+  useSearchParams: vi.fn(() => ({
+    get: vi.fn((key) => (key === 'role' ? null : undefined)),
+  })),
 }))
 
 vi.mock('@/contexts/AuthContext', () => ({

@@ -6,11 +6,11 @@ import Footer from '@/components/ui/footer'
 
 export default function HomeLayout({ children }: { children: React.ReactNode }) {
     return (
-        <div className="flex h-screen flex-col">
+        <div className="flex flex-col min-h-screen">
             <HomeNavbar />
             <NavigationLoading />
 
-            <main className="flex-1 overflow-y-auto">{children}</main>
+            <main className="flex-1">{children}</main>
 
             <Footer />
         </div>
