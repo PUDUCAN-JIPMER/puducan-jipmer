@@ -1,4 +1,5 @@
 import z from 'zod'
+import { SmartNoteSchema } from './smart-note'
 
 export const InsuranceSchema = z
     .object({
@@ -10,6 +11,7 @@ export const InsuranceSchema = z
 export const FollowUpSchema = z.object({
     date: z.string().optional(),
     remarks: z.string().optional(),
+    smartNote: SmartNoteSchema.optional(),
 })
 
 export const PatientSchema = z
