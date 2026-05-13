@@ -3,6 +3,7 @@
 import {
     Pagination,
     PaginationContent,
+    PaginationEllipsis,
     PaginationItem,
     PaginationLink,
     PaginationNext,
@@ -27,6 +28,20 @@ interface GenericPaginationProps {
     stats?: Stats
     isPatientTab: boolean
 }
+function getPageRange(current: number, total: number, delta = 2): (number | '...')[] {
+    const range: (number | '...')[] = [];
+    const left = Math.max(2, current - delta);
+    const right = Math.min(total - 1, current + delta);
+
+    range.push(1);
+    if (left > 2) range.push('...');
+    for (let i = left; i <= right; i++) range.push(i);
+    if (right < total - 1) range.push('...');
+    if (total > 1) range.push(total);
+
+    return range;
+}
+
 
 export function GenericPagination({
     currentPage,
@@ -35,6 +50,7 @@ export function GenericPagination({
     stats,
     isPatientTab,
 }: GenericPaginationProps) {
+    const pages = getPageRange(currentPage, totalPages);
     return (
         <section className="">
             <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
@@ -76,20 +92,27 @@ export function GenericPagination({
                             />
                         </PaginationItem>
 
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                            <PaginationItem key={page}>
-                                <PaginationLink
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault()
-                                        onPageChange(page)
-                                    }}
-                                    isActive={currentPage === page}
-                                >
-                                    {page}
-                                </PaginationLink>
-                            </PaginationItem>
-                        ))}
+                        {pages.map((page, i) =>
+                            page === '...' ? (
+                                <PaginationItem key={`ellipsis-${i}`}>
+                                    <PaginationEllipsis />
+                                </PaginationItem>
+                            ) : (
+                                <PaginationItem key={page}>
+                                    <PaginationLink
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            onPageChange(page)
+                                        }}
+                                        isActive={currentPage === page}
+                                    >
+                                        {page}
+                                    </PaginationLink>
+                                </PaginationItem>
+                            )
+                        )}
+
 
                         <PaginationItem>
                             <PaginationNext
