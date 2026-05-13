@@ -12,6 +12,7 @@ import {
 } from '@/constants'
 import { GenericTable } from '@/components/table'
 import { withAuth } from '@/components/hoc/withAuth'
+import WelcomeBanner from '@/components/dashboard/WelcomeBanner'
 import { ROLE_CONFIG } from '@/constants/auth'
 import {
     Select,
@@ -60,6 +61,7 @@ function AdminPageContent() {
 
     return (
         <div className="mx-auto px-4 py-4 lg:max-w-[1240px] xl:max-w-[1400px]">
+            <WelcomeBanner />
             {/* Mobile: dropdown */}
             <div className="mb-1 sm:hidden">
                 <Select value={activeTab} onValueChange={(val) => handleTabChange(val as typeof activeTab)}>
