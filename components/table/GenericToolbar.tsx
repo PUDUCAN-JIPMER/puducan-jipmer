@@ -19,6 +19,7 @@ import GenericPatientDialog from '../forms/patient/GenericPatientDialog'
 import GenericUserDialog from '../forms/user/GenericUserDialog'
 import { SearchInput } from '../search/SearchInput'
 import { useAuth } from '@/contexts/AuthContext'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export function GenericToolbar({
     activeTab,
@@ -26,12 +27,14 @@ export function GenericToolbar({
     searchTerm,
     setSearchTerm,
     searchFields,
+    loading = false,
 }: {
     activeTab: 'ashas' | 'hospitals' | 'doctors' | 'nurses' | 'patients' | 'removedPatients'
     getExportData: () => any[]
     searchTerm: string
     setSearchTerm: (val: string) => void
     searchFields: readonly string[]
+    loading?: boolean
 }) {
     const pathname = usePathname()
     const queryClient = useQueryClient()
@@ -54,6 +57,21 @@ export function GenericToolbar({
         const data = getExportData()
         exportToExcel(data, activeTab)
     }
+
+    if (loading) {
+    return (
+        <div className="mb-4 flex items-center justify-between gap-4">
+            <Skeleton className="hidden h-8 w-56 sm:block" />
+
+            <div className="flex w-full items-center justify-center gap-2 sm:w-auto">
+                <Skeleton className="h-10 w-[320px]" />
+                <Skeleton className="h-10 w-24" />
+                <Skeleton className="h-10 w-32" />
+                <Skeleton className="h-10 w-10" />
+            </div>
+        </div>
+    )
+}
 
     return (
         <div className="mb-4 flex items-center justify-between">

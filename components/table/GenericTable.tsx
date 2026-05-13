@@ -23,6 +23,7 @@ import { useTableStore } from '@/store'
 import { useResponsiveRows } from '@/hooks/table/useResponsiveRows'
 import { TabDataMap, RowDataBase, ModalType } from '@/types/table/types'
 import { GenericMobileRow } from './GenericMobileRow'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export function GenericTable({
     headers,
@@ -62,12 +63,15 @@ export function GenericTable({
     } as const
 
     const fieldsToDisplay = fieldsMap[activeTab]
-    const { data = [] } = useTableData(queryProps) ?? {}
+    const {
+        data = [],
+        isLoading,
+    } = useTableData(queryProps) ?? {}
 
     const searchFields = SEARCH_FIELDS[activeTab]
 
     const isPatientTab = activeTab === 'patients'
-    const isHospitalTab = activeTab =='hospitals'
+    const isHospitalTab = activeTab === 'hospitals'
     const patients = (data as Patient[]) ?? []
     const filteredPatients = useFilteredPatients(isPatientTab ? patients : [])
 
@@ -118,6 +122,7 @@ export function GenericTable({
     return (
         <div className="flex min-h-screen flex-col">
             <GenericToolbar
+                loading={isLoading}
                 activeTab={activeTab}
                 getExportData={() => getExportData(activeTab, data, filteredPatients)}
                 searchTerm={searchTerm}
@@ -143,7 +148,17 @@ export function GenericTable({
                 </TableHeader>
 
                 <TableBody>
-                    {paginatedData.length > 0 ? (
+                    {isLoading ? (
+                        Array.from({ length: 6 }).map((_, index) => (
+                            <TableRow key={index}>
+                                {Array.from({ length: headers.length + 2 }).map((_, cellIndex) => (
+                                    <TableCell key={cellIndex}>
+                                        <Skeleton className="h-8 w-full" />
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        ))
+                    ) : paginatedData.length > 0 ? (
                         paginatedData.map((data, index) => (
                             <GenericRow
                                 key={data.id}
@@ -173,20 +188,33 @@ export function GenericTable({
 
             {/* ✅ Mobile rows outside table */}
             <div className="sm:hidden">
-                {paginatedData.map((data, index) => (
-                    <GenericMobileRow
-                        key={data.id + '-mobile'}
-                        activeTab={activeTab}
-                        isPatientTab={isPatientTab}
-                        isRemovedPatientsTab={activeTab === 'removedPatients'}
-                        rowData={data}
-                        index={(currentPage - 1) * rowsPerPage + index}
-                        onView={(row) => handleRowAction(row, 'view')}
-                        onUpdate={(row) => handleRowAction(row, 'update')}
-                        onDelete={(row) => handleRowAction(row, 'delete')}
-                        headers={stableHeaders}
-                    />
-                ))}
+                {isLoading ? (
+                    Array.from({ length: 4 }).map((_, index) => (
+                        <div
+                            key={index}
+                            className="mb-4 rounded-lg border p-4"
+                        >
+                            <Skeleton className="mb-2 h-5 w-3/4" />
+                            <Skeleton className="mb-2 h-4 w-1/2" />
+                            <Skeleton className="h-4 w-2/3" />
+                        </div>
+                    ))
+                ) : (
+                    paginatedData.map((data, index) => (
+                        <GenericMobileRow
+                            key={data.id + '-mobile'}
+                            activeTab={activeTab}
+                            isPatientTab={isPatientTab}
+                            isRemovedPatientsTab={activeTab === 'removedPatients'}
+                            rowData={data}
+                            index={(currentPage - 1) * rowsPerPage + index}
+                            onView={(row) => handleRowAction(row, 'view')}
+                            onUpdate={(row) => handleRowAction(row, 'update')}
+                            onDelete={(row) => handleRowAction(row, 'delete')}
+                            headers={stableHeaders}
+                        />
+                    ))
+                )}
             </div>
 
             <div className="">
