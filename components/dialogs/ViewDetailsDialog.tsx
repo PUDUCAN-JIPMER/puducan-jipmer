@@ -36,7 +36,7 @@ export default function ViewDetailsDialog({
 
         if (typeof value === 'object') {
             if (key === 'gpsLocation') return `Lat: ${value.lat}, Lng: ${value.lng}`
-            if (key === 'assignedHospital') return `${value.name} (ID: ${value.id})`
+            if (key === 'assignedHospital') return `${value.name}`
             if (key === 'insurance') return `${value.type}${value.id ? ` (${value.id})` : ''}`
             return JSON.stringify(value) // fallback
         }
@@ -90,8 +90,11 @@ export default function ViewDetailsDialog({
 
 function Info({ label, value }: { label: string; value: string }) {
     return (
-        <p>
-            <span className="text-muted-foreground font-medium">{label}:</span> <span>{value}</span>
-        </p>
+        <div className="bg-muted/30 rounded-lg border border-border p-3 flex flex-col gap-1">
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {label}
+            </span>
+            <span className="text-sm font-medium text-foreground break-words">{value}</span>
+        </div>
     )
 }
