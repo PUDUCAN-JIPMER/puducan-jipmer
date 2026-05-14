@@ -55,7 +55,7 @@ describe('ColumnFive location picker', () => {
         expect(screen.getByText('JIPMER, Puducherry, India')).toBeInTheDocument()
 
         expect(fetch).toHaveBeenCalledWith(
-            'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=11.949819&lon=79.799479'
+            'https://nominatim.openstreetmap.org/reverse?format=jsonv2&accept-language=en&lat=11.949819&lon=79.799479'
         )
 
         await user.click(screen.getByRole('button', { name: /open in google maps/i }))
@@ -99,7 +99,7 @@ describe('ColumnFive location picker', () => {
 
         render(<TestWrapper />)
 
-        await user.click(screen.getByRole('button', { name: /gps/i }))
+        await user.click(screen.getByRole('button', { name: /get location/i }))
 
         await waitFor(() => {
             expect(getCurrentPosition).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), {

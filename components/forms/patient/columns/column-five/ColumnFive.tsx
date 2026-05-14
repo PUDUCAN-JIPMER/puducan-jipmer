@@ -46,7 +46,7 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
         setReverseGeocoding(true)
         try {
             const response = await fetch(
-                `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`
+                `https://nominatim.openstreetmap.org/reverse?format=jsonv2&accept-language=en&lat=${lat}&lon=${lng}`
             )
             if (!response.ok) return null
             const data = await response.json()
@@ -56,6 +56,15 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
             return null
         } finally {
             setReverseGeocoding(false)
+        }
+    }
+
+    const clearPreviousLocation = (clearInputs = false) => {
+        setLocationError('')
+        setValue('gpsLocation', null, { shouldDirty: true })
+        if (clearInputs) {
+            setManualLat('')
+            setManualLng('')
         }
     }
 
@@ -106,20 +115,27 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
     /** Save GPS from browser */
     const handleSaveLocation = async () => {
         setSavingLocation(true)
-        setLocationError('')
+        clearPreviousLocation(true)
         try {
             if (!navigator.geolocation) {
                 setLocationError('Geolocation is not supported by your browser.')
+                setSavingLocation(false)
                 return
             }
             navigator.geolocation.getCurrentPosition(
                 async (position) => {
-                    await saveLocation({
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude,
-                        accuracy: position.coords.accuracy,
-                    })
-                    setSavingLocation(false)
+                    try {
+                        await saveLocation({
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                            accuracy: position.coords.accuracy,
+                        })
+                    } catch (error) {
+                        console.error('Error saving location:', error)
+                        setLocationError('Could not save GPS location. Please try again.')
+                    } finally {
+                        setSavingLocation(false)
+                    }
                 },
                 (err) => {
                     console.error('Error saving location:', err)
@@ -145,6 +161,7 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
             setLocationError(parsed.error)
             return
         }
+        clearPreviousLocation()
         await saveLocation(parsed.coords!)
     }
 
@@ -224,32 +241,44 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
                     <div>
                         <Label className="text-sm font-medium">Patient Location</Label>
                     </div>
-                    <Button type="button" size="sm" variant={'outline'} onClick={handleSaveLocation} disabled={savingLocation || reverseGeocoding}>
+                    <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleSaveLocation}
+                        disabled={savingLocation || reverseGeocoding}
+                        className="h-8 shrink-0 rounded-full bg-transparent px-3 text-xs text-white hover:bg-gray-600 border border-gray-600"
+                    >
                         <Navigation className="h-4 w-4" />
-                        {savingLocation ? 'Saving...' : 'GPS'}
+                        {savingLocation ? 'Saving...' : 'Get Location'}
                     </Button>
                 </div>
 
                 <div className="space-y-2">
-                    <div className="flex gap-2">
-                        <Input
-                            type="number"
-                            step="any"
-                            min="-90"
-                            max="90"
-                            placeholder="Lat"
-                            value={manualLat}
-                            onChange={(e) => setManualLat(e.target.value)}
-                        />
-                        <Input
-                            type="number"
-                            step="any"
-                            min="-180"
-                            max="180"
-                            placeholder="Lng"
-                            value={manualLng}
-                            onChange={(e) => setManualLng(e.target.value)}
-                        />
+                    <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Latitude</Label>
+                            <Input
+                                type="number"
+                                step="any"
+                                min="-90"
+                                max="90"
+                                placeholder="Lat"
+                                value={manualLat}
+                                onChange={(e) => setManualLat(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Longitude</Label>
+                            <Input
+                                type="number"
+                                step="any"
+                                min="-180"
+                                max="180"
+                                placeholder="Lng"
+                                value={manualLng}
+                                onChange={(e) => setManualLng(e.target.value)}
+                            />
+                        </div>
                     </div>
                     <Button type="button" className="w-full" variant="outline" size="sm" onClick={handleSaveManualLocation} disabled={reverseGeocoding}>
                         {reverseGeocoding ? 'Finding place...' : 'Save Coordinates'}
