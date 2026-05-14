@@ -49,13 +49,13 @@ describe('LoginPage (Unit)', () => {
   it('renders email and password inputs', () => {
     render(<LoginPage />)
 
-    expect(screen.getByPlaceholderText(/Email/i)).toBeInTheDocument()
-    expect(screen.getByPlaceholderText(/Password/i)).toBeInTheDocument()
+    expect(screen.getByLabelText('Email Address')).toBeInTheDocument()
+    expect(screen.getByLabelText('Password')).toBeInTheDocument()
   })
 
   it('toggles password visibility', () => {
     render(<LoginPage />)
-    const passwordInput = screen.getByPlaceholderText(/Password/i)
+    const passwordInput = screen.getByLabelText('Password')
     const toggleButton = screen.getByRole('button', { name: '' })
 
     expect(passwordInput).toHaveAttribute('type', 'password')

@@ -169,7 +169,7 @@ export default function LoginPage() {
 
                         {/* Email Input */}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-primary">
+                            <label htmlFor="email" className="text-sm font-medium text-primary">
                                 Email Address
                             </label>
                             <div className="relative">
@@ -178,6 +178,7 @@ export default function LoginPage() {
                                     className="text-muted pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
                                 />
                                 <Input
+                                    id="email"
                                     placeholder="you@example.com"
                                     type="email"
                                     {...register('email')}
@@ -191,7 +192,7 @@ export default function LoginPage() {
 
                         {/* Password Input */}
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-primary">
+                            <label htmlFor="password" className="text-sm font-medium text-primary">
                                 Password
                             </label>
                             <div className="relative">
@@ -200,6 +201,7 @@ export default function LoginPage() {
                                     className="text-muted pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
                                 />
                                 <Input
+                                    id="password"
                                     placeholder="••••••••"
                                     type={showPassword ? 'text' : 'password'}
                                     {...register('password')}

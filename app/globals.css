@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Ovo&family=Montserrat:wght@300;400;500;600;700&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
@@ -25,6 +26,7 @@
     --color-input: var(--input);
     --color-border: var(--border);
     --color-destructive: var(--destructive);
+    --color-warning: var(--warning);
     --color-accent-foreground: var(--accent-foreground);
     --color-accent: var(--accent);
     --color-muted-foreground: var(--muted-foreground);
@@ -44,28 +46,38 @@
 }
 
 :root {
+    /* Brand colors */
+    --pondicherry-green: #0F9D58;
+    --pondicherry-yellow: #FFC107;
+    --pondicherry-blue: #2196F3;
+
+    /* Font stacks */
+    --font-headings: 'Ovo', serif;
+    --font-body: 'Montserrat', sans-serif;
+
     --radius: 0.625rem;
     --card: oklch(100% 0 0);
     --card-foreground: oklch(8.5% 0.02 258);
     --popover: oklch(100% 0 0);
     --popover-foreground: oklch(8.5% 0.02 258);
-    --primary: oklch(16.5% 0.05 258);
+    --primary: #0F9D58; /* Pondicherry green */
     --primary-foreground: oklch(100% 0 0);
     --secondary: oklch(97% 0.01 252);
     --secondary-foreground: oklch(8.5% 0.02 258);
     --muted: oklch(56% 0.04 256);
     --muted-foreground: oklch(45% 0.03 260);
-    --accent: oklch(55% 0.15 145);
+    --accent: var(--pondicherry-blue); /* Primary accent: blue */
     --accent-foreground: oklch(100% 0 0);
+    --warning: var(--pondicherry-yellow); /* Warning: yellow */
     --destructive: oklch(57.7% 0.245 27.325);
     --border: oklch(92% 0.01 252);
     --input: oklch(97% 0.01 252);
     --ring: oklch(55% 0.15 145);
-    --chart-1: oklch(55% 0.15 145);
-    --chart-2: oklch(45% 0.1 200);
-    --chart-3: oklch(40% 0.08 240);
-    --chart-4: oklch(65% 0.12 160);
-    --chart-5: oklch(50% 0.1 180);
+    --chart-1: #0F9D58;
+    --chart-2: var(--pondicherry-blue);
+    --chart-3: var(--pondicherry-yellow);
+    --chart-4: #155a9a;
+    --chart-5: #0b6b3a;
     --sidebar: oklch(100% 0 0);
     --sidebar-foreground: oklch(8.5% 0.02 258);
     --sidebar-primary: oklch(16.5% 0.05 258);
@@ -79,29 +91,31 @@
 }
 
 .dark {
+    /* dark theme maps (keep brand contrast) */
     --background: oklch(15% 0.02 258);
     --foreground: oklch(98% 0 0);
     --card: oklch(20% 0.02 258);
     --card-foreground: oklch(98% 0 0);
     --popover: oklch(20% 0.02 258);
     --popover-foreground: oklch(98% 0 0);
-    --primary: oklch(35% 0.08 258);
+    --primary: #0F9D58;
     --primary-foreground: oklch(98% 0 0);
     --secondary: oklch(25% 0.02 258);
     --secondary-foreground: oklch(98% 0 0);
     --muted: oklch(45% 0.03 260);
     --muted-foreground: oklch(70% 0.02 260);
-    --accent: oklch(65% 0.15 145);
+    --accent: var(--pondicherry-blue);
     --accent-foreground: oklch(15% 0.02 258);
+    --warning: var(--pondicherry-yellow);
     --destructive: oklch(70.4% 0.191 22.216);
     --border: oklch(30% 0.02 258);
     --input: oklch(25% 0.02 258);
     --ring: oklch(55% 0.15 145);
-    --chart-1: oklch(65% 0.15 145);
-    --chart-2: oklch(55% 0.12 200);
-    --chart-3: oklch(50% 0.1 240);
-    --chart-4: oklch(70% 0.15 160);
-    --chart-5: oklch(60% 0.12 180);
+    --chart-1: #0F9D58;
+    --chart-2: var(--pondicherry-blue);
+    --chart-3: var(--pondicherry-yellow);
+    --chart-4: #155a9a;
+    --chart-5: #0b6b3a;
     --sidebar: oklch(18% 0.02 258);
     --sidebar-foreground: oklch(98% 0 0);
     --sidebar-primary: oklch(35% 0.08 258);
@@ -118,6 +132,33 @@
     }
     body {
         @apply bg-background text-foreground;
+        font-family: var(--font-body);
+        font-size: 16px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        color: var(--foreground);
+    }
+
+    h1,h2,h3,h4,h5,h6 {
+        font-family: var(--font-headings);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-weight: 700;
+        line-height: 1.25;
+        letter-spacing: -0.02em;
+        color: var(--foreground);
+    }
+
+    /* Force the brand fonts globally to override other utility classes */
+    html, body, #__next {
+        font-family: var(--font-body) !important;
+    }
+
+    h1,h2,h3,h4,h5,h6 {
+        font-family: var(--font-headings) !important;
+        font-weight: 700 !important;
+        line-height: 1.25 !important;
     }
 }
 

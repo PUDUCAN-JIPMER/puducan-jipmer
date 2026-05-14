@@ -56,10 +56,10 @@ describe('LoginPage (Integration)', () => {
     it('submits with correct email and password', async () => {
         render(<LoginPage />)
 
-        fireEvent.change(screen.getByPlaceholderText(/Email/i), {
+        fireEvent.change(screen.getByLabelText('Email Address'), {
             target: { value: 'test@example.com' },
         })
-        fireEvent.change(screen.getByPlaceholderText(/Password/i), {
+        fireEvent.change(screen.getByLabelText('Password'), {
             target: { value: 'secret123' },
         })
 

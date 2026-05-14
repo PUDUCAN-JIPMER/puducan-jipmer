@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { LucideIcon } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 
 interface RoleCardProps {
     role: string
@@ -15,35 +14,31 @@ export default function RoleCard({ role, description, icon: Icon, href }: RoleCa
     const roleKey = role.toLowerCase().replace(' ', '')
     const loginPath = role === 'ASHA Worker' ? '/login?role=asha' : `/login?role=${roleKey.toLowerCase()}`
 
+    const colors: Record<string, { bg: string; icon: string; text: string }> = {
+        doctor: { bg: 'from-green-50 to-green-50/50 dark:from-green-950/30 dark:to-green-950/10', icon: 'text-primary', text: 'text-primary' },
+        nurse: { bg: 'from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/10', icon: 'text-accent', text: 'text-accent' },
+        ashaworker: { bg: 'from-yellow-50 to-yellow-50/50 dark:from-yellow-950/30 dark:to-yellow-950/10', icon: 'text-warning', text: 'text-warning' },
+        administrator: { bg: 'from-slate-50 to-slate-50/50 dark:from-slate-900/20 dark:to-slate-900/10', icon: 'text-primary', text: 'text-primary' },
+    }
+    const colorKey = roleKey.toLowerCase() as keyof typeof colors
+    const color = colors[colorKey] || colors.doctor
+
     return (
         <Link href={loginPath}>
-            <div className="group relative p-6 rounded-lg border border-border bg-card hover:border-accent hover:shadow-lg transition-all duration-200 cursor-pointer hover:bg-accent/5">
-                {/* Background accent */}
-                <div className="absolute inset-0 bg-gradient-to-br from-accent/0 via-transparent to-accent/0 group-hover:from-accent/5 group-hover:to-accent/5 rounded-lg transition-all" />
+            <div className={`group flex flex-col items-start gap-4 p-6 rounded-lg bg-gradient-to-br ${color.bg} hover:shadow-md transition-all duration-300 cursor-pointer h-full`}>
+                {/* Icon */}
+                <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-gradient-to-br from-white/40 to-white/20 dark:from-white/10 dark:to-white/5 group-hover:from-white/60 group-hover:to-white/40 transition-all">
+                    <Icon size={24} className={color.icon} />
+                </div>
 
                 {/* Content */}
-                <div className="relative space-y-4">
-                    {/* Icon */}
-                    <div className="inline-flex p-3 rounded-lg bg-accent/10 group-hover:bg-accent/20 transition-colors">
-                        <Icon size={24} className="text-accent" />
-                    </div>
-
-                    {/* Role Title */}
-                    <div>
-                        <h3 className="text-lg font-semibold text-primary group-hover:text-accent transition-colors">
-                            {role}
-                        </h3>
-                        <p className="text-sm text-muted mt-1">{description}</p>
-                    </div>
-
-                    {/* CTA */}
-                    <div className="pt-2">
-                        <div className="inline-flex items-center text-sm font-medium text-accent group-hover:translate-x-1 transition-transform">
-                            Continue
-                            <span className="ml-1">→</span>
-                        </div>
-                    </div>
+                <div className="flex-1">
+                    <h3 className={`text-lg font-bold ${color.text} group-hover:opacity-90 transition-opacity`}>{role}</h3>
+                    <p className="text-sm text-muted mt-2 leading-relaxed">{description}</p>
                 </div>
+
+                {/* CTA Arrow */}
+                <div className={`text-sm font-bold ${color.text} opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all self-end`}>→</div>
             </div>
         </Link>
     )
