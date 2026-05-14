@@ -33,18 +33,18 @@ export default function WelcomeBanner() {
         const hour = new Date().getHours()
 
         if (hour < 12) {
-            return <Sunrise className="h-8 w-8 text-yellow-400" />
+            return <Sunrise className="h-5 w-5 text-yellow-400" />
         }
 
         if (hour < 17) {
-            return <Sun className="h-8 w-8 text-yellow-400" />
+            return <Sun className="h-5 w-5 text-yellow-400" />
         }
 
         if (hour < 21) {
-            return <Sunset className="h-8 w-8 text-orange-400" />
+            return <Sunset className="h-5 w-5 text-orange-400" />
         }
 
-        return <Moon className="h-8 w-8 text-blue-400" />
+        return <Moon className="h-5 w-5 text-blue-400" />
     }
 
     const [greeting] = useState(getGreeting())
@@ -81,32 +81,16 @@ export default function WelcomeBanner() {
         fetchUser()
     }, [])
 
-    return (
-    <div className="mb-6 rounded-2xl border border-zinc-800 bg-gradient-to-r from-zinc-900 to-zinc-800 p-3 sm:p-4">
-        <div className="flex items-start justify-between gap-4">
-            <div>
-                <h1 className="text-xl font-bold text-white sm:text-2xl">
-                    {greeting},{' '}
-                    <span className="text-green-500">
-                        {userData?.name || 'User'}
-                    </span>
-                </h1>
+   return (
+    <div className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-2">
+        <span className="text-xs sm:text-sm font-medium text-zinc-300">
+            {greeting},{' '}
+            <span className="text-green-500">
+                {userData?.name || 'User'}
+            </span>
+        </span>
 
-                <p className="mt-1 text-sm text-zinc-400 sm:text-base">
-                    Hope you&apos;re having a productive day at PuduCan ✨
-                </p>
-
-                {userData?.role && (
-                    <div className="mt-2 inline-flex rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1 text-xs font-medium uppercase tracking-wide text-green-400">
-                        {userData.role}
-                    </div>
-                )}
-            </div>
-
-            <div className="hidden sm:flex items-center justify-center rounded-full border border-zinc-700 bg-zinc-900/70 p-4">
-                {getGreetingIcon()}
-            </div>
-        </div>
+        <span>{getGreetingIcon()}</span>
     </div>
 )
 }

@@ -61,7 +61,6 @@ function AdminPageContent() {
 
     return (
         <div className="mx-auto px-4 py-4 lg:max-w-[1240px] xl:max-w-[1400px]">
-            <WelcomeBanner />
             {/* Mobile: dropdown */}
             <div className="mb-1 sm:hidden">
                 <Select value={activeTab} onValueChange={(val) => handleTabChange(val as typeof activeTab)}>
@@ -88,7 +87,8 @@ function AdminPageContent() {
             </div>
 
             {/* Tablet+ : horizontal buttons */}
-            <div className="hidden sm:flex flex-wrap gap-2 ">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-wrap gap-2">
                 {(
                     [
                         'hospitals',
@@ -103,20 +103,24 @@ function AdminPageContent() {
                         key={tab}
                         onClick={() => handleTabChange(tab)}
                         variant={'default'}
-                        className={`uppercase text-foreground ${
-                            activeTab === tab ? '' : 'bg-border'
-                        }`}
+                        className={`uppercase text-foreground ${activeTab === tab ? '' : 'bg-border'
+                            }`}
                     >
                         {tabLabels[tab]}
                     </Button>
                 ))}
             </div>
 
-            {/* Table */}
-            <div className="mt-4">
-                <GenericTable headers={selectedHeaders} activeTab={activeTab} />
-            </div>
-        </div>
+            <WelcomeBanner />
+
+        </div> 
+            
+
+            {/* Table */ }
+    <div className="mt-4">
+        <GenericTable headers={selectedHeaders} activeTab={activeTab} />
+    </div>
+        </div >
     )
 }
 

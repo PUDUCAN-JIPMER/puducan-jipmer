@@ -55,7 +55,6 @@ function AshaPageContent() {
 
     return (
         <main className="mt-4 p-4">
-            <WelcomeBanner />
             <h1 className="mb-4 text-center text-xl font-bold">Your Assigned Patients</h1>
 
             {patients.length === 0 ? (
