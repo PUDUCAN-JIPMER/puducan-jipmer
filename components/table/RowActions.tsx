@@ -16,6 +16,7 @@ import TransferDialog from '../dialogs/TransferDialog'
 import GenericHospitalDialog from '../forms/hospital/GenericHospitalDialog'
 import GenericPatientDialog from '../forms/patient/GenericPatientDialog'
 import GenericUserDialog from '../forms/user/GenericUserDialog'
+import ConfirmRetrieveDialog from '../dialogs/ConfirmRetrieveDialog'
 
 type RowDataBase = {
     id: string | number
@@ -40,6 +41,7 @@ export function RowActions({
     onDelete,
 }: RowActionsProps) {
     const [assignedAshaId, setAssignedAshaId] = useState((rowData as Patient).assignedAsha || '')
+    const [open, setOpen] = useState(false)
     const queryClient = useQueryClient()
     const { role } = useAuth()
 
@@ -141,15 +143,24 @@ export function RowActions({
 
             {/* Retrieve Patient */}
             {isRemovedPatientsTab && (
-                <Button
-                    size="icon"
-                    variant="outline"
-                    className="text-green-600"
-                    onClick={handleRetrieve}
-                    title="Retrieve Patient"
-                >
-                    <RotateCcw className="h-4 w-4" />
-                </Button>
+                <>
+                    <Button
+                        size="icon"
+                        variant="outline"
+                        className="text-green-600"
+                        onClick={() => setOpen(true)}
+                        title="Retrieve Patient"
+                    >
+                        <RotateCcw className="h-4 w-4" />
+                    </Button>
+
+                    <ConfirmRetrieveDialog
+                        open={open}
+                        onOpenChange={setOpen}
+                        patientName={rowData.name as string}
+                        onConfirm={handleRetrieve}
+                    />
+                </>
             )}
 
             {/* Delete */}

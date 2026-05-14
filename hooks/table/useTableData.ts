@@ -20,13 +20,13 @@ type UsePatientsProps = {
     ashaId?: string | null | undefined
     enabled?: boolean
     requiredData?:
-        | 'ashas'
-        | 'doctors'
-        | 'nurses'
-        | 'hospitals'
-        | 'patients'
-        | 'removedPatients'
-        | undefined
+    | 'ashas'
+    | 'doctors'
+    | 'nurses'
+    | 'hospitals'
+    | 'patients'
+    | 'removedPatients'
+    | undefined
 }
 
 export const useTableData = ({
