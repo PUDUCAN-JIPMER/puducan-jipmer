@@ -1,5 +1,5 @@
 'use client'
-
+import WelcomeBanner from '@/components/dashboard/WelcomeBanner'
 import { withAuth } from '@/components/hoc/withAuth'
 import PatientFormMobile from '@/components/asha/PatientFormMobile'
 import Loading from '@/components/ui/loading'
@@ -55,6 +55,7 @@ function AshaPageContent() {
 
     return (
         <main className="mt-4 p-4">
+            <WelcomeBanner />
             <h1 className="mb-4 text-center text-xl font-bold">Your Assigned Patients</h1>
 
             {patients.length === 0 ? (
