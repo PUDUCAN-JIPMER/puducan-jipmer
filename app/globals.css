@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Ovo&family=Montserrat:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
@@ -46,119 +46,251 @@
 }
 
 :root {
-    /* Brand colors */
-    --pondicherry-green: #0F9D58;
-    --pondicherry-yellow: #FFC107;
-    --pondicherry-blue: #2196F3;
+    /* Pondicherry-Inspired Warm Coastal Palette */
+    --base-50: #faf9f7;
+    --base-100: #f5f1ed;
+    --base-200: #ebe8e1;
+    --base-300: #e0ddd6;
+    --base-400: #d4cfc5;
+    
+    --text-900: #0f172a;
+    --text-700: #2d3748;
+    --text-600: #4a5568;
+    --text-500: #718096;
 
-    /* Font stacks */
-    --font-headings: 'Ovo', serif;
-    --font-body: 'Montserrat', sans-serif;
+    /* Pondicherry Accent System */
+    --accent-primary: #0f766e;      /* Deep teal - heritage, ocean */
+    --accent-primary-light: #ccf0ed;
+    --accent-primary-dark: #064e47;
 
-    --radius: 0.625rem;
+    --accent-secondary: #2563eb;    /* Sea blue - clarity, research */
+    --accent-secondary-light: #dbeafe;
+    
+    --accent-warm: #c26d52;         /* Terracotta - warmth, humanity */
+    --accent-saffron: #d4a017;      /* Muted saffron - cultural touch */
+    --accent-green: #2e8b57;        /* Palm green - life, care */
+
+    /* Beach Vibe & Cancer-Fighting Colors */
+    --color-blue: #0099ff;          /* Vibrant ocean blue - clarity, strength */
+    --color-blue-light: #e0f2fe;
+    --color-green: #10b981;         /* Vibrant healing green - hope, growth */
+    --color-green-light: #dcfce7;
+    --color-yellow: #fbbf24;        /* Vibrant sun yellow - energy, optimism */
+    --color-yellow-light: #fffbeb;
+
+    /* Font stacks - Plus Jakarta Sans for warmth */
+    --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'Geist Mono', monospace;
+
+    /* Spacing System: 8px base */
+    --space-1: 0.5rem;   /* 8px */
+    --space-2: 1rem;     /* 16px */
+    --space-3: 1.5rem;   /* 24px */
+    --space-4: 2rem;     /* 32px */
+    --space-5: 3rem;     /* 48px */
+    --space-6: 4rem;     /* 64px */
+    --space-7: 6rem;     /* 96px */
+
+    /* Typography Scale */
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 1.875rem;
+    --text-4xl: 2.25rem;
+    --text-5xl: 3rem;
+
+    /* Line heights */
+    --lh-tight: 1.2;
+    --lh-normal: 1.5;
+    --lh-relaxed: 1.75;
+
+    --radius: 0.5rem;
     --card: oklch(100% 0 0);
-    --card-foreground: oklch(8.5% 0.02 258);
+    --card-foreground: var(--text-900);
     --popover: oklch(100% 0 0);
-    --popover-foreground: oklch(8.5% 0.02 258);
-    --primary: #0F9D58; /* Pondicherry green */
+    --popover-foreground: var(--text-900);
+    --primary: var(--accent-primary);
     --primary-foreground: oklch(100% 0 0);
-    --secondary: oklch(97% 0.01 252);
-    --secondary-foreground: oklch(8.5% 0.02 258);
-    --muted: oklch(56% 0.04 256);
-    --muted-foreground: oklch(45% 0.03 260);
-    --accent: var(--pondicherry-blue); /* Primary accent: blue */
+    --secondary: var(--base-100);
+    --secondary-foreground: var(--text-900);
+    --muted: var(--base-400);
+    --muted-foreground: var(--text-500);
+    --accent: var(--accent-secondary);
     --accent-foreground: oklch(100% 0 0);
-    --warning: var(--pondicherry-yellow); /* Warning: yellow */
-    --destructive: oklch(57.7% 0.245 27.325);
-    --border: oklch(92% 0.01 252);
-    --input: oklch(97% 0.01 252);
-    --ring: oklch(55% 0.15 145);
-    --chart-1: #0F9D58;
-    --chart-2: var(--pondicherry-blue);
-    --chart-3: var(--pondicherry-yellow);
-    --chart-4: #155a9a;
-    --chart-5: #0b6b3a;
+    --warning: var(--accent-warm);
+    --destructive: #ef4444;
+    --border: var(--base-200);
+    --input: var(--base-100);
+    --ring: var(--accent-primary);
+    --chart-1: var(--accent-primary);
+    --chart-2: var(--accent-secondary);
+    --chart-3: var(--accent-warm);
+    --chart-4: var(--accent-saffron);
+    --chart-5: var(--accent-green);
     --sidebar: oklch(100% 0 0);
-    --sidebar-foreground: oklch(8.5% 0.02 258);
-    --sidebar-primary: oklch(16.5% 0.05 258);
+    --sidebar-foreground: var(--text-900);
+    --sidebar-primary: var(--accent-primary);
     --sidebar-primary-foreground: oklch(100% 0 0);
-    --sidebar-accent: oklch(55% 0.15 145);
+    --sidebar-accent: var(--accent-secondary);
     --sidebar-accent-foreground: oklch(100% 0 0);
-    --sidebar-border: oklch(92% 0.01 252);
-    --sidebar-ring: oklch(55% 0.15 145);
-    --background: oklch(97.5% 0.01 252);
-    --foreground: oklch(8.5% 0.02 258);
+    --sidebar-border: var(--base-200);
+    --sidebar-ring: var(--accent-primary);
+    /* Coastal Atmospheric Gradient - Beach Vibe System */
+    --background: 
+        radial-gradient(circle at 20% 0%, rgba(0, 150, 200, 0.08), transparent 40%),
+        radial-gradient(circle at 80% 100%, rgba(16, 185, 129, 0.06), transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.03), transparent 70%),
+        linear-gradient(to bottom, #f8f6f2 0%, #faf9f7 50%, #f5f1ed 100%),
+        #f8f6f2;
+    --foreground: var(--text-900);
 }
 
 .dark {
-    /* dark theme maps (keep brand contrast) */
-    --background: oklch(15% 0.02 258);
-    --foreground: oklch(98% 0 0);
-    --card: oklch(20% 0.02 258);
-    --card-foreground: oklch(98% 0 0);
-    --popover: oklch(20% 0.02 258);
-    --popover-foreground: oklch(98% 0 0);
-    --primary: #0F9D58;
-    --primary-foreground: oklch(98% 0 0);
-    --secondary: oklch(25% 0.02 258);
-    --secondary-foreground: oklch(98% 0 0);
-    --muted: oklch(45% 0.03 260);
-    --muted-foreground: oklch(70% 0.02 260);
-    --accent: var(--pondicherry-blue);
-    --accent-foreground: oklch(15% 0.02 258);
-    --warning: var(--pondicherry-yellow);
-    --destructive: oklch(70.4% 0.191 22.216);
-    --border: oklch(30% 0.02 258);
-    --input: oklch(25% 0.02 258);
-    --ring: oklch(55% 0.15 145);
-    --chart-1: #0F9D58;
-    --chart-2: var(--pondicherry-blue);
-    --chart-3: var(--pondicherry-yellow);
-    --chart-4: #155a9a;
-    --chart-5: #0b6b3a;
-    --sidebar: oklch(18% 0.02 258);
-    --sidebar-foreground: oklch(98% 0 0);
-    --sidebar-primary: oklch(35% 0.08 258);
-    --sidebar-primary-foreground: oklch(98% 0 0);
-    --sidebar-accent: oklch(65% 0.15 145);
-    --sidebar-accent-foreground: oklch(15% 0.02 258);
-    --sidebar-border: oklch(30% 0.02 258);
-    --sidebar-ring: oklch(55% 0.15 145);
+    --background: linear-gradient(135deg, #1a1a1a 0%, rgba(15, 118, 110, 0.05) 50%, rgba(37, 99, 235, 0.03) 100%);
+    --foreground: #f5f5f5;
+    --card: #2a2a2a;
+    --card-foreground: #f5f5f5;
+    --popover: #2a2a2a;
+    --popover-foreground: #f5f5f5;
+    --primary: #0f766e;
+    --primary-foreground: #1a1a1a;
+    --secondary: #3a3a3a;
+    --secondary-foreground: #f5f5f5;
+    --muted: #666666;
+    --muted-foreground: #999999;
+    --accent: #2563eb;
+    --accent-foreground: #1a1a1a;
+    --warning: #c26d52;
+    --destructive: #ef4444;
+    --border: #3a3a3a;
+    --input: #3a3a3a;
+    --ring: #0f766e;
+    --chart-1: #0f766e;
+    --chart-2: #2563eb;
+    --chart-3: #c26d52;
+    --chart-4: #d4a017;
+    --chart-5: #2e8b57;
+    --sidebar: #2a2a2a;
+    --sidebar-foreground: #f5f5f5;
+    --sidebar-primary: #0f766e;
+    --sidebar-primary-foreground: #1a1a1a;
+    --sidebar-accent: #2563eb;
+    --sidebar-accent-foreground: #1a1a1a;
+    --sidebar-border: #3a3a3a;
+    --sidebar-ring: #0f766e;
 }
 
 @layer base {
     * {
         @apply border-border outline-ring/50;
     }
+    
     body {
         @apply bg-background text-foreground;
         font-family: var(--font-body);
         font-size: 16px;
-        line-height: 1.6;
+        line-height: var(--lh-normal);
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         color: var(--foreground);
+        font-weight: 400;
     }
 
-    h1,h2,h3,h4,h5,h6 {
-        font-family: var(--font-headings);
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
+    /* Unified Typography System */
+    h1 {
+        font-size: var(--text-5xl);
         font-weight: 700;
-        line-height: 1.25;
-        letter-spacing: -0.02em;
-        color: var(--foreground);
+        line-height: 0.92;
+        letter-spacing: -0.05em;
+        color: var(--text-900);
+        max-width: 8ch;
     }
 
-    /* Force the brand fonts globally to override other utility classes */
+    h2 {
+        font-size: var(--text-3xl);
+        font-weight: 600;
+        line-height: var(--lh-tight);
+        letter-spacing: -0.02em;
+        color: var(--text-900);
+    }
+
+    h3 {
+        font-size: var(--text-2xl);
+        font-weight: 600;
+        line-height: var(--lh-tight);
+        letter-spacing: -0.01em;
+        color: var(--text-900);
+    }
+
+    h4 {
+        font-size: var(--text-xl);
+        font-weight: 600;
+        line-height: var(--lh-normal);
+        color: var(--text-900);
+    }
+
+    h5 {
+        font-size: var(--text-lg);
+        font-weight: 600;
+        line-height: var(--lh-normal);
+        color: var(--text-900);
+    }
+
+    h6 {
+        font-size: var(--text-base);
+        font-weight: 600;
+        line-height: var(--lh-normal);
+        color: var(--text-900);
+    }
+
+    p {
+        line-height: var(--lh-normal);
+        color: var(--text-700);
+    }
+
+    small {
+        font-size: var(--text-sm);
+        font-weight: 400;
+    }
+
+    .text-muted {
+        color: var(--text-500);
+    }
+
+    /* Atmospheric Section Transitions */
+    section {
+        position: relative;
+        transition: all 0.5s duration;
+    }
+
+    /* System-level color accents (surgical, not card fills) */
+    .accent-dot-blue {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--color-blue);
+    }
+
+    .accent-dot-green {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--color-green);
+    }
+
+    .accent-dot-yellow {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--color-yellow);
+    }
+
+    /* Force unified font globally */
     html, body, #__next {
         font-family: var(--font-body) !important;
-    }
-
-    h1,h2,h3,h4,h5,h6 {
-        font-family: var(--font-headings) !important;
-        font-weight: 700 !important;
-        line-height: 1.25 !important;
     }
 }
 

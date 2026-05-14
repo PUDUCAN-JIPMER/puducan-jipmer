@@ -14,40 +14,40 @@ export default function HomeNavbar() {
     const isActive = (href: string) => pathname === href
 
     return (
-        <nav className="border-b border-border bg-white dark:bg-slate-950 sticky top-0 z-50 shadow-sm">
-            <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-                {/* Left: Logo and branding */}
+        <nav className="w-screen fixed top-0 left-0 right-0 z-50 shadow-lg" style={{ backgroundColor: '#0099ff' }}>
+            <div className="container mx-auto px-4 py-6 flex items-center justify-between">
+                {/* Logo */}
                 <div className="flex items-center gap-3">
-                    <div className="hidden sm:flex items-center gap-2">
-                        <Image
-                            src="/jipmer-logo.png"
-                            alt="JIPMER"
-                            width={40}
-                            height={40}
-                            className="object-contain"
-                        />
-                    </div>
-                    <div className="flex flex-col">
-                        <div className="font-semibold text-base text-primary">PuduCan</div>
-                        <div className="text-xs text-muted hidden sm:block">JIPMER • Puducherry</div>
+                    <Image
+                        src="/jipmer-logo.png"
+                        alt="JIPMER"
+                        width={48}
+                        height={48}
+                        className="object-contain"
+                    />
+                    <div>
+                        <div className="font-bold text-white text-lg">PuduCan</div>
+                        <div className="text-xs text-blue-100">JIPMER • Puducherry</div>
                     </div>
                 </div>
 
-                {/* Right: Navigation and theme toggle (desktop) */}
-                <div className="hidden sm:flex items-center gap-1">
+                {/* Desktop Navigation */}
+                <div className="hidden sm:flex items-center gap-12">
                     <NavLink href="/home" label="Home" isActive={isActive('/home')} />
                     <NavLink href="/home/about" label="About" isActive={isActive('/home/about')} />
                     <NavLink href="/home/reports" label="Reports" isActive={isActive('/home/reports')} />
                     <NavLink href="/home/contact" label="Contact" isActive={isActive('/home/contact')} />
-                    <div className="ml-2 pl-2 border-l border-border">
-                        <ModeToggle />
-                    </div>
+                </div>
+
+                {/* Right: Theme toggle */}
+                <div className="hidden sm:flex items-center gap-4">
+                    <ModeToggle />
                 </div>
 
                 {/* Mobile menu button */}
                 <button
                     onClick={() => setMobileOpen(!mobileOpen)}
-                    className="sm:hidden p-2 hover:bg-accent/10 rounded"
+                    className="sm:hidden p-2 hover:bg-blue-500 rounded text-white"
                 >
                     {mobileOpen ? <X size={20} /> : <Menu size={20} />}
                 </button>
@@ -55,13 +55,13 @@ export default function HomeNavbar() {
 
             {/* Mobile menu */}
             {mobileOpen && (
-                <div className="sm:hidden border-t border-border bg-white dark:bg-slate-950 px-4 py-3 space-y-2">
+                <div className="sm:hidden border-t border-blue-400 px-4 py-3 space-y-2" style={{ backgroundColor: '#0099ff' }}>
                     <MobileNavLink href="/home" label="Home" onClick={() => setMobileOpen(false)} />
                     <MobileNavLink href="/home/about" label="About" onClick={() => setMobileOpen(false)} />
                     <MobileNavLink href="/home/reports" label="Reports" onClick={() => setMobileOpen(false)} />
                     <MobileNavLink href="/home/contact" label="Contact" onClick={() => setMobileOpen(false)} />
-                    <div className="pt-2 flex items-center justify-between">
-                        <span className="text-sm text-muted">Theme</span>
+                    <div className="pt-3 border-t border-blue-400 flex items-center justify-between">
+                        <span className="text-sm text-white font-medium">Theme</span>
                         <ModeToggle />
                     </div>
                 </div>
@@ -82,10 +82,10 @@ function NavLink({
     return (
         <Link
             href={href}
-            className={`px-3 py-2 text-sm font-medium rounded transition-colors ${
+            className={`text-sm font-medium transition-colors border-b-2 pb-1 ${
                 isActive
-                    ? 'text-primary bg-accent/10'
-                    : 'text-foreground hover:bg-accent/5'
+                    ? 'text-accent-primary border-accent-primary'
+                    : 'text-text-600 border-transparent hover:text-text-900'
             }`}
         >
             {label}
@@ -93,20 +93,12 @@ function NavLink({
     )
 }
 
-function MobileNavLink({
-    href,
-    label,
-    onClick,
-}: {
-    href: string
-    label: string
-    onClick: () => void
-}) {
+function MobileNavLink({ href, label, onClick }: { href: string; label: string; onClick: () => void }) {
     return (
         <Link
             href={href}
             onClick={onClick}
-            className="block px-3 py-2 text-sm font-medium text-foreground hover:text-primary hover:bg-accent/10 rounded transition-colors"
+            className="block px-3 py-2 text-sm font-medium text-white hover:text-blue-100 hover:bg-blue-600 rounded transition-colors"
         >
             {label}
         </Link>

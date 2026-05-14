@@ -181,6 +181,7 @@ export default function LoginPage() {
                                     id="email"
                                     placeholder="you@example.com"
                                     type="email"
+                                    aria-label="Email"
                                     {...register('email')}
                                     className="h-11 pl-10 border-border bg-white dark:bg-slate-900 focus-visible:ring-2 focus-visible:ring-accent/50"
                                 />
@@ -201,14 +202,15 @@ export default function LoginPage() {
                                     className="text-muted pointer-events-none absolute top-1/2 left-3 -translate-y-1/2"
                                 />
                                 <Input
-                                    id="password"
-                                    placeholder="••••••••"
+                                    placeholder="Password"
+                                    aria-label="Password"
                                     type={showPassword ? 'text' : 'password'}
                                     {...register('password')}
                                     className="h-11 pl-10 pr-10 border-border bg-white dark:bg-slate-900 focus-visible:ring-2 focus-visible:ring-accent/50"
                                 />
                                 <button
                                     type="button"
+                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                                     onClick={() => setShowPassword((prev) => !prev)}
                                     className="absolute top-1/2 right-3 -translate-y-1/2 text-muted hover:text-primary transition-colors"
                                     disabled={loading}
