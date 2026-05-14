@@ -21,36 +21,13 @@
  */
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import {
+  buildFallbackExplanation,
+  type ExplainFormErrorInput,
+} from "@/lib/explainFormErrorUtils";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-export interface ExplainFormErrorInput {
-  /** The name of the form field that failed validation (e.g. "age") */
-  fieldName: string;
-  /** The raw Zod / validation error message */
-  errorMessage: string;
-  /** The value the user actually typed (optional — never contains PHI) */
-  typedValue?: string;
-}
-
-// ─── Fallback (no AI) ────────────────────────────────────────────────────────
-
-/**
- * Produces a best-effort, human-friendly rewrite of the raw Zod error
- * without calling any external API.
- */
-function buildFallbackExplanation(input: ExplainFormErrorInput): string {
-  const friendly = input.fieldName
-    .replace(/([A-Z])/g, " $1")
-    .replace(/[_-]/g, " ")
-    .trim()
-    .toLowerCase();
-
-  return (
-    `It looks like the "${friendly}" field has a problem: ${input.errorMessage}. ` +
-    `Please check the value you entered and try again.`
-  );
-}
+// Re-export the input type for consumers
+export type { ExplainFormErrorInput };
 
 // ─── Gemini Prompt ───────────────────────────────────────────────────────────
 
@@ -91,7 +68,7 @@ export async function explainFormError(
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const result = await model.generateContent(buildPrompt(input));
     const response = result.response;
@@ -109,6 +86,3 @@ export async function explainFormError(
     return buildFallbackExplanation(input);
   }
 }
-
-// ─── Exported for testing only ───────────────────────────────────────────────
-export { buildFallbackExplanation as _buildFallbackExplanation };
