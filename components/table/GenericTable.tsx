@@ -91,7 +91,7 @@ export function GenericTable({
     } = useSearch<ActiveDataType>(baseData, searchFields)
 
      // ✅ Apply sorting after search
-const { sorting, toggle, sortedData,setSorting } = useSorting(searchedData)
+const { sorting, toggle, sortedData } = useSorting(searchedData)
 
     // ✅ Use searchedData for pagination
     const dataToPaginate = useMemo(() => sortedData, [sortedData])
@@ -112,12 +112,7 @@ const { sorting, toggle, sortedData,setSorting } = useSorting(searchedData)
     // Reset to page 1 whenever sorting changes
      useEffect(() => {
     setCurrentPage(1)
-}, [sorting])
-
-    // useEffect to reset sort when activeTab changes 
-  useEffect(() => {
-  setSorting([{ id: 'name', desc: false }])
-}, [activeTab])
+  },  [sorting,setCurrentPage])
 
 
     const handleRowAction = useCallback(
