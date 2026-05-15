@@ -23,7 +23,7 @@ import { useTableStore } from '@/store'
 import { useResponsiveRows } from '@/hooks/table/useResponsiveRows'
 import { TabDataMap, RowDataBase, ModalType } from '@/types/table/types'
 import { GenericMobileRow } from './GenericMobileRow'
-
+import TableSkeleton from '@/components/skeletons/TableSkeleton'
 export function GenericTable({
     headers,
     activeTab,
@@ -62,12 +62,12 @@ export function GenericTable({
     } as const
 
     const fieldsToDisplay = fieldsMap[activeTab]
-    const { data = [] } = useTableData(queryProps) ?? {}
+    const { data = [], isLoading } = useTableData(queryProps) ?? {}
 
     const searchFields = SEARCH_FIELDS[activeTab]
 
     const isPatientTab = activeTab === 'patients'
-    const isHospitalTab = activeTab =='hospitals'
+    const isHospitalTab = activeTab == 'hospitals'
     const patients = (data as Patient[]) ?? []
     const filteredPatients = useFilteredPatients(isPatientTab ? patients : [])
 
@@ -90,7 +90,8 @@ export function GenericTable({
 
     const tableStats = useStats({
         TableData: searchedData ?? [],
-        isPatientTab, isHospitalTab
+        isPatientTab,
+        isHospitalTab,
     })
 
     useEffect(() => {
@@ -123,6 +124,7 @@ export function GenericTable({
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 searchFields={SEARCH_FIELDS[activeTab]}
+                isLoading={isLoading || isLoadingAuth}
             />
 
             <Table className="border-border flex-1 overflow-auto rounded-md border">
@@ -143,7 +145,13 @@ export function GenericTable({
                 </TableHeader>
 
                 <TableBody>
-                    {paginatedData.length > 0 ? (
+                    {isLoading || isLoadingAuth ? (
+                        <TableRow>
+                            <TableCell colSpan={8}>
+                                <TableSkeleton />
+                            </TableCell>
+                        </TableRow>
+                    ) : paginatedData.length > 0 ? (
                         paginatedData.map((data, index) => (
                             <GenericRow
                                 key={data.id}
@@ -196,6 +204,7 @@ export function GenericTable({
                     onPageChange={setCurrentPage}
                     stats={tableStats} // only show stats for patients
                     isPatientTab={isPatientTab}
+                    isLoading={isLoading || isLoadingAuth}
                 />
             </div>
 
