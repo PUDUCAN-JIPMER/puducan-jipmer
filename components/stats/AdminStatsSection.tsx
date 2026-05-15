@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -5,10 +6,12 @@ import { StatCard } from './StatCard'
 import { Building2, Stethoscope, Syringe, User2, ShieldCheck } from 'lucide-react'
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-    ResponsiveContainer, PieChart, Pie, Cell, Legend,
+    ResponsiveContainer, Legend,
 } from 'recharts'
 
-const COLORS = ['#4ade80', '#22d3ee', '#f97316', '#a78bfa', '#fb7185', '#fbbf24']
+// Theme colors for chart consistency
+const PRIMARY_COLOR = '#3b82f6' // Blue-500
+const PRIMARY_COLOR_LIGHT = '#60a5fa' // Blue-400
 
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null
@@ -24,17 +27,27 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     )
 }
 
-const RADIAN = Math.PI / 180
-const PieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
-    if (percent < 0.06) return null
-    const r = innerRadius + (outerRadius - innerRadius) * 0.5
-    const x = cx + r * Math.cos(-midAngle * RADIAN)
-    const y = cy + r * Math.sin(-midAngle * RADIAN)
+// Custom Y-axis label to truncate long names with an ellipsis and provide a hover tooltip
+const TruncatedLabel = ({ x, y, payload, maxLength = 15 }: any) => {
+    const fullName = payload.value
+    const truncated = fullName.length > maxLength 
+        ? `${fullName.substring(0, maxLength)}...` 
+        : fullName
+    
     return (
-        <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central"
-            fontSize={11} fontWeight={600}>
-            {`${(percent * 100).toFixed(0)}%`}
-        </text>
+        <g>
+            <title>{fullName}</title>
+            <text 
+                x={x} 
+                y={y} 
+                dy={4} 
+                textAnchor="end" 
+                fill="#666" 
+                fontSize={11}
+            >
+                {truncated}
+            </text>
+        </g>
     )
 }
 
@@ -64,15 +77,24 @@ function ChartCard({ title, children, empty = false }: {
 }
 
 export function AdminStatsSection({ stats }: { stats: AdminStats }) {
+    // Pre-process data: remove zero-value entries and sort descending for better scanability
+    const filteredAndSortedStaffData = stats.staffRoleData
+        .filter(item => item.value > 0)
+        .sort((a, b) => b.value - a.value)
+    
+    const filteredAndSortedHospitalData = stats.patientsPerHospital
+        .filter(item => item.patients > 0)
+        .sort((a, b) => b.patients - a.patients)
+
     return (
         <div className="space-y-4">
-            {/* Section header */}
+            {/* Section Header */}
             <div className="flex items-center gap-2 border-b pb-2">
                 <ShieldCheck className="h-4 w-4 text-primary" />
                 <h2 className="text-base font-semibold">Hospital &amp; Staff Overview</h2>
             </div>
 
-            {/* ── 5 KPI cards in one tight row ─────────────────── */}
+            {/* KPI Summary Cards */}
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
                 <StatCard title="Hospitals"   value={stats.totalHospitals} icon={Building2}   iconClassName="text-cyan-500" />
                 <StatCard title="Doctors"     value={stats.doctors}        icon={Stethoscope} iconClassName="text-blue-500" />
@@ -81,48 +103,87 @@ export function AdminStatsSection({ stats }: { stats: AdminStats }) {
                 <StatCard title="Total Staff" value={stats.totalStaff}     icon={User2}       iconClassName="text-violet-500" />
             </div>
 
-            {/* ── Staff pie + Patients-per-hospital bar ─────────── */}
+            {/* Distribution Charts */}
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <ChartCard title="Staff by Role" empty={!stats.staffRoleData.length}>
+                {/* Staff Distribution Bar Chart */}
+                <ChartCard title="Staff by Role" empty={!filteredAndSortedStaffData.length}>
                     <ResponsiveContainer width="100%" height={220}>
-                        <PieChart>
-                            <Pie data={stats.staffRoleData} cx="50%" cy="50%" outerRadius={80}
-                                dataKey="value" labelLine={false} label={PieLabel}>
-                                {stats.staffRoleData.map((_, i) => (
-                                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                                ))}
-                            </Pie>
+                        <BarChart 
+                            data={filteredAndSortedStaffData} 
+                            layout="vertical" 
+                            margin={{ top: 5, right: 20, bottom: 20, left: 10 }}
+                        >
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                            <XAxis 
+                                type="number" 
+                                allowDecimals={false} 
+                                tick={{ fontSize: 11 }} 
+                            />
+                            <YAxis 
+                                type="category" 
+                                dataKey="name" 
+                                width={70}
+                                tick={{ fontSize: 11 }}
+                            />
                             <Tooltip content={<CustomTooltip />} />
-                            <Legend wrapperStyle={{ fontSize: 12 }} />
-                        </PieChart>
+                            <Bar 
+                                dataKey="value" 
+                                name="Staff Count" 
+                                fill={PRIMARY_COLOR}
+                                radius={[0, 4, 4, 0]}
+                            />
+                        </BarChart>
                     </ResponsiveContainer>
                 </ChartCard>
 
-                <ChartCard title="Patients per Hospital" empty={!stats.patientsPerHospital.length}>
+                {/* Patient Distribution by Hospital Chart */}
+                <ChartCard title="Patients per Hospital" empty={!filteredAndSortedHospitalData.length}>
                     <ResponsiveContainer width="100%" height={220}>
-                        <BarChart data={stats.patientsPerHospital} layout="vertical" margin={{ left: 4 }}>
+                        <BarChart 
+                            data={filteredAndSortedHospitalData} 
+                            layout="vertical" 
+                            margin={{ left: 4 }}
+                        >
                             <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                            <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
-                            <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} />
+                            <XAxis 
+                                type="number" 
+                                allowDecimals={false} 
+                                tick={{ fontSize: 11 }} 
+                            />
+                            <YAxis 
+                                type="category" 
+                                dataKey="name" 
+                                width={120} 
+                                tick={<TruncatedLabel maxLength={15} />}
+                            />
                             <Tooltip content={<CustomTooltip />} />
-                            <Bar dataKey="patients" name="Patients" radius={[0, 4, 4, 0]}>
-                                {stats.patientsPerHospital.map((_, i) => (
-                                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                                ))}
-                            </Bar>
+                            <Bar 
+                                dataKey="patients" 
+                                name="Patients" 
+                                fill={PRIMARY_COLOR_LIGHT}
+                                radius={[0, 4, 4, 0]}
+                            />
                         </BarChart>
                     </ResponsiveContainer>
                 </ChartCard>
             </div>
 
-            {/* ── ASHA coverage stacked bar ─────────────────────── */}
+            {/* ASHA Coverage Stacked Bar Chart */}
             {stats.ashaCoverageData.length > 0 && (
                 <ChartCard title="ASHA Coverage by Hospital">
                     <ResponsiveContainer width="100%" height={200}>
-                        <BarChart data={stats.ashaCoverageData} margin={{ bottom: 16 }}>
+                        <BarChart 
+                            data={stats.ashaCoverageData.filter(d => (d.covered + d.uncovered) > 0)} 
+                            margin={{ bottom: 16 }}
+                        >
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                            <XAxis dataKey="name" tick={{ fontSize: 11 }} angle={-20}
-                                textAnchor="end" interval={0} />
+                            <XAxis 
+                                dataKey="name" 
+                                tick={{ fontSize: 11 }} 
+                                angle={-20}
+                                textAnchor="end" 
+                                interval={0} 
+                            />
                             <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
                             <Tooltip content={<CustomTooltip />} />
                             <Legend wrapperStyle={{ fontSize: 12 }} />

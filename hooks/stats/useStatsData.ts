@@ -6,6 +6,11 @@ import { useQuery } from '@tanstack/react-query'
 import { collection, getDocs, query, where } from 'firebase/firestore'
 import { useMemo } from 'react'
 
+// Stable references to prevent exhaustive-deps warnings in useMemo
+const EMPTY_PATIENTS: Patient[] = []
+const EMPTY_HOSPITALS: Hospital[] = []
+const EMPTY_USERS: UserDoc[] = []
+
 interface UseStatsDataProps {
     role: string | null
     orgId: string | null
@@ -13,7 +18,9 @@ interface UseStatsDataProps {
 
 export function useStatsData({ role, orgId }: UseStatsDataProps) {
     const isAdmin = role === 'admin'
-    const isPatientRole = role === 'doctor' || role === 'nurse'
+    
+    // TODO: Uncomment when needed for patient-specific role logic
+    // const isPatientRole = role === 'doctor' || role === 'nurse'
 
     // ── Patients ──────────────────────────────────────────────────────
     const patientsQuery = useQuery<Patient[], Error>({
@@ -58,9 +65,9 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
         staleTime: 60 * 1000,
     })
 
-    const patients = patientsQuery.data ?? []
-    const hospitals = hospitalsQuery.data ?? []
-    const users = usersQuery.data ?? []
+    const patients = patientsQuery.data ?? EMPTY_PATIENTS
+    const hospitals = hospitalsQuery.data ?? EMPTY_HOSPITALS
+    const users = usersQuery.data ?? EMPTY_USERS
 
     // ── Derived patient stats (shared by all roles) ───────────────────
     const patientStats = useMemo(() => {
@@ -178,7 +185,7 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
         const ashas = users.filter((u) => u.role === 'asha').length
         const admins = users.filter((u) => u.role === 'admin').length
 
-        // Patients per hospital (sorted by count)
+        // Patients per hospital with filtering and sorting
         const hospitalMap: Record<string, { name: string; patients: number }> = {}
         hospitals.forEach((h) => {
             hospitalMap[h.id!] = { name: h.name, patients: 0 }
@@ -187,23 +194,31 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
             const hId = p.assignedHospital?.id
             if (hId && hospitalMap[hId]) hospitalMap[hId].patients++
         })
-        const patientsPerHospital = Object.values(hospitalMap).sort(
-            (a, b) => b.patients - a.patients
-        )
+        
+        // Filter out zero-value hospitals and sort in descending order
+        const patientsPerHospital = Object.values(hospitalMap)
+            .filter((h) => h.patients > 0)
+            .sort((a, b) => b.patients - a.patients)
 
+        // Staff role data with filtering and sorting
         const staffRoleData = [
             { name: 'Doctors', value: doctors },
             { name: 'Nurses', value: nurses },
             { name: 'ASHAs', value: ashas },
             { name: 'Admins', value: admins },
-        ].filter((d) => d.value > 0)
+        ]
+            .filter((d) => d.value > 0)
+            .sort((a, b) => b.value - a.value)
 
-        // ASHA coverage: patients with vs without assigned ASHA per hospital
-        const ashaCoverageData = Object.values(hospitalMap).map((h) => {
-            const hPatients = patients.filter((p) => p.assignedHospital?.id === Object.keys(hospitalMap).find((k) => hospitalMap[k] === h))
-            const covered = hPatients.filter((p) => p.assignedAsha && p.assignedAsha !== 'none').length
-            return { name: h.name, covered, uncovered: hPatients.length - covered }
-        })
+        // ASHA coverage with filtering
+        const ashaCoverageData = Object.values(hospitalMap)
+            .map((h) => {
+                const hPatients = patients.filter((p) => p.assignedHospital?.id === Object.keys(hospitalMap).find((k) => hospitalMap[k] === h))
+                const covered = hPatients.filter((p) => p.assignedAsha && p.assignedAsha !== 'none').length
+                return { name: h.name, covered, uncovered: hPatients.length - covered }
+            })
+            .filter((d) => (d.covered + d.uncovered) > 0)
+            .sort((a, b) => (b.covered + b.uncovered) - (a.covered + a.uncovered))
 
         return {
             totalHospitals: hospitals.length,
