@@ -202,7 +202,8 @@ interface VerticalBarChartProps {
 /**
  * Horizontal (layout="vertical") bar chart for long category names.
  * Renders each bar in a given color and shows the value label at the end.
- * Tooltip ONLY shows when hovering the actual bar.
+ * Tooltip ONLY shows when hovering the actual bar (not the entire row).
+ * Value labels remain permanently visible (no flickering on hover).
  */
 const HorizontalBarChart = memo(({
     data,
@@ -211,103 +212,69 @@ const HorizontalBarChart = memo(({
     yAxisWidth = 120,
 }: VerticalBarChartProps) => {
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-    const [tooltipData, setTooltipData] = useState<{ name: string; value: number; x: number; y: number } | null>(null);
-
-    // Custom tooltip component that shows on bar hover only
-    const CustomFloatingTooltip = () => {
-        if (!tooltipData) return null;
-
-        return (
-            <div
-                className="fixed rounded-lg border bg-background p-2 shadow-md text-xs z-50"
-                style={{
-                    left: tooltipData.x + 10,
-                    top: tooltipData.y - 30,
-                    pointerEvents: 'none',
-                }}
-            >
-                <p className="font-medium mb-1">{tooltipData.name}</p>
-                <p className="font-semibold">Patients: {tooltipData.value}</p>
-            </div>
-        );
-    };
-
-    // Empty component to disable default tooltip (FIX: use a function, not JSX)
-    const EmptyTooltip = () => null;
 
     return (
-        <>
-            <CustomFloatingTooltip />
-            <ResponsiveContainer width="100%" height={height}>
-                <BarChart
-                    data={data}
-                    layout="vertical"
-                    margin={{ top: 4, right: 40, bottom: 4, left: 4 }}
-                    barCategoryGap={8}
+        <ResponsiveContainer width="100%" height={height}>
+            <BarChart
+                data={data}
+                layout="vertical"
+                margin={{ top: 4, right: 40, bottom: 4, left: 4 }}
+                barCategoryGap={8}
+            >
+                <CartesianGrid strokeDasharray={GRID_DASH} horizontal={false} stroke={CHART_COLORS.grid} />
+                <XAxis
+                    type="number"
+                    allowDecimals={false}
+                    tick={AXIS_TICK}
+                    axisLine={false}
+                    tickLine={false}
+                />
+                <YAxis
+                    type="category"
+                    dataKey="name"
+                    width={yAxisWidth}
+                    tick={AXIS_TICK}
+                    tickFormatter={toTitleCase}
+                    axisLine={false}
+                    tickLine={false}
+                />
+                {/* Using the same ChartTooltip as VerticalBarChart and DonutChart */}
+                <Tooltip content={<ChartTooltip />} cursor={{ fill: 'transparent' }} />
+
+                <Bar
+                    dataKey="value"
+                    name="Patients"
+                    radius={[0, 4, 4, 0]}
+                    maxBarSize={22}
+                    isAnimationActive={false}
                 >
-                    <CartesianGrid strokeDasharray={GRID_DASH} horizontal={false} stroke={CHART_COLORS.grid} />
-                    <XAxis type="number" allowDecimals={false} tick={AXIS_TICK} axisLine={false} tickLine={false} />
-                    <YAxis
-                        type="category"
-                        dataKey="name"
-                        width={yAxisWidth}
-                        tick={AXIS_TICK}
-                        tickFormatter={toTitleCase}
-                        axisLine={false}
-                        tickLine={false}
-                    />
-                    {/* 
-                        FIXED: content expects a component function, not JSX.
-                        Use EmptyTooltip component to completely hide default tooltip
-                    */}
-                    <Tooltip content={EmptyTooltip} cursor={{ fill: 'transparent' }} active={false} />
+                    {data.map((entry, i) => {
+                        const originalColor = colorFn(entry.name, i);
+                        const isHovered = hoveredIndex === i;
+                        const hoverColor = isHovered ? darkenColor(originalColor, 0.2) : originalColor;
 
-                    <Bar
+                        return (
+                            <Cell
+                                key={entry.name}
+                                fill={hoverColor}
+                                style={{
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease-in-out',
+                                }}
+                                onMouseEnter={() => setHoveredIndex(i)}
+                                onMouseLeave={() => setHoveredIndex(null)}
+                            />
+                        );
+                    })}
+                    <LabelList
                         dataKey="value"
-                        name="Patients"
-                        radius={[0, 4, 4, 0]}
-                        maxBarSize={22}
-                    >
-                        {data.map((entry, i) => {
-                            const originalColor = colorFn(entry.name, i);
-                            const isHovered = hoveredIndex === i;
-                            const hoverColor = isHovered ? darkenColor(originalColor, 0.2) : originalColor;
-
-                            return (
-                                <Cell
-                                    key={entry.name}
-                                    fill={hoverColor}
-                                    style={{
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s ease-in-out',
-                                    }}
-                                    onMouseEnter={(event) => {
-                                        setHoveredIndex(i);
-                                        // Get mouse position for custom tooltip
-                                        const rect = (event.target as SVGGElement).getBoundingClientRect();
-                                        setTooltipData({
-                                            name: entry.name,
-                                            value: entry.value,
-                                            x: rect.right,
-                                            y: rect.top,
-                                        });
-                                    }}
-                                    onMouseLeave={() => {
-                                        setHoveredIndex(null);
-                                        setTooltipData(null);
-                                    }}
-                                />
-                            );
-                        })}
-                        <LabelList
-                            dataKey="value"
-                            position="right"
-                            style={{ fontSize: 11, fill: CHART_COLORS.axis, fontWeight: 600 }}
-                        />
-                    </Bar>
-                </BarChart>
-            </ResponsiveContainer>
-        </>
+                        position="right"
+                        style={{ fontSize: 11, fill: CHART_COLORS.axis, fontWeight: 600 }}
+                        offset={5}
+                    />
+                </Bar>
+            </BarChart>
+        </ResponsiveContainer>
     );
 });
 HorizontalBarChart.displayName = 'HorizontalBarChart';
