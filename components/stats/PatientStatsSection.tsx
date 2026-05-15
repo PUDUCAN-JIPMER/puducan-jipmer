@@ -1,5 +1,6 @@
 'use client'
 
+import { memo, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatCard } from './StatCard'
 import {
@@ -9,216 +10,505 @@ import {
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
     ResponsiveContainer, PieChart, Pie, Cell, Legend,
-    LineChart, Line,
+    LineChart, Line, LabelList,
 } from 'recharts'
+import type { TooltipProps } from 'recharts'
+import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent'
+import type { PieLabelRenderProps } from 'recharts/types/polar/Pie'
 
-const COLORS = [
-    '#4ade80', '#22d3ee', '#f97316', '#a78bfa',
-    '#fb7185', '#fbbf24', '#34d399', '#60a5fa',
-    '#f472b6', '#e879f9',
-]
-const STATUS_COLORS: Record<string, string> = {
-    Alive: '#4ade80', 'Not Alive': '#f87171', 'Not Available': '#94a3b8',
-}
-const GENDER_COLORS: Record<string, string> = {
-    Male: '#60a5fa', Female: '#f472b6', Other: '#94a3b8',
+// ── Color Configuration ──────────────────────────────────────────────────────
+
+/**
+ * Central color palette for the healthcare dashboard.
+ * Uses muted, professional tones — no neon or high-saturation hues.
+ */
+const CHART_COLORS = {
+    // Sequential palette for generic categorical charts (disease, insurance, ration)
+    categorical: [
+        '#4a90a4', // steel teal
+        '#6a9fb5', // sky slate
+        '#7aab8a', // sage green
+        '#8fa3b1', // cool blue-gray
+        '#a0b4a0', // muted sage
+        '#b0c4cc', // pale steel
+        '#9ab0b8', // dusty blue
+        '#7d9fa8', // slate teal
+        '#8aaa96', // fern
+        '#a8bfc4', // silver teal
+    ],
+
+    // Semantic colors for patient status
+    status: {
+        Alive: '#5a9e7a',         // calm green
+        'Not Alive': '#b07070',   // muted rose-red
+        'Not Available': '#9aa3ad', // cool gray
+    } as Record<string, string>,
+
+    // Semantic colors for gender
+    gender: {
+        Male: '#5a84b0',    // steel blue
+        Female: '#a07898',  // dusty mauve
+        Other: '#8fa3a8',   // neutral slate
+    } as Record<string, string>,
+
+    /**
+     * Semantic stage colors — convey clinical progression clearly.
+     * Light/hopeful → dark/serious as stage advances.
+     */
+    stage: {
+        'Stage I': '#6aab7e', // soft green  — early, good prognosis
+        'Stage Ii': '#4a9aaa', // teal        — moderate
+        'Stage Iii': '#c08840', // amber        — advanced
+        'Stage Iv': '#b06060', // soft rose-red — metastatic
+        // fallback keys for alternate input capitalizations
+        'Stage 1': '#6aab7e',
+        'Stage 2': '#4a9aaa',
+        'Stage 3': '#c08840',
+        'Stage 4': '#b06060',
+    } as Record<string, string>,
+
+    stageFallback: '#8fa3ad', // cool gray for Unknown/Other
+
+    // Trend line
+    trendLine: '#4a90a4',
+
+    // Grid & axis
+    grid: '#e8edf0',
+    axis: '#7a8c96',
+} as const
+
+// ── Utility ──────────────────────────────────────────────────────────────────
+
+/** Convert any string to Title Case */
+const toTitleCase = (str: string): string =>
+    str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase())
+
+/** Pick a stage color; fall back to gray for unknown stages */
+const getStageColor = (name: string): string =>
+    CHART_COLORS.stage[name] ?? CHART_COLORS.stageFallback
+
+/** Pick a categorical palette color by index */
+const getCategoricalColor = (index: number): string =>
+    CHART_COLORS.categorical[index % CHART_COLORS.categorical.length]
+
+// ── TypeScript Interfaces ─────────────────────────────────────────────────────
+
+interface DataPoint {
+    name: string
+    value: number
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
-    if (!active || !payload?.length) return null
-    return (
-        <div className="rounded-lg border bg-background p-2 shadow-md text-xs">
-            {label && <p className="font-medium mb-1">{label}</p>}
-            {payload.map((e: any, i: number) => (
-                <p key={i} style={{ color: e.color ?? e.fill }}>
-                    {e.name}: <span className="font-semibold">{e.value}</span>
-                </p>
-            ))}
-        </div>
-    )
+interface TrendPoint {
+    month: string
+    count: number
 }
+
+export interface PatientStats {
+    total: number
+    alive: number
+    deceased: number
+    notAvailable: number
+    male: number
+    female: number
+    other: number
+    withAsha: number
+    withoutAsha: number
+    diseaseData: DataPoint[]
+    stageData: DataPoint[]
+    insuranceData: DataPoint[]
+    rationData: DataPoint[]
+    registrationTrend: TrendPoint[]
+    statusData: DataPoint[]
+    genderData: DataPoint[]
+}
+
+interface TooltipEntry {
+    name: string
+    value: number
+    color?: string
+    fill?: string
+}
+
+
+
+// ── Shared Chart Primitives ───────────────────────────────────────────────────
 
 const RADIAN = Math.PI / 180
-const PieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+
+/**
+ * Renders a count label inside pie/donut slices.
+ * Skips slices smaller than 6% to avoid overlap.
+ * Must be a plain function (not memo) so Recharts accepts it as the `label` prop.
+ */
+function PiePercentLabel({
+    cx = 0, cy = 0, midAngle = 0,
+    innerRadius = 0, outerRadius = 0,
+    percent = 0, value,
+}: PieLabelRenderProps) {
     if (percent < 0.06) return null
     const r = innerRadius + (outerRadius - innerRadius) * 0.5
-    const x = cx + r * Math.cos(-midAngle * RADIAN)
-    const y = cy + r * Math.sin(-midAngle * RADIAN)
+    const x = (cx as number) + r * Math.cos(-midAngle * RADIAN)
+    const y = (cy as number) + r * Math.sin(-midAngle * RADIAN)
     return (
-        <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central"
-            fontSize={11} fontWeight={600}>
-            {`${(percent * 100).toFixed(0)}%`}
+        <text
+            x={x} y={y}
+            fill="white"
+            textAnchor="middle"
+            dominantBaseline="central"
+            fontSize={11}
+            fontWeight={600}
+        >
+            {value}
         </text>
     )
 }
 
-interface PatientStats {
-    total: number; alive: number; deceased: number; notAvailable: number
-    male: number; female: number; other: number
-    withAsha: number; withoutAsha: number
-    diseaseData: { name: string; value: number }[]
-    stageData: { name: string; value: number }[]
-    insuranceData: { name: string; value: number }[]
-    rationData: { name: string; value: number }[]
-    registrationTrend: { month: string; count: number }[]
-    statusData: { name: string; value: number }[]
-    genderData: { name: string; value: number }[]
+/** Shared tooltip rendered by Recharts on hover */
+interface ChartTooltipProps {
+    active?: boolean
+    payload?: Array<{ name: string; value: number; color?: string; fill?: string }>
+    label?: string | number
 }
 
-export function PatientStatsSection({ stats, role }: { stats: PatientStats; role: string }) {
-    const pct = (n: number) => stats.total ? `${((n / stats.total) * 100).toFixed(0)}%` : '0%'
+const ChartTooltip = memo(({ active, payload, label }: ChartTooltipProps) => {
+    if (!active || !payload?.length) return null
+    return (
+        <div className="rounded-lg border border-border bg-background px-3 py-2 shadow-md text-xs">
+            {label != null && <p className="font-semibold text-foreground mb-1">{String(label)}</p>}
+            {payload.map((entry, i) => (
+                <p key={i} style={{ color: entry.color ?? entry.fill ?? CHART_COLORS.axis }}>
+                    {toTitleCase(entry.name)}:{' '}
+                    <span className="font-bold">{entry.value}</span>
+                </p>
+            ))}
+        </div>
+    )
+})
+ChartTooltip.displayName = 'ChartTooltip'
+
+/** Shared axis tick styles to avoid repetition */
+const AXIS_TICK = { fontSize: 11, fill: CHART_COLORS.axis } as const
+const GRID_DASH = '3 3' as const
+
+// ── Reusable Chart Wrappers ───────────────────────────────────────────────────
+
+interface VerticalBarChartProps {
+    data: DataPoint[]
+    colorFn?: (name: string, index: number) => string
+    height?: number
+    yAxisWidth?: number
+}
+
+/**
+ * Horizontal (layout="vertical") bar chart for long category names.
+ * Renders each bar in a given color and shows the value label at the end.
+ */
+const HorizontalBarChart = memo(({
+    data,
+    colorFn = (_, i) => getCategoricalColor(i),
+    height = 260,
+    yAxisWidth = 120,
+}: VerticalBarChartProps) => (
+    <ResponsiveContainer width="100%" height={height}>
+        <BarChart
+            data={data}
+            layout="vertical"
+            margin={{ top: 4, right: 40, bottom: 4, left: 4 }}
+        >
+            <CartesianGrid strokeDasharray={GRID_DASH} horizontal={false} stroke={CHART_COLORS.grid} />
+            <XAxis type="number" allowDecimals={false} tick={AXIS_TICK} axisLine={false} tickLine={false} />
+            <YAxis
+                type="category"
+                dataKey="name"
+                width={yAxisWidth}
+                tick={AXIS_TICK}
+                tickFormatter={toTitleCase}
+                axisLine={false}
+                tickLine={false}
+            />
+            <Tooltip content={<ChartTooltip />} />
+            <Bar dataKey="value" name="Patients" radius={[0, 4, 4, 0]} maxBarSize={22}>
+                {data.map((entry, i) => (
+                    <Cell key={entry.name} fill={colorFn(entry.name, i)} />
+                ))}
+                <LabelList
+                    dataKey="value"
+                    position="right"
+                    style={{ fontSize: 11, fill: CHART_COLORS.axis, fontWeight: 600 }}
+                />
+            </Bar>
+        </BarChart>
+    </ResponsiveContainer>
+))
+HorizontalBarChart.displayName = 'HorizontalBarChart'
+
+interface VerticalBarProps {
+    data: DataPoint[]
+    colorFn?: (name: string, index: number) => string
+    height?: number
+}
+
+/**
+ * Vertical bar chart for shorter category names (stages, ration cards, etc.).
+ * Rotates X-axis labels to prevent overlap and adds top value labels.
+ */
+const VerticalBarChart = memo(({
+    data,
+    colorFn = (_, i) => getCategoricalColor(i),
+    height = 260,
+}: VerticalBarProps) => (
+    <ResponsiveContainer width="100%" height={height}>
+        <BarChart
+            data={data}
+            margin={{ top: 24, right: 12, bottom: 36, left: 4 }}
+        >
+            <CartesianGrid strokeDasharray={GRID_DASH} vertical={false} stroke={CHART_COLORS.grid} />
+            <XAxis
+                dataKey="name"
+                tick={AXIS_TICK}
+                angle={-30}
+                textAnchor="end"
+                interval={0}
+                tickFormatter={toTitleCase}
+                axisLine={false}
+                tickLine={false}
+                height={52}
+            />
+            <YAxis
+                allowDecimals={false}
+                tick={AXIS_TICK}
+                axisLine={false}
+                tickLine={false}
+            />
+            <Tooltip content={<ChartTooltip />} />
+            <Bar dataKey="value" name="Patients" radius={[4, 4, 0, 0]} maxBarSize={40}>
+                {data.map((entry, i) => (
+                    <Cell key={entry.name} fill={colorFn(entry.name, i)} />
+                ))}
+                <LabelList
+                    dataKey="value"
+                    position="top"
+                    style={{ fontSize: 11, fill: CHART_COLORS.axis, fontWeight: 600 }}
+                />
+            </Bar>
+        </BarChart>
+    </ResponsiveContainer>
+))
+VerticalBarChart.displayName = 'VerticalBarChart'
+
+interface DonutChartProps {
+    data: DataPoint[]
+    colorFn: (name: string, index: number) => string
+    innerRadius?: number
+    outerRadius?: number
+    height?: number
+}
+
+/**
+ * Pie / donut chart with inline value labels and a legend.
+ * `innerRadius > 0` renders a donut; `0` renders a full pie.
+ */
+const DonutChart = memo(({
+    data,
+    colorFn,
+    innerRadius = 0,
+    outerRadius = 80,
+    height = 220,
+}: DonutChartProps) => (
+    <ResponsiveContainer width="100%" height={height}>
+        <PieChart>
+            <Pie
+                data={data}
+                cx="50%"
+                cy="45%"
+                innerRadius={innerRadius}
+                outerRadius={outerRadius}
+                dataKey="value"
+                labelLine={false}
+                label={PiePercentLabel}
+                nameKey="name"
+            >
+                {data.map((entry, i) => (
+                    <Cell key={entry.name} fill={colorFn(entry.name, i)} />
+                ))}
+            </Pie>
+            <Tooltip content={<ChartTooltip />} />
+            <Legend
+                formatter={(value) => toTitleCase(String(value))}
+                wrapperStyle={{ fontSize: 12, color: CHART_COLORS.axis }}
+                iconType="circle"
+                iconSize={8}
+            />
+        </PieChart>
+    </ResponsiveContainer>
+))
+DonutChart.displayName = 'DonutChart'
+
+interface TrendLineChartProps {
+    data: TrendPoint[]
+    height?: number
+}
+
+/** Sparkline-style line chart for registration trend */
+const TrendLineChart = memo(({ data, height = 200 }: TrendLineChartProps) => (
+    <ResponsiveContainer width="100%" height={height}>
+        <LineChart data={data} margin={{ top: 16, right: 16, bottom: 4, left: 4 }}>
+            <CartesianGrid strokeDasharray={GRID_DASH} vertical={false} stroke={CHART_COLORS.grid} />
+            <XAxis dataKey="month" tick={AXIS_TICK} axisLine={false} tickLine={false} />
+            <YAxis allowDecimals={false} tick={AXIS_TICK} axisLine={false} tickLine={false} />
+            <Tooltip content={<ChartTooltip />} />
+            <Line
+                type="monotone"
+                dataKey="count"
+                name="Registrations"
+                stroke={CHART_COLORS.trendLine}
+                strokeWidth={2.5}
+                dot={{ fill: CHART_COLORS.trendLine, r: 3, strokeWidth: 0 }}
+                activeDot={{ r: 5, strokeWidth: 0 }}
+            >
+                <LabelList
+                    dataKey="count"
+                    position="top"
+                    style={{ fontSize: 10, fill: CHART_COLORS.axis, fontWeight: 600 }}
+                />
+            </Line>
+        </LineChart>
+    </ResponsiveContainer>
+))
+TrendLineChart.displayName = 'TrendLineChart'
+
+// ── ChartCard ─────────────────────────────────────────────────────────────────
+
+interface ChartCardProps {
+    title: string
+    children: React.ReactNode
+    empty?: boolean
+    className?: string
+}
+
+const ChartCard = memo(({ title, children, empty = false, className }: ChartCardProps) => (
+    <Card className={className}>
+        <CardHeader className="px-5 py-4">
+            <CardTitle className="text-sm font-semibold tracking-wide text-foreground/80">
+                {title}
+            </CardTitle>
+        </CardHeader>
+        <CardContent className="px-5 pb-5 pt-0">
+            {empty ? (
+                <p className="py-10 text-center text-xs text-muted-foreground">No data available</p>
+            ) : children}
+        </CardContent>
+    </Card>
+))
+ChartCard.displayName = 'ChartCard'
+
+// ── Main Component ────────────────────────────────────────────────────────────
+
+interface PatientStatsSectionProps {
+    stats: PatientStats
+    role: string
+}
+
+export function PatientStatsSection({ stats }: PatientStatsSectionProps) {
+    const pct = useCallback(
+        (n: number) => (stats.total ? `${((n / stats.total) * 100).toFixed(0)}%` : '0%'),
+        [stats.total],
+    )
+
+    // Color resolvers passed to wrappers
+    const statusColorFn = useCallback(
+        (name: string) => CHART_COLORS.status[name] ?? CHART_COLORS.stageFallback,
+        [],
+    )
+    const genderColorFn = useCallback(
+        (name: string) => CHART_COLORS.gender[name] ?? CHART_COLORS.stageFallback,
+        [],
+    )
+    const stageColorFn = useCallback(
+        (name: string) => getStageColor(toTitleCase(name)),
+        [],
+    )
 
     return (
-        <div className="space-y-4">
-            {/* ── 8 KPI cards — 2 rows × 4 cols ─────────────────── */}
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                <StatCard title="Total Patients"  value={stats.total}        icon={Users}      iconClassName="text-primary" />
-                <StatCard title="Alive"           value={stats.alive}        icon={Heart}      iconClassName="text-green-500"   subtitle={`${pct(stats.alive)} of total`} />
-                <StatCard title="Deceased"        value={stats.deceased}     icon={Skull}      iconClassName="text-red-500"     subtitle={`${pct(stats.deceased)} of total`} />
-                <StatCard title="Not Available"   value={stats.notAvailable} icon={HelpCircle} iconClassName="text-slate-500" />
-                <StatCard title="Male Patients"   value={stats.male}         icon={Activity}   iconClassName="text-blue-500" />
-                <StatCard title="Female Patients" value={stats.female}       icon={Activity}   iconClassName="text-pink-500" />
-                <StatCard title="ASHA Assigned"   value={stats.withAsha}     icon={UserCheck}  iconClassName="text-emerald-500" subtitle={`${pct(stats.withAsha)} coverage`} />
-                <StatCard title="No ASHA Yet"     value={stats.withoutAsha}  icon={UserX}      iconClassName="text-orange-500" />
+        <div className="space-y-5">
+
+            {/* ── KPI Cards — 2 rows × 4 cols ───────────────────── */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <StatCard title="Total Patients" value={stats.total} icon={Users} iconClassName="text-primary" />
+                <StatCard title="Alive" value={stats.alive} icon={Heart} iconClassName="text-emerald-600" subtitle={`${pct(stats.alive)} of total`} />
+                <StatCard title="Deceased" value={stats.deceased} icon={Skull} iconClassName="text-rose-600" subtitle={`${pct(stats.deceased)} of total`} />
+                <StatCard title="Not Available" value={stats.notAvailable} icon={HelpCircle} iconClassName="text-slate-500" />
+                <StatCard title="Male Patients" value={stats.male} icon={Activity} iconClassName="text-blue-600" />
+                <StatCard title="Female Patients" value={stats.female} icon={Activity} iconClassName="text-pink-600" />
+                <StatCard title="ASHA Assigned" value={stats.withAsha} icon={UserCheck} iconClassName="text-teal-600" subtitle={`${pct(stats.withAsha)} coverage`} />
+                <StatCard title="No ASHA Assigned" value={stats.withoutAsha} icon={UserX} iconClassName="text-amber-600" />
             </div>
 
-            {/* ── Row 1: Status pie + Gender pie ─────────────────── */}
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            {/* ── Row 1: Status pie + Gender pie ────────────────── */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <ChartCard title="Patient Status">
-                    <ResponsiveContainer width="100%" height={220}>
-                        <PieChart>
-                            <Pie data={stats.statusData} cx="50%" cy="50%" outerRadius={80}
-                                dataKey="value" labelLine={false} label={PieLabel}>
-                                {stats.statusData.map((e) => (
-                                    <Cell key={e.name} fill={STATUS_COLORS[e.name] ?? '#94a3b8'} />
-                                ))}
-                            </Pie>
-                            <Tooltip content={<CustomTooltip />} />
-                            <Legend wrapperStyle={{ fontSize: 12 }} />
-                        </PieChart>
-                    </ResponsiveContainer>
+                    <DonutChart
+                        data={stats.statusData}
+                        colorFn={statusColorFn}
+                        height={230}
+                    />
                 </ChartCard>
 
                 <ChartCard title="Gender Distribution">
-                    <ResponsiveContainer width="100%" height={220}>
-                        <PieChart>
-                            <Pie data={stats.genderData} cx="50%" cy="50%" outerRadius={80}
-                                dataKey="value" labelLine={false} label={PieLabel}>
-                                {stats.genderData.map((e) => (
-                                    <Cell key={e.name} fill={GENDER_COLORS[e.name] ?? '#94a3b8'} />
-                                ))}
-                            </Pie>
-                            <Tooltip content={<CustomTooltip />} />
-                            <Legend wrapperStyle={{ fontSize: 12 }} />
-                        </PieChart>
-                    </ResponsiveContainer>
+                    <DonutChart
+                        data={stats.genderData}
+                        colorFn={genderColorFn}
+                        height={230}
+                    />
                 </ChartCard>
             </div>
 
-            {/* ── Row 2: Disease bar + Stage bar ─────────────────── */}
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            {/* ── Row 2: Disease bar + Stage bar ────────────────── */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <ChartCard title="Disease Distribution" empty={!stats.diseaseData.length}>
-                    <ResponsiveContainer width="100%" height={260}>
-                        <BarChart data={stats.diseaseData} layout="vertical" margin={{ left: 4 }}>
-                            <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                            <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
-                            <YAxis type="category" dataKey="name" width={115} tick={{ fontSize: 11 }} />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Bar dataKey="value" name="Patients" radius={[0, 4, 4, 0]}>
-                                {stats.diseaseData.map((_, i) => (
-                                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                                ))}
-                            </Bar>
-                        </BarChart>
-                    </ResponsiveContainer>
+                    <HorizontalBarChart
+                        data={stats.diseaseData}
+                        colorFn={(_, i) => getCategoricalColor(i)}
+                        height={270}
+                        yAxisWidth={120}
+                    />
                 </ChartCard>
 
                 <ChartCard title="Cancer Stage" empty={!stats.stageData.length}>
-                    <ResponsiveContainer width="100%" height={260}>
-                        <BarChart data={stats.stageData} margin={{ bottom: 20 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                            <XAxis dataKey="name" tick={{ fontSize: 11 }} angle={-25} textAnchor="end" interval={0} />
-                            <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Bar dataKey="value" name="Patients" radius={[4, 4, 0, 0]}>
-                                {stats.stageData.map((_, i) => (
-                                    <Cell key={i} fill={COLORS[(i + 2) % COLORS.length]} />
-                                ))}
-                            </Bar>
-                        </BarChart>
-                    </ResponsiveContainer>
+                    <VerticalBarChart
+                        data={stats.stageData}
+                        colorFn={stageColorFn}
+                        height={270}
+                    />
                 </ChartCard>
             </div>
 
-            {/* ── Row 3: Insurance donut + Ration card bar ───────── */}
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            {/* ── Row 3: Insurance donut + Ration card bar ──────── */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <ChartCard title="Insurance Coverage">
-                    <ResponsiveContainer width="100%" height={210}>
-                        <PieChart>
-                            <Pie data={stats.insuranceData} cx="50%" cy="50%"
-                                innerRadius={50} outerRadius={80}
-                                dataKey="value" labelLine={false} label={PieLabel}>
-                                {stats.insuranceData.map((_, i) => (
-                                    <Cell key={i} fill={COLORS[(i + 4) % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip content={<CustomTooltip />} />
-                            <Legend wrapperStyle={{ fontSize: 12 }} />
-                        </PieChart>
-                    </ResponsiveContainer>
+                    <DonutChart
+                        data={stats.insuranceData}
+                        colorFn={(_, i) => getCategoricalColor(i + 3)}
+                        innerRadius={52}
+                        outerRadius={82}
+                        height={220}
+                    />
                 </ChartCard>
 
                 <ChartCard title="Ration Card Type">
-                    <ResponsiveContainer width="100%" height={210}>
-                        <BarChart data={stats.rationData}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                            <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                            <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Bar dataKey="value" name="Patients" radius={[4, 4, 0, 0]}>
-                                <Cell fill="#f87171" />
-                                <Cell fill="#fbbf24" />
-                                <Cell fill="#94a3b8" />
-                            </Bar>
-                        </BarChart>
-                    </ResponsiveContainer>
+                    <VerticalBarChart
+                        data={stats.rationData}
+                        colorFn={(_, i) => getCategoricalColor(i + 1)}
+                        height={220}
+                    />
                 </ChartCard>
             </div>
 
-            {/* ── Registration trend ─────────────────────────────── */}
-            <ChartCard title="New Registrations – Last 12 Months">
-                <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={stats.registrationTrend}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                        <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                        <Tooltip content={<CustomTooltip />} />
-                        <Line type="monotone" dataKey="count" name="Registrations"
-                            stroke="#4ade80" strokeWidth={2}
-                            dot={{ fill: '#4ade80', r: 3 }} activeDot={{ r: 5 }} />
-                    </LineChart>
-                </ResponsiveContainer>
+            {/* ── Registration trend ────────────────────────────── */}
+            <ChartCard title="New Registrations — Last 12 Months">
+                <TrendLineChart data={stats.registrationTrend} height={210} />
             </ChartCard>
-        </div>
-    )
-}
 
-// ── tiny wrapper to keep JSX above clean ──────────────────────────
-function ChartCard({
-    title, children, empty = false,
-}: {
-    title: string; children: React.ReactNode; empty?: boolean
-}) {
-    return (
-        <Card>
-            <CardHeader className="px-4 py-3">
-                <CardTitle className="text-sm font-semibold">{title}</CardTitle>
-            </CardHeader>
-            <CardContent className="px-4 pb-4 pt-0">
-                {empty ? (
-                    <p className="py-8 text-center text-xs text-muted-foreground">No data yet</p>
-                ) : children}
-            </CardContent>
-        </Card>
+        </div>
     )
 }
