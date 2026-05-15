@@ -15,6 +15,7 @@ interface PatientFormProps {
     handleSubmit: UseFormHandleSubmit<PatientFormInputs>
     onSubmit: (data: PatientFormInputs) => Promise<void>
     isEdit?: boolean
+    isSaving?: boolean
 }
 
 const STEPS = [
@@ -35,6 +36,7 @@ export default function GenericPatientForm({
     handleSubmit,
     onSubmit,
     isEdit = false,
+    isSaving = false,
 }: PatientFormProps) {
     const [currentStep, setCurrentStep] = useState(1)
     const steps = isEdit ? EDIT_STEPS : STEPS
@@ -173,9 +175,10 @@ export default function GenericPatientForm({
                                 ) : (
                                     <Button
                                         type="submit"
+                                        disabled={isSaving}
                                         className="h-10 px-6 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800"
                                     >
-                                        {isEdit ? 'Update Patient' : 'Save Patient'}
+                                        {isSaving ? (isEdit ? 'Updating...' : 'Saving...') : isEdit ? 'Update Patient' : 'Save Patient'}
                                     </Button>
                                 )}
                             </div>

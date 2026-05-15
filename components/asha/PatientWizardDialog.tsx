@@ -45,6 +45,30 @@ export function PatientWizardDialog({
         if (open) setActiveIndex(0)
     }, [open])
 
+    // 1. Auto-Load Draft on Mount
+    useEffect(() => {
+        if (!patient.id || !open) return
+        const savedDraft = localStorage.getItem(`patient-draft-${patient.id}`)
+        if (savedDraft) {
+            try {
+                const draft = JSON.parse(savedDraft)
+                form.reset(draft)
+            } catch (e) {
+                console.error('Failed to load patient draft', e)
+            }
+        }
+    }, [patient.id, open, form])
+
+    // 2. Auto-Save Draft on Change (Debounced)
+    const watchedValues = form.watch()
+    useEffect(() => {
+        if (!patient.id || !open) return
+        const timeoutId = setTimeout(() => {
+            localStorage.setItem(`patient-draft-${patient.id}`, JSON.stringify(watchedValues))
+        }, 1000)
+        return () => clearTimeout(timeoutId)
+    }, [watchedValues, patient.id, open])
+
     const steps = [
         <ColumnOne key="col1" form={form} isAsha />,
         <ColumnTwo key="col2" form={form} isAsha />,
@@ -69,19 +93,36 @@ export function PatientWizardDialog({
 
     const handleSubmit = form.handleSubmit(
         async (values) => {
+            console.log('📝 ASHA: Submitting patient update (Optimistic)...', patient.id)
+            setIsSaving(true)
+
             try {
-                setIsSaving(true)
                 if (!patient.id) throw new Error('Patient ID missing')
                 const cleanValues = Object.fromEntries(
                     Object.entries(values).filter(([_, v]) => v !== undefined)
                 ) as PatientFormInputs
-                await updatePatient(patient.id, cleanValues)
+
+                // Trigger update without awaiting for UI completion
+                const updatePromise = updatePatient(patient.id, cleanValues)
+                console.log('✅ ASHA: Update initiated')
+
+                // 3. Clear draft and show success immediately
+                localStorage.removeItem(`patient-draft-${patient.id}`)
                 toast.success('Patient updated successfully!')
-                queryClient.invalidateQueries({ queryKey: ['patients', { ashaId: userId }] })
+
+                // Background tasks
+                updatePromise.then(() => {
+                    console.log('🏁 ASHA: Update confirmed')
+                    const queryKey = ['patients', { ashaId: userId }]
+                    queryClient.invalidateQueries({ queryKey })
+                }).catch(err => {
+                    console.error('❌ ASHA: Background update failed', err)
+                })
+
                 onClose()
             } catch (err) {
-                console.error(err)
-                toast.error('Failed to save changes. Try again.')
+                console.error('❌ ASHA: Immediate update error', err)
+                toast.error('Failed to process changes.')
             } finally {
                 setIsSaving(false)
             }

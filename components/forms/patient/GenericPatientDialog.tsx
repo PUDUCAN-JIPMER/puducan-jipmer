@@ -21,7 +21,6 @@ import GenericPatientForm from './GenericPatientForm'
 import clsx from 'clsx'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/contexts/AuthContext'
-import { int } from 'zod'
 
 interface GenericPatientDialogProps {
     mode: 'add' | 'edit'
@@ -30,7 +29,7 @@ interface GenericPatientDialogProps {
     onSuccess?: () => void
     // for keyboard shortcuts
     open?: boolean
-    onOpenChange?: (open:boolean) => void
+    onOpenChange?: (open: boolean) => void
 }
 
 export default function GenericPatientDialog({
@@ -43,14 +42,15 @@ export default function GenericPatientDialog({
     onOpenChange,
 }: GenericPatientDialogProps) {
     const [internalOpen, setInternalOpen] = useState(false)
+    const [isSaving, setIsSaving] = useState(false)
     const isEdit = mode === 'edit'
     const queryClient = useQueryClient()
 
     const isOpen = open ?? internalOpen
-
     const setIsOpen = onOpenChange ?? setInternalOpen
 
-    const {orgId} = useAuth()
+    const { orgId, userId } = useAuth()
+    const draftKey = `addPatientFormData-${userId}`
 
     const form = useForm<PatientFormInputs>({
         resolver: zodResolver(PatientSchema),
@@ -85,16 +85,16 @@ export default function GenericPatientDialog({
         },
     })
 
-    const { handleSubmit, reset, watch, setValue } = form
+    const { handleSubmit, reset, watch } = form
     const aadhaarId = watch('aadhaarId')
     const hasAadhaar = watch('hasAadhaar')
 
     // Initialize form with patient data for edit mode
     useEffect(() => {
-        if (isEdit && patientData && open) {
+        if (isEdit && patientData && isOpen) {
             reset(patientData)
         }
-    }, [isEdit, patientData, open, reset])
+    }, [isEdit, patientData, isOpen, reset])
 
     // Aadhaar duplicate check (skip for edit mode if Aadhaar hasn't changed)
     useEffect(() => {
@@ -112,15 +112,19 @@ export default function GenericPatientDialog({
 
     // Save to localStorage (for add mode only)
     useEffect(() => {
-        if (!isEdit) {
-            localStorage.setItem('addPatientFormData', JSON.stringify(form.getValues()))
+        if (!isEdit && userId) {
+            const values = form.getValues()
+            // Only save if there's some data
+            if (Object.values(values).some(v => v !== '' && v !== undefined && v !== 'none' && (Array.isArray(v) ? v.length > 0 : true))) {
+                localStorage.setItem(draftKey, JSON.stringify(values))
+            }
         }
-    }, [watch(), form, isEdit])
+    }, [watch(), form, isEdit, userId, draftKey])
 
     // Load from localStorage (for add mode only)
     useEffect(() => {
-        if (isOpen && !isEdit) {
-            const saved = localStorage.getItem('addPatientFormData')
+        if (isOpen && !isEdit && userId) {
+            const saved = localStorage.getItem(draftKey)
             if (saved) {
                 try {
                     reset(JSON.parse(saved))
@@ -129,37 +133,52 @@ export default function GenericPatientDialog({
                 }
             }
         }
-    }, [open, reset, isEdit])
+    }, [isOpen, reset, isEdit, userId, draftKey])
 
     const onSubmit = async (data: PatientFormInputs) => {
-        try {
-            if (isEdit && patientData?.id) {
-                // Update existing patient
-                await updateDoc(doc(db, 'patients', patientData.id), data)
-                toast.success('Patient updated successfully.')
-            } else {
-                // Add new patient
-                await addDoc(collection(db, 'patients'), {
-                    ...data,
-                    createdAt: serverTimestamp(), // ✅ Firestore timestamp
-                })
-                toast.success('Patient added successfully.')
-                localStorage.removeItem('addPatientFormData')
-            }
+        console.log('📝 Submitting patient data (Optimistic)...', mode)
+        setIsSaving(true)
 
-            // queryClient.invalidateQueries({ queryKey: ['patients'] })
-            if (orgId) {
-                queryClient.invalidateQueries({ queryKey: ['patients', orgId] })
-            } else {
-                queryClient.invalidateQueries({ queryKey: ['patients'] })
-            }
+        try {
+            const patientRef = isEdit && patientData?.id
+                ? doc(db, 'patients', patientData.id)
+                : collection(db, 'patients')
+
+            // Trigger Firestore write
+            const firestoreOp = isEdit
+                ? updateDoc(patientRef as any, data)
+                : addDoc(patientRef as any, {
+                    ...data,
+                    createdAt: serverTimestamp(),
+                })
+
+            console.log('✅ Firestore write initiated')
+
+            // OPTIMISTIC COMPLETION: 
+            // We do NOT await firestoreOp here for the UI to move on.
+            // This ensures the dialog closes immediately in offline mode.
+
+            toast.success(isEdit ? 'Patient updated successfully.' : 'Patient added successfully.')
+            if (!isEdit) localStorage.removeItem(draftKey)
 
             setIsOpen(false)
             reset()
-            onSuccess?.()
+
+            // Background task: Handle completion and invalidation
+            firestoreOp.then(() => {
+                console.log('🏁 Firestore write confirmed (local/remote)')
+                const queryKey = orgId ? ['patients', orgId] : ['patients']
+                queryClient.invalidateQueries({ queryKey })
+                onSuccess?.()
+            }).catch(err => {
+                console.error('❌ Background Firestore write failed:', err)
+            })
+
         } catch (err) {
-            console.error(`Error ${isEdit ? 'updating' : 'adding'} patient:`, err)
-            toast.error(`Failed to ${isEdit ? 'update' : 'add'} patient. Please try again.`)
+            console.error('❌ Immediate submission error:', err)
+            toast.error('Failed to process patient data.')
+        } finally {
+            setIsSaving(false)
         }
     }
 
@@ -197,6 +216,7 @@ export default function GenericPatientDialog({
                         handleSubmit={handleSubmit}
                         onSubmit={onSubmit}
                         isEdit={isEdit}
+                        isSaving={isSaving}
                     />
                 </DialogContent>
             </Dialog>

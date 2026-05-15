@@ -6,7 +6,6 @@ import { Toaster } from 'sonner'
 import { ThemeProvider } from '@/components/theme-provider'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import ClientLayout from '@/components/layout/ClientLayout'
 
 const queryClient = new QueryClient()
 
