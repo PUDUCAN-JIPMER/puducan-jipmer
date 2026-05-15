@@ -93,11 +93,11 @@ export default function MetricsSection() {
                 <div className="mt-16 pt-12 border-t border-base-300">
                     <p className="text-sm text-text-600">
                         <span className="font-semibold text-accent-primary">Implementation Leadership</span>
-                        <span className="mx-2 text-text-400">•</span>
+                        <span className="mx-2 text-text-500">•</span>
                         JIPMER, Puducherry
-                        <span className="mx-2 text-text-400">•</span>
+                        <span className="mx-2 text-text-500">•</span>
                         <span className="font-semibold text-accent-secondary">Research Support</span>
-                        <span className="mx-2 text-text-400">•</span>
+                        <span className="mx-2 text-text-500">•</span>
                         ICMR
                     </p>
                 </div>

@@ -4,6 +4,9 @@ import { Mail, MapPin, Phone, Code, ExternalLink } from 'lucide-react'
 export default function Footer() {
     const currentYear = new Date().getFullYear()
 
+    const footerLinkClass = 'text-text-600 dark:text-text-500 hover:text-color-green transition-colors'
+    const footerMutedClass = 'text-text-600 dark:text-text-500'
+
     return (
         <footer className="relative bg-white dark:bg-text-900 border-t border-base-200 text-text-900 dark:text-white">
             {/* Main footer content */}
@@ -14,7 +17,7 @@ export default function Footer() {
                     <div className="space-y-4">
                         <div>
                             <h2 className="text-2xl font-bold text-color-blue mb-1">PuduCan</h2>
-                            <p className="text-sm text-text-600 dark:text-text-400">
+                            <p className="text-sm text-text-600 dark:text-text-500">
                                 JIPMER, Puducherry
                             </p>
                             <p className="text-xs text-text-500 dark:text-text-600 mt-2">
@@ -28,22 +31,22 @@ export default function Footer() {
                         <h3 className="text-sm font-bold uppercase tracking-wide text-color-green">About</h3>
                         <ul className="space-y-2 text-sm">
                             <li>
-                                <Link href="/home/about" className="text-text-600 dark:text-text-400 hover:text-color-green transition-colors">
+                                <Link href="/home/about" className={footerLinkClass}>
                                     About PuduCan
                                 </Link>
                             </li>
                             <li>
-                                <a href="#" className="text-text-600 dark:text-text-400 hover:text-color-green transition-colors">
+                                <span className={footerMutedClass}>
                                     Research Framework
-                                </a>
+                                </span>
                             </li>
                             <li>
-                                <a href="#" className="text-text-600 dark:text-text-400 hover:text-color-green transition-colors">
+                                <span className={footerMutedClass}>
                                     Implementation
-                                </a>
+                                </span>
                             </li>
                             <li>
-                                <Link href="/home/reports" className="text-text-600 dark:text-text-400 hover:text-color-green transition-colors">
+                                <Link href="/home/reports" className={footerLinkClass}>
                                     Reports & Data
                                 </Link>
                             </li>
@@ -55,25 +58,25 @@ export default function Footer() {
                         <h3 className="text-sm font-bold uppercase tracking-wide text-color-green">Support</h3>
                         <ul className="space-y-2 text-sm">
                             <li>
-                                <a href="#" className="text-text-600 dark:text-text-400 hover:text-color-green transition-colors">
+                                <span className={footerMutedClass}>
                                     Documentation
-                                </a>
+                                </span>
                             </li>
                             <li>
-                                <a href="https://github.com/puducan" target="_blank" rel="noopener noreferrer" className="text-text-600 dark:text-text-400 hover:text-color-green transition-colors flex items-center gap-2">
+                                <a href="https://github.com/puducan" target="_blank" rel="noopener noreferrer" className={`${footerLinkClass} flex items-center gap-2`}>
                                     <Code size={14} />
                                     GitHub
                                 </a>
                             </li>
                             <li>
-                                <a href="#" className="text-text-600 dark:text-text-400 hover:text-color-green transition-colors">
+                                <span className={footerMutedClass}>
                                     Contributing
-                                </a>
+                                </span>
                             </li>
                             <li>
-                                <a href="#" className="text-text-600 dark:text-text-400 hover:text-color-green transition-colors">
+                                <span className={footerMutedClass}>
                                     License
-                                </a>
+                                </span>
                             </li>
                         </ul>
                     </div>
@@ -82,20 +85,20 @@ export default function Footer() {
                     <div className="space-y-4">
                         <h3 className="text-sm font-bold uppercase tracking-wide text-color-green">Contact</h3>
                         <ul className="space-y-3 text-sm">
-                            <li className="flex gap-2 text-text-600 dark:text-text-400">
+                            <li className="flex gap-2 text-text-600 dark:text-text-500">
                                 <MapPin size={16} className="flex-shrink-0 mt-0.5 text-color-blue" />
                                 <div>
                                     <p className="font-semibold text-text-900 dark:text-white">JIPMER</p>
                                     <p className="text-xs">Puducherry, India</p>
                                 </div>
                             </li>
-                            <li className="flex gap-2 text-text-600 dark:text-text-400">
+                            <li className="flex gap-2 text-text-600 dark:text-text-500">
                                 <Mail size={16} className="flex-shrink-0 mt-0.5 text-color-blue" />
                                 <a href="mailto:puducan@jipmer.edu.in" className="hover:text-color-green transition-colors">
                                     puducan@jipmer.edu.in
                                 </a>
                             </li>
-                            <li className="flex gap-2 text-text-600 dark:text-text-400">
+                            <li className="flex gap-2 text-text-600 dark:text-text-500">
                                 <Phone size={16} className="flex-shrink-0 mt-0.5 text-color-blue" />
                                 <a href="tel:+914133296000" className="hover:text-color-green transition-colors">
                                     +91-413-3296000
@@ -109,10 +112,10 @@ export default function Footer() {
                 <div className="bg-base-50 dark:bg-text-900/50 border border-base-200 dark:border-text-700 rounded-lg p-6 mb-8">
                     <div className="grid md:grid-cols-2 gap-8 text-sm">
                         <div className="space-y-2">
-                            <p className="text-text-700 dark:text-text-300">
+                            <p className="text-text-700 dark:text-text-600">
                                 <span className="font-semibold text-text-900 dark:text-white">Built By:</span> Department of Community Medicine, JIPMER Health IT Lab
                             </p>
-                            <p className="text-text-700 dark:text-text-300">
+                            <p className="text-text-700 dark:text-text-600">
                                 <span className="font-semibold text-text-900 dark:text-white">Partners:</span>
                                 <a href="https://www.jipmer.edu.in" target="_blank" rel="noopener noreferrer" className="text-color-blue hover:underline"> JIPMER</a>
                                 <span className="text-text-500 dark:text-text-600 mx-1">•</span>
@@ -120,10 +123,10 @@ export default function Footer() {
                             </p>
                         </div>
                         <div className="space-y-2">
-                            <p className="text-text-700 dark:text-text-300">
+                            <p className="text-text-700 dark:text-text-600">
                                 <span className="font-semibold text-text-900 dark:text-white">Sponsored By:</span> Indian Council of Medical Research (ICMR)
                             </p>
-                            <p className="text-text-700 dark:text-text-300">
+                            <p className="text-text-700 dark:text-text-600">
                                 <span className="font-semibold text-text-900 dark:text-white">Implementation:</span> State Health Departments of Tamil Nadu & Puducherry
                             </p>
                         </div>
@@ -140,15 +143,15 @@ export default function Footer() {
                         <p>Building coordinated cancer care infrastructure for India</p>
                     </div>
                     <div className="flex flex-wrap gap-6 text-xs">
-                        <a href="#" className="text-text-500 dark:text-text-600 hover:text-text-900 dark:hover:text-white transition-colors">
+                        <span className="text-text-500 dark:text-text-600">
                             Privacy Policy
-                        </a>
-                        <a href="#" className="text-text-500 dark:text-text-600 hover:text-text-900 dark:hover:text-white transition-colors">
+                        </span>
+                        <span className="text-text-500 dark:text-text-600">
                             Terms of Service
-                        </a>
-                        <a href="#" className="text-text-500 dark:text-text-600 hover:text-text-900 dark:hover:text-white transition-colors">
+                        </span>
+                        <span className="text-text-500 dark:text-text-600">
                             Security
-                        </a>
+                        </span>
                     </div>
                 </div>
             </div>

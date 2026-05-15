@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { auth } from '@/firebase'
 import { signInWithEmailAndPassword } from 'firebase/auth'
@@ -14,7 +14,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { FirebaseError } from 'firebase/app'
 import { useAuth } from '@/contexts/AuthContext'
-import { useEffect } from 'react'
 import Link from 'next/link'
 
 const loginSchema = z.object({
@@ -43,8 +42,6 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false)
     const { user, role, isLoadingAuth } = useAuth()
     const router = useRouter()
-    const searchParams = useSearchParams()
-    const roleParam = searchParams.get('role') as keyof typeof roleConfig | null
 
     useEffect(() => {
         if (!isLoadingAuth && user && role) {
@@ -59,8 +56,6 @@ export default function LoginPage() {
             router.push(targetRoute)
         }
     }, [user, role, isLoadingAuth, router])
-
-    const roleDisplay = roleParam && roleConfig[roleParam] ? roleConfig[roleParam] : null
 
     const {
         register,
@@ -136,21 +131,9 @@ export default function LoginPage() {
             <div className="flex-1 flex items-center justify-center px-4 py-12 bg-background">
                 <div className="w-full max-w-md">
                     {/* Role Context */}
-                    {roleDisplay && (
-                        <div className="mb-8 p-4 rounded-lg bg-accent/5 border border-accent/20">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/30 mb-3">
-                                <span className="text-xs font-semibold text-accent uppercase tracking-wide">
-                                    {roleParam}
-                                </span>
-                            </div>
-                            <h1 className="text-2xl font-bold text-primary mb-1">
-                                {roleDisplay.title}
-                            </h1>
-                            <p className="text-sm text-muted">
-                                {roleDisplay.subtitle}
-                            </p>
-                        </div>
-                    )}
+                    <Suspense fallback={null}>
+                        <RoleContextCard />
+                    </Suspense>
 
                     {/* Login Form */}
                     <form
@@ -254,5 +237,29 @@ export default function LoginPage() {
                 </div>
             </div>
         </section>
+    )
+}
+
+function RoleContextCard() {
+    const searchParams = useSearchParams()
+    const roleParam = searchParams.get('role') as keyof typeof roleConfig | null
+    const roleDisplay = roleParam && roleConfig[roleParam] ? roleConfig[roleParam] : null
+
+    if (!roleDisplay) return null
+
+    return (
+        <div className="mb-8 p-4 rounded-lg bg-accent/5 border border-accent/20">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/30 mb-3">
+                <span className="text-xs font-semibold text-accent uppercase tracking-wide">
+                    {roleParam}
+                </span>
+            </div>
+            <h1 className="text-2xl font-bold text-primary mb-1">
+                {roleDisplay.title}
+            </h1>
+            <p className="text-sm text-muted">
+                {roleDisplay.subtitle}
+            </p>
+        </div>
     )
 }

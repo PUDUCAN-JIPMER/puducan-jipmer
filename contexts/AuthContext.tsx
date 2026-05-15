@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Handle user role errors
     useEffect(() => {
-        if (isErrorUserRole && firebaseUser && queryClient) {
+        if (isErrorUserRole && firebaseUser) {
             toast.error(error?.message || 'Failed to load user profile. Please log in again.')
             auth.signOut()
             router.push('/login')

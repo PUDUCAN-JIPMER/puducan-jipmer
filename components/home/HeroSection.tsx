@@ -7,7 +7,7 @@ const personas = [
     {
         title: 'Doctor',
         description: 'Clinical coordination access',
-        href: '/PuduCan/doctor',
+        href: '/login?role=doctor',
         accentColor: 'text-blue-600',
         dotColor: 'bg-blue-500',
         glowColor: 'from-blue-500/20',
@@ -15,7 +15,7 @@ const personas = [
     {
         title: 'Nurse',
         description: 'Patient tracking workflows',
-        href: '/PuduCan/nurse',
+        href: '/login?role=nurse',
         accentColor: 'text-green-600',
         dotColor: 'bg-green-500',
         glowColor: 'from-green-500/20',
@@ -23,7 +23,7 @@ const personas = [
     {
         title: 'ASHA Worker',
         description: 'Community navigation tools',
-        href: '/PuduCan/asha',
+        href: '/login?role=asha',
         accentColor: 'text-yellow-600',
         dotColor: 'bg-yellow-500',
         glowColor: 'from-yellow-500/20',
@@ -31,7 +31,7 @@ const personas = [
     {
         title: 'Administrator',
         description: 'Operational insights & reporting',
-        href: '/PuduCan/admin',
+        href: '/login?role=admin',
         accentColor: 'text-accent-primary',
         dotColor: 'bg-accent-primary',
         glowColor: 'from-accent-primary/20',
@@ -108,13 +108,13 @@ export default function HeroSection() {
                                                     {persona.title}
                                                 </h3>
                                             </div>
-                                            <p className="text-xs text-text-500 pl-5.5">
+                                            <p className="text-xs text-text-500 pl-[1.375rem]">
                                                 {persona.description}
                                             </p>
                                         </div>
 
                                         {/* Access indicator */}
-                                        <div className={`mt-2 pl-5.5 text-xs font-semibold ${persona.accentColor} flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity`}>
+                                        <div className={`mt-2 pl-[1.375rem] text-xs font-semibold ${persona.accentColor} flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity`}>
                                             Access
                                             <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
                                         </div>
