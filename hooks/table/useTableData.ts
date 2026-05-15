@@ -12,7 +12,6 @@ import { collection, getDocs, query, where } from 'firebase/firestore'
  * @returns {string} The string with the last character removed.
  */
 function cutLastCharacter(str: string | undefined): string | undefined {
-    // Use the slice method to get a substring from the beginning up to the second-to-last character.
     return str?.slice(0, -1)
 }
 
@@ -21,13 +20,13 @@ type UsePatientsProps = {
     ashaId?: string | null | undefined
     enabled?: boolean
     requiredData?:
-    | 'ashas'
-    | 'doctors'
-    | 'nurses'
-    | 'hospitals'
-    | 'patients'
-    | 'removedPatients'
-    | undefined
+        | 'ashas'
+        | 'doctors'
+        | 'nurses'
+        | 'hospitals'
+        | 'patients'
+        | 'removedPatients'
+        | undefined
 }
 
 export const useTableData = ({
@@ -36,15 +35,28 @@ export const useTableData = ({
     enabled = true,
     requiredData,
 }: UsePatientsProps) => {
-    // Now you return the appropriate query result based on the props.
+    const isPatientsEnabled =
+        requiredData === 'patients'
+            ? enabled && (!!orgId || !!ashaId)
+            : false
+
+    const isHospitalsEnabled =
+        enabled && requiredData === 'hospitals'
+
+    const isUsersEnabled =
+        enabled &&
+        (requiredData === 'ashas' ||
+            requiredData === 'doctors' ||
+            requiredData === 'nurses')
+
+    // Hospitals
     if (requiredData === 'hospitals') {
-        const isHospitalsEnabled = enabled && requiredData === 'hospitals'
-        
         const hospitalsQuery = useQuery<Hospital[], Error>({
             queryKey: ['hospitals'],
             queryFn: async () => {
                 const hospitalQuery = query(collection(db, 'hospitals'))
                 const hospitalsSnap = await getDocs(hospitalQuery)
+
                 return hospitalsSnap.docs.map((hos) => ({
                     id: hos.id,
                     ...hos.data(),
@@ -53,19 +65,16 @@ export const useTableData = ({
             enabled: isHospitalsEnabled,
             staleTime: 60 * 1000,
         })
+
         return hospitalsQuery
     }
-    
+
+    // Users
     if (
         requiredData === 'ashas' ||
         requiredData === 'doctors' ||
         requiredData === 'nurses'
     ) {
-        const isUsersEnabled = enabled &&
-            (requiredData === 'ashas' ||
-                requiredData === 'doctors' ||
-                requiredData === 'nurses')
-        
         const usersQuery = useQuery<UserDoc[], Error>({
             queryKey: ['users', requiredData],
             queryFn: async () => {
@@ -73,20 +82,25 @@ export const useTableData = ({
                     collection(db, 'users'),
                     where('role', '==', cutLastCharacter(requiredData))
                 )
+
                 const usersSnap = await getDocs(usersQuery)
+
                 return usersSnap.docs.map((user) => ({
-                    id: user.id, // Firestore document ID
-                    ...(user.data() as Omit<UserDoc, 'id'>), // spread the rest of the user fields
+                    id: user.id,
+                    ...(user.data() as Omit<UserDoc, 'id'>),
                 })) as UserDoc[]
             },
             enabled: isUsersEnabled,
             staleTime: 60 * 1000,
         })
+
         return usersQuery
     }
 
+    // Patients
     if (requiredData === 'patients') {
         let queryKeyValue
+
         if (orgId) {
             queryKeyValue = ['patients', { orgId }]
         } else if (ashaId) {
@@ -95,57 +109,67 @@ export const useTableData = ({
             queryKeyValue = ['patients']
         }
 
-        // ✅ FIX: Define isPatientsEnabled inside this block
-        const isPatientsEnabled = enabled && (!!orgId || !!ashaId)
-
         const patientsQuery = useQuery<Patient[], Error>({
             queryKey: queryKeyValue,
 
             queryFn: async () => {
                 let patientsQuery
+
                 if (orgId) {
-                    patientsQuery = query(
-                        collection(db, 'patients'),
-                        where('assignedHospital.id', '==', orgId)
-                    )
+                    patientsQuery = query(collection(db, 'patients'))
                 } else if (ashaId) {
                     patientsQuery = query(
                         collection(db, 'patients'),
                         where('assignedAsha', '==', ashaId)
                     )
                 } else {
-                    throw new Error('No organization Id or Asha email provided to fetch patients')
+                    throw new Error(
+                        'No organization Id or Asha email provided to fetch patients'
+                    )
                 }
+
                 const patientsSnap = await getDocs(patientsQuery)
+
                 return patientsSnap.docs.map((doc) => ({
                     id: doc.id,
                     ...doc.data(),
                 })) as Patient[]
             },
+
             enabled: isPatientsEnabled,
             staleTime: 60 * 1000,
         })
+
         return patientsQuery
     }
 
+    // Removed Patients
     if (requiredData === 'removedPatients') {
         const patientsQuery = useQuery<Patient[], Error>({
             queryKey: ['removedPatients'],
 
             queryFn: async () => {
-                const removedPatientsQuery = query(collection(db, 'removedPatients'))
-                const removedPatientsSnap = await getDocs(removedPatientsQuery)
+                const removedPatientsQuery = query(
+                    collection(db, 'removedPatients')
+                )
+
+                const removedPatientsSnap = await getDocs(
+                    removedPatientsQuery
+                )
+
                 return removedPatientsSnap.docs.map((doc) => ({
                     id: doc.id,
                     ...doc.data(),
                 })) as Patient[]
             },
+
             staleTime: 60 * 1000,
         })
+
         return patientsQuery
     }
-    
-    // Return empty query if no requiredData matches
+
+    // Default empty query
     return useQuery({
         queryKey: ['empty'],
         queryFn: async () => [],
