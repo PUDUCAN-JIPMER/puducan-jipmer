@@ -28,7 +28,7 @@ We are eagerly looking to launch the version v1.1 so kindly focus on the v1.1 re
 #### 🧑‍💼 Admin — Patients View (Dark theme)
 ![Admin Patients View Dark](screenshots/patients-view-admin.png)
  
-#### 🧑‍💼 Admin — Patients View (Light theme)
+#### 🧑‍💼 Admin - Patients View (Light theme)
 ![Admin Patients View Light](screenshots/admin-view-hospital-light-theme.png)
  
 #### 📊 Patient Disease Report
