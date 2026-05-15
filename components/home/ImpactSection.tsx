@@ -29,7 +29,7 @@ export default function ImpactSection() {
     ]
 
     return (
-        <section className="relative py-20 sm:py-28 lg:py-32 bg-gradient-to-b from-white via-blue-50/30 to-white border-b border-base-200">
+        <section className="relative py-12 lg:py-16 bg-gradient-to-b from-white via-blue-50/30 to-white border-b border-base-200">
             {/* Atmospheric accents */}
             <div className="absolute inset-0 -z-10 opacity-60">
                 <div className="absolute left-0 top-0 w-96 h-96 bg-gradient-to-br from-blue-400/10 via-transparent to-transparent rounded-full blur-3xl"></div>
@@ -37,54 +37,65 @@ export default function ImpactSection() {
             </div>
 
             <div className="container mx-auto px-6 lg:px-16 xl:px-24">
-                <div className="max-w-4xl">
-                    {/* Label */}
-                    <div className="flex items-center gap-3 mb-8">
-                        <div className="flex gap-1">
-                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                            <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+                    {/* Left Column - Text Content */}
+                    <div>
+                        {/* Label */}
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="flex gap-1">
+                                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                            </div>
+                            <p className="text-xs font-semibold tracking-widest text-accent-primary uppercase">
+                                The Challenge
+                            </p>
                         </div>
-                        <p className="text-xs font-semibold tracking-widest text-accent-primary uppercase">
-                            The Challenge
-                        </p>
+
+                        {/* Core message */}
+                        <h2 className="text-4xl sm:text-5xl lg:text-5xl font-bold text-text-900 leading-tight mb-6">
+                            Fragmented pathways create barriers to care
+                        </h2>
+
+                        <div className="space-y-4 text-base text-text-600 leading-relaxed">
+                            <p>
+                                When cancer patients navigate fragmented healthcare systems—disconnected between community health centers, primary care, and hospitals—outcomes suffer. Delayed diagnoses, lost follow-ups, and patient confusion increase.
+                            </p>
+                            
+                            <p>
+                                PuduCan bridges these gaps through coordinated patient navigation. By connecting ASHA workers, nurses, doctors, and administrators in real-time, we enable:
+                            </p>
+                        </div>
                     </div>
 
-                    {/* Core message */}
-                    <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-text-900 leading-tight mb-8">
-                        Fragmented pathways create barriers to care
-                    </h2>
-
-                    <div className="space-y-6 text-lg text-text-600 leading-relaxed mb-12">
-                        <p>
-                            When cancer patients navigate fragmented healthcare systems—disconnected between community health centers, primary care, and hospitals—outcomes suffer. Delayed diagnoses, lost follow-ups, and patient confusion increase.
-                        </p>
+                    {/* Right Column - Timeline */}
+                    <div className="relative">
+                        {/* Vertical connecting line - PROMINENT */}
+                        <div className="absolute left-3.5 top-0 bottom-0 w-1.5 bg-gradient-to-b from-color-blue via-color-green to-accent-primary"></div>
                         
-                        <p>
-                            PuduCan bridges these gaps through coordinated patient navigation. By connecting ASHA workers, nurses, doctors, and administrators in real-time, we enable:
-                        </p>
-                    </div>
-
-                    {/* Solution cards - unified surface with surgical color accents */}
-                    <div className="grid md:grid-cols-2 gap-4">
-                        {challenges.map((item, idx) => (
-                            <div
-                                key={idx}
-                                className={`${item.borderColor} bg-white/70 backdrop-blur-sm border border-base-200 p-5 rounded-lg transition-all hover:shadow-lg hover:bg-white/90 group`}
-                            >
-                                <div className="flex items-start gap-3">
-                                    <div className={`w-2.5 h-2.5 rounded-full ${item.dotColor} flex-shrink-0 mt-0.5`}></div>
-                                    <div className="flex-1">
-                                        <p className="font-semibold text-text-900 text-base mb-1">
+                        {/* Timeline items */}
+                        <div className="space-y-16 pl-20">
+                            {challenges.map((item, idx) => (
+                                <div key={idx} className="relative group">
+                                    {/* Numbered dot on line */}
+                                    <div className="absolute -left-16 top-0">
+                                        <div className={`w-8 h-8 rounded-full ${item.dotColor} border-4 border-white shadow-lg flex items-center justify-center text-white text-xs font-bold transition-all duration-300 group-hover:scale-125 group-hover:shadow-xl relative z-10`}>
+                                            {idx + 1}
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Content - no box */}
+                                    <div className="transition-all duration-300 group-hover:pl-3">
+                                        <h3 className="font-bold text-text-900 text-lg mb-2 group-hover:text-accent-primary transition-colors">
                                             {item.title}
-                                        </p>
-                                        <p className="text-sm text-text-600">
+                                        </h3>
+                                        <p className="text-text-600 text-sm leading-relaxed">
                                             {item.desc}
                                         </p>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>

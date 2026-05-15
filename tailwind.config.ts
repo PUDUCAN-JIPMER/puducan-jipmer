@@ -7,6 +7,10 @@ const config: Config = {
     ],
     theme: {
         extend: {
+            fontFamily: {
+                'heading': ["'Montserrat'", 'sans-serif'],
+                'body': ["'Plus Jakarta Sans'", 'sans-serif'],
+            },
             colors: {
                 'base': {
                     50: 'var(--base-50)',
