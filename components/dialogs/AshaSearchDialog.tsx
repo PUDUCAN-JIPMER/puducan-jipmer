@@ -32,15 +32,16 @@ type Asha = {
 
 interface AshaDialogProps {
     patientId: string
-    assignedAshaId?: string // optional: current assigned ASHA
+    assignedAshaId?: string
     onAssigned?: (ashaId: string | null) => void
+    trigger?: React.ReactNode
 }
-
 export default function AshaSearchDialog({
     patientId,
     assignedAshaId,
     onAssigned,
-}: AshaDialogProps) {
+    trigger,
+}: AshaDialogProps){
     const { orgId } = useAuth() // ✅ get orgId from auth
     const [ashas, setAshas] = useState<Asha[]>([])
     const [selectedAsha, setSelectedAsha] = useState<Asha | null>(null)
@@ -114,14 +115,16 @@ export default function AshaSearchDialog({
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button size="icon" variant="outline" title="Assign ASHA">
-                    {assignedAshaId !== 'none' && assignedAshaId ? (
-                        <UserCheck className="h-4 w-4 text-green-600" />
-                    ) : (
-                        <UserPlus className="h-4 w-4" />
-                    )}
-                </Button>
-            </DialogTrigger>
+    {trigger || (
+        <Button size="icon" variant="outline" title="Assign ASHA">
+            {assignedAshaId !== 'none' && assignedAshaId ? (
+                <UserCheck className="h-4 w-4 text-green-600" />
+            ) : (
+                <UserPlus className="h-4 w-4" />
+            )}
+        </Button>
+    )}
+</DialogTrigger>
 
             <DialogContent>
                 <DialogHeader>
