@@ -20,7 +20,7 @@ A modern healthcare platform built for ASHA workers, nurses, and doctors to mana
 ### Focus Area
 We are eagerly looking to launch the version v1.1 so kindly focus on the v1.1 related issues [LINK](https://github.com/lourduradjou/puducan-jipmer/issues?q=is%3Aissue%20state%3Aopen%20milestone%3Av1.1.1)
 
-## Screenshots
+## Screenshots of the Project
  
 #### 🏠 Home Page
 ![Home Page](screenshots/home-page.png)
