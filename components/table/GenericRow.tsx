@@ -3,6 +3,13 @@ import { TableCell, TableRow } from '@/components/ui/table'
 import { memo } from 'react'
 import { GenericCell } from './GenericCell'
 import { RowActions } from './RowActions'
+import { RefreshCcw } from 'lucide-react'
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 type Header = {
   name: string
@@ -54,11 +61,26 @@ export const GenericRow = memo(function GenericRow(props: GenericRowProps) {
             header.key === 'name' ? 'font-semibold' : ''
           }`}
         >
-          <GenericCell
-            value={rowData[header.key]}
-            keyName={header.key}
-            isPatientTab={isPatientTab}
-          />
+          <div className="flex items-center justify-center gap-2">
+            <GenericCell
+              value={rowData[header.key]}
+              keyName={header.key}
+              isPatientTab={isPatientTab}
+            />
+            {isPatientTab && header.key === 'name' && Boolean(rowData._hasPendingWrites) && (
+              <TooltipProvider>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <RefreshCcw className="h-4 w-4 animate-spin text-amber-500" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Pending Sync: Changes will be uploaded when online.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
         </TableCell>
       ))}
 

@@ -36,6 +36,7 @@ export default function GenericPatientDialog({
     onSuccess,
 }: GenericPatientDialogProps) {
     const [open, setOpen] = useState(false)
+    const [isSaving, setIsSaving] = useState(false)
     const isEdit = mode === 'edit'
     const queryClient = useQueryClient()
     const {orgId} = useAuth()
@@ -120,34 +121,53 @@ export default function GenericPatientDialog({
     }, [open, reset, isEdit])
 
     const onSubmit = async (data: PatientFormInputs) => {
+        console.log('📝 Submitting patient data (Optimistic)...', mode)
+        setIsSaving(true)
+        
         try {
-            if (isEdit && patientData?.id) {
-                // Update existing patient
-                await updateDoc(doc(db, 'patients', patientData.id), data)
-                toast.success('Patient updated successfully.')
-            } else {
-                // Add new patient
-                await addDoc(collection(db, 'patients'), {
-                    ...data,
-                    createdAt: serverTimestamp(), // ✅ Firestore timestamp
-                })
-                toast.success('Patient added successfully.')
-                localStorage.removeItem('addPatientFormData')
-            }
+            const patientRef = isEdit && patientData?.id
+                ? doc(db, 'patients', patientData.id)
+                : collection(db, 'patients')
 
-            // queryClient.invalidateQueries({ queryKey: ['patients'] })
-            if (orgId) {
-                queryClient.invalidateQueries({ queryKey: ['patients', orgId] })
-            } else {
-                queryClient.invalidateQueries({ queryKey: ['patients'] })
-            }
+            // Trigger Firestore write
+            const firestoreOp = isEdit 
+                ? updateDoc(patientRef as any, data)
+                : addDoc(patientRef as any, {
+                    ...data,
+                    createdAt: serverTimestamp(),
+                })
+
+            console.log('✅ Firestore write initiated')
+
+            // OPTIMISTIC COMPLETION: 
+            // We do NOT await firestoreOp here for the UI to move on.
+            // This ensures the dialog closes immediately in offline mode.
+            
+            toast.success(isEdit ? 'Patient updated successfully.' : 'Patient added successfully.')
+            if (!isEdit) localStorage.removeItem('addPatientFormData')
 
             setOpen(false)
             reset()
-            onSuccess?.()
+            
+            // Background task: Handle completion and invalidation
+            firestoreOp.then(() => {
+                console.log('🏁 Firestore write confirmed (local/remote)')
+                const queryKey = orgId ? ['patients', orgId] : ['patients']
+                queryClient.invalidateQueries({ queryKey })
+                onSuccess?.()
+            }).catch(err => {
+                console.error('❌ Background Firestore write failed:', err)
+                // Note: We don't show a blocking error here as the UI is already closed,
+                // but we log it and could show a non-intrusive toast.
+            })
+
         } catch (err) {
-            console.error(`Error ${isEdit ? 'updating' : 'adding'} patient:`, err)
-            toast.error(`Failed to ${isEdit ? 'update' : 'add'} patient. Please try again.`)
+            console.error('❌ Immediate submission error:', err)
+            toast.error('Failed to process patient data.')
+        } finally {
+            // We set isSaving to false immediately because the UI transition (closing) 
+            // will unmount or hide the button anyway.
+            setIsSaving(false)
         }
     }
 
@@ -184,6 +204,7 @@ export default function GenericPatientDialog({
                         handleSubmit={handleSubmit}
                         onSubmit={onSubmit}
                         isEdit={isEdit}
+                        isSaving={isSaving}
                     />
                 </DialogContent>
             </Dialog>
