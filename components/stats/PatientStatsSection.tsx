@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatCard } from './StatCard'
 import {
@@ -202,45 +202,109 @@ interface VerticalBarChartProps {
 /**
  * Horizontal (layout="vertical") bar chart for long category names.
  * Renders each bar in a given color and shows the value label at the end.
+ * FIXED: Tooltip + visual hover effect ONLY on the bar itself (not the whole row).
  */
 const HorizontalBarChart = memo(({
     data,
     colorFn = (_, i) => getCategoricalColor(i),
     height = 260,
     yAxisWidth = 120,
-}: VerticalBarChartProps) => (
-    <ResponsiveContainer width="100%" height={height}>
-        <BarChart
-            data={data}
-            layout="vertical"
-            margin={{ top: 4, right: 40, bottom: 4, left: 4 }}
-        >
-            <CartesianGrid strokeDasharray={GRID_DASH} horizontal={false} stroke={CHART_COLORS.grid} />
-            <XAxis type="number" allowDecimals={false} tick={AXIS_TICK} axisLine={false} tickLine={false} />
-            <YAxis
-                type="category"
-                dataKey="name"
-                width={yAxisWidth}
-                tick={AXIS_TICK}
-                tickFormatter={toTitleCase}
-                axisLine={false}
-                tickLine={false}
-            />
-            <Tooltip content={<ChartTooltip />} />
-            <Bar dataKey="value" name="Patients" radius={[0, 4, 4, 0]} maxBarSize={22}>
-                {data.map((entry, i) => (
-                    <Cell key={entry.name} fill={colorFn(entry.name, i)} />
-                ))}
-                <LabelList
-                    dataKey="value"
-                    position="right"
-                    style={{ fontSize: 11, fill: CHART_COLORS.axis, fontWeight: 600 }}
+}: VerticalBarChartProps) => {
+    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+    return (
+        <ResponsiveContainer width="100%" height={height}>
+            <BarChart
+                data={data}
+                layout="vertical"
+                margin={{ top: 4, right: 40, bottom: 4, left: 4 }}
+                barCategoryGap={8}
+            >
+                <CartesianGrid strokeDasharray={GRID_DASH} horizontal={false} stroke={CHART_COLORS.grid} />
+                <XAxis type="number" allowDecimals={false} tick={AXIS_TICK} axisLine={false} tickLine={false} />
+                <YAxis
+                    type="category"
+                    dataKey="name"
+                    width={yAxisWidth}
+                    tick={AXIS_TICK}
+                    tickFormatter={toTitleCase}
+                    axisLine={false}
+                    tickLine={false}
                 />
-            </Bar>
-        </BarChart>
-    </ResponsiveContainer>
-))
-HorizontalBarChart.displayName = 'HorizontalBarChart'
+                <Tooltip
+                    content={<ChartTooltip />}
+                    cursor={{ fill: 'transparent' }}
+                    trigger="hover"
+                />
+                <Bar
+                    dataKey="value"
+                    name="Patients"
+                    radius={[0, 4, 4, 0]}
+                    maxBarSize={22}
+                >
+                    {data.map((entry, i) => {
+                        const originalColor = colorFn(entry.name, i);
+                        const isHovered = hoveredIndex === i;
+                        // Darken the color by 20% when hovered
+                        const hoverColor = isHovered ? darkenColor(originalColor, 0.2) : originalColor;
+
+                        return (
+                            <Cell
+                                key={entry.name}
+                                fill={hoverColor}
+                                style={{
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease-in-out',
+                                }}
+                                onMouseEnter={() => setHoveredIndex(i)}
+                                onMouseLeave={() => setHoveredIndex(null)}
+                            />
+                        );
+                    })}
+                    <LabelList
+                        dataKey="value"
+                        position="right"
+                        style={{ fontSize: 11, fill: CHART_COLORS.axis, fontWeight: 600 }}
+                    />
+                </Bar>
+            </BarChart>
+        </ResponsiveContainer>
+    );
+});
+HorizontalBarChart.displayName = 'HorizontalBarChart';
+
+// Helper function to darken/lighten colors
+const darkenColor = (color: string, percent: number): string => {
+    // Handle hex colors
+    if (color.startsWith('#')) {
+        const r = parseInt(color.slice(1, 3), 16);
+        const g = parseInt(color.slice(3, 5), 16);
+        const b = parseInt(color.slice(5, 7), 16);
+
+        const darkenedR = Math.floor(r * (1 - percent));
+        const darkenedG = Math.floor(g * (1 - percent));
+        const darkenedB = Math.floor(b * (1 - percent));
+
+        return `#${darkenedR.toString(16).padStart(2, '0')}${darkenedG.toString(16).padStart(2, '0')}${darkenedB.toString(16).padStart(2, '0')}`;
+    }
+
+    // Handle rgb/rgba colors
+    const rgbMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+    if (rgbMatch) {
+        const r = parseInt(rgbMatch[1]);
+        const g = parseInt(rgbMatch[2]);
+        const b = parseInt(rgbMatch[3]);
+
+        const darkenedR = Math.floor(r * (1 - percent));
+        const darkenedG = Math.floor(g * (1 - percent));
+        const darkenedB = Math.floor(b * (1 - percent));
+
+        return `rgb(${darkenedR}, ${darkenedG}, ${darkenedB})`;
+    }
+
+    // Fallback: return original color
+    return color;
+};
 
 interface VerticalBarProps {
     data: DataPoint[]
