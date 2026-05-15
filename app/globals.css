@@ -132,6 +132,21 @@
     }
 }
 
+.no-calendar-icon {
+    appearance: none;
+}
+
+.no-calendar-icon::-webkit-calendar-picker-indicator,
+.no-calendar-icon::-webkit-clear-button,
+.no-calendar-icon::-webkit-inner-spin-button {
+    display: none !important;
+    -webkit-appearance: none !important;
+}
+
+.no-calendar-icon::-ms-clear {
+    display: none !important;
+}
+
 .animate-fadeIn {
     animation: fadeIn 0.3s ease forwards;
 }

@@ -9,8 +9,9 @@ import {
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
     ResponsiveContainer, PieChart, Pie, Cell, Legend,
-    LineChart, Line,
 } from 'recharts'
+import { RegistrationAnalytics } from '@/components/analytics/RegistrationAnalytics'
+import type { Patient } from '@/schema/patient'
 
 const COLORS = [
     '#4ade80', '#22d3ee', '#f97316', '#a78bfa',
@@ -24,22 +25,50 @@ const GENDER_COLORS: Record<string, string> = {
     Male: '#60a5fa', Female: '#f472b6', Other: '#94a3b8',
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+interface TooltipPayload {
+    name?: string
+    value?: number | string
+    color?: string
+    fill?: string
+}
+
+const CustomTooltip = ({
+    active,
+    payload,
+    label,
+}: {
+    active?: boolean
+    payload?: TooltipPayload[]
+    label?: string | number
+}) => {
     if (!active || !payload?.length) return null
     return (
         <div className="rounded-lg border bg-background p-2 shadow-md text-xs">
             {label && <p className="font-medium mb-1">{label}</p>}
-            {payload.map((e: any, i: number) => (
-                <p key={i} style={{ color: e.color ?? e.fill }}>
-                    {e.name}: <span className="font-semibold">{e.value}</span>
-                </p>
+            {payload.map((e, i) => (
+                <div key={i} className="flex items-center gap-2">
+                    <span className="inline-flex h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500" />
+                    <p>
+                        {e.name}: <span className="font-semibold">{e.value}</span>
+                    </p>
+                </div>
             ))}
         </div>
     )
 }
 
 const RADIAN = Math.PI / 180
-const PieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+
+interface PieLabelProps {
+    cx: number
+    cy: number
+    midAngle: number
+    innerRadius: number
+    outerRadius: number
+    percent: number
+}
+
+const PieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: PieLabelProps) => {
     if (percent < 0.06) return null
     const r = innerRadius + (outerRadius - innerRadius) * 0.5
     const x = cx + r * Math.cos(-midAngle * RADIAN)
@@ -60,12 +89,11 @@ interface PatientStats {
     stageData: { name: string; value: number }[]
     insuranceData: { name: string; value: number }[]
     rationData: { name: string; value: number }[]
-    registrationTrend: { month: string; count: number }[]
     statusData: { name: string; value: number }[]
     genderData: { name: string; value: number }[]
 }
 
-export function PatientStatsSection({ stats, role }: { stats: PatientStats; role: string }) {
+export function PatientStatsSection({ stats, patients }: { stats: PatientStats; patients: Patient[] }) {
     const pct = (n: number) => stats.total ? `${((n / stats.total) * 100).toFixed(0)}%` : '0%'
 
     return (
@@ -114,6 +142,8 @@ export function PatientStatsSection({ stats, role }: { stats: PatientStats; role
                     </ResponsiveContainer>
                 </ChartCard>
             </div>
+
+            <RegistrationAnalytics patients={patients} />
 
             {/* ── Row 2: Disease bar + Stage bar ─────────────────── */}
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -185,20 +215,6 @@ export function PatientStatsSection({ stats, role }: { stats: PatientStats; role
                 </ChartCard>
             </div>
 
-            {/* ── Registration trend ─────────────────────────────── */}
-            <ChartCard title="New Registrations – Last 12 Months">
-                <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={stats.registrationTrend}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                        <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                        <Tooltip content={<CustomTooltip />} />
-                        <Line type="monotone" dataKey="count" name="Registrations"
-                            stroke="#4ade80" strokeWidth={2}
-                            dot={{ fill: '#4ade80', r: 3 }} activeDot={{ r: 5 }} />
-                    </LineChart>
-                </ResponsiveContainer>
-            </ChartCard>
         </div>
     )
 }

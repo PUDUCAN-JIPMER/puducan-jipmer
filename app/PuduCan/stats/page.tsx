@@ -18,7 +18,7 @@ const STATS_ROLE_CONFIG = {
 function StatsPageContent() {
     const { role, orgId } = useAuth()
 
-    const { patientStats, adminStats, isLoading, isError } = useStatsData({
+    const { patientStats, patients, adminStats, isLoading, isError } = useStatsData({
         role,
         orgId,
     })
@@ -57,7 +57,7 @@ function StatsPageContent() {
     }
 
     return (
-        <main className="mx-auto max-w-6xl px-4 py-6 lg:max-w-[1240px] xl:max-w-[1400px] space-y-8">
+        <main className="mx-auto max-w-6xl px-4 py-6 lg:max-w-310 xl:max-w-350 space-y-8">
             {/* Page header */}
             <div className="flex items-center gap-2 border-b pb-3">
                 <BarChart3 className="h-6 w-6 text-primary" />
@@ -75,7 +75,7 @@ function StatsPageContent() {
                         ({role === 'admin' ? 'All hospitals' : 'Your hospital'})
                     </span>
                 </h2>
-                <PatientStatsSection stats={patientStats} role={role ?? ''} />
+                <PatientStatsSection stats={patientStats} patients={patients} />
             </section>
 
             {/* Admin-only section */}
@@ -88,4 +88,4 @@ function StatsPageContent() {
     )
 }
 
-export default withAuth(StatsPageContent, STATS_ROLE_CONFIG as any)
+export default withAuth(StatsPageContent, STATS_ROLE_CONFIG)
