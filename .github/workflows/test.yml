@@ -1,28 +1,38 @@
 name: Run Tests
 
 on:
-    pull_request:
-        branches:
-            - main
-    push:
-        branches:
-            - main
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
 
 jobs:
-    test:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v6
-            - uses: pnpm/action-setup@v6
+  test:
+    runs-on: ubuntu-latest
 
-              with:
-                  version: 10.13.1
+    env:
+      NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+      NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
 
-            - uses: actions/setup-node@v6
-              with:
-                  node-version: 20
-                  cache: 'pnpm'
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6
 
-            - run: pnpm install --frozen-lockfile
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: 'pnpm'
 
-            - run: pnpm test
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e

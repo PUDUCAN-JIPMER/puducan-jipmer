@@ -1,38 +1,26 @@
 'use client'
 
-import { auth, db } from '@/firebase'
-import { collection, getDocs, query, where } from 'firebase/firestore'
-import { Menu, Sun, User } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
+import { BarChart3, Menu } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { useState } from 'react'
 import { ModeToggle } from '../ui/toggle'
 import SignOutButton from './SignOutButton'
 import { paperSavedLabel } from '@/lib/paperSaved'
 
+// Roles that can see the Stats link
+const STATS_ROLES = ['admin', 'doctor', 'nurse']
 
 export default function Navbar() {
-    const [username, setUsername] = useState<string | null>(null)
+    const { role } = useAuth()
+    const pathname = usePathname()
     const [menuOpen, setMenuOpen] = useState(false)
 
-    useEffect(() => {
-        const fetchUsername = async () => {
-            const user = auth.currentUser
-            if (!user) return
+    const canViewStats = role && STATS_ROLES.includes(role)
 
-            const q = query(
-                collection(db, 'users'),
-                where('email', '==', user.email!.trim().toLowerCase())
-            )
-            const snap = await getDocs(q)
-
-            if (!snap.empty) {
-                const userData = snap.docs[0].data()
-                setUsername(userData.name || user.email)
-            }
-        }
-
-        fetchUsername()
-    }, [])
+    const statsHref = '/PuduCan/stats'
+    const isStatsActive = pathname === statsHref
 
     
     return (
@@ -43,13 +31,6 @@ export default function Navbar() {
             </Link>
 
 
-            {/* ✅ Paper Saved Badge — visible on all screen sizes */}
-            <span className="flex items-center gap-1 text-xs font-medium text-green-800 bg-green-100 border border-green-300 rounded-full px-3 py-1 dark:bg-green-900 dark:text-green-200 dark:border-green-700">
-                {paperSavedLabel}
-            </span>
-
-
-            {/* Hamburger */}
             <div className="md:hidden">
                 <button
                     onClick={() => setMenuOpen(!menuOpen)}
@@ -61,27 +42,44 @@ export default function Navbar() {
 
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center gap-4">
+                {canViewStats && (
+                    <Link
+                        href={statsHref}
+                        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                            isStatsActive
+                                ? 'bg-primary/10 text-primary'
+                                : 'text-foreground hover:bg-muted'
+                        }`}
+                    >
+                        <BarChart3 className="h-4 w-4" />
+                        Stats
+                    </Link>
+                )}
                 <ModeToggle />
-                {/* {username && (
-                    <span className="flex items-center gap-2 text-foreground font-medium capitalize select-none">
-                        <User className="h-4 w-4" /> {username}
-                    </span>
-                )} */}
                 <SignOutButton />
             </div>
 
             {/* Mobile Dropdown */}
             {menuOpen && (
-                <div className="absolute top-16 rounded-md right-0 z-50 min-w-[160px] bg-background border-t shadow-md md:hidden">
-                    <div className="flex flex-col justify-center items-center p-4 gap-3">
-                        <ModeToggle/>
-
-                        {/* {username && (
-                            <span className="flex items-center gap-2 text-foreground font-medium capitalize">
-                                <User className="h-4 w-4" /> {username}
-                            </span>
-                        )} */}
-
+                <div className="absolute top-16 right-0 z-50 min-w-[180px] rounded-md border-t bg-background shadow-md md:hidden">
+                    <div className="flex flex-col items-start gap-2 p-4">
+                        {canViewStats && (
+                            <Link
+                                href={statsHref}
+                                onClick={() => setMenuOpen(false)}
+                                className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                                    isStatsActive
+                                        ? 'bg-primary/10 text-primary'
+                                        : 'text-foreground hover:bg-muted'
+                                }`}
+                            >
+                                <BarChart3 className="h-4 w-4" />
+                                Stats
+                            </Link>
+                        )}
+                        <div className="w-full flex justify-center">
+                            <ModeToggle />
+                        </div>
                         <SignOutButton className="w-full" />
                     </div>
                 </div>
