@@ -33,11 +33,11 @@ export default function WelcomeBanner() {
         const hour = new Date().getHours()
 
         if (hour < 12) {
-            return <Sunrise className="h-5 w-5 text-yellow-400" />
+            return <Sunrise className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />
         }
 
         if (hour < 17) {
-            return <Sun className="h-5 w-5 text-yellow-400" />
+            return <Sun className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />
         }
 
         if (hour < 21) {
@@ -82,10 +82,10 @@ export default function WelcomeBanner() {
     }, [])
 
    return (
-    <div className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-2">
-        <span className="text-xs sm:text-sm font-medium text-zinc-300">
+    <div className="flex items-center gap-2 rounded-lg border border-zinc-300 bg-white/80 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/60">
+        <span className="text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-300">
             {greeting},{' '}
-            <span className="text-green-500">
+            <span className="text-green-600 dark:text-green-500">
                 {userData?.name || 'User'}
             </span>
         </span>
