@@ -21,7 +21,7 @@ export function OfflineBanner() {
   return (
     <div
       id="global-offline-banner"
-      className="fixed bottom-0 left-0 right-0 z-[2147483647] flex items-center justify-center px-4 py-2 bg-red-700 text-white shadow-[0_-4px_12px_rgba(0,0,0,0.5)] border-t-2 border-yellow-400 select-none pointer-events-none"
+      className="fixed bottom-0 left-0 right-0 z-[9999] flex items-center justify-center px-4 py-2 bg-red-700 text-white shadow-[0_-4px_12px_rgba(0,0,0,0.5)] border-t-2 border-yellow-400 select-none pointer-events-none"
     >
       <div className="flex items-center gap-3 pointer-events-auto">
         <WifiOff className="h-5 w-5 text-white animate-pulse flex-shrink-0" />
