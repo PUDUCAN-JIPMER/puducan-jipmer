@@ -1,6 +1,6 @@
+@config "./tailwind.config.ts";
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&display=swap');
-@config "./tailwind.config.ts";
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
