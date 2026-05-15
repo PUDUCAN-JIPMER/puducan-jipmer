@@ -12,6 +12,7 @@ import { usePathname } from 'next/navigation'
 import { NAV_LINKS } from '@/constants/navbar'
 import { useState } from 'react'
 import Image from 'next/image'
+import { paperSavedLabel } from '@/lib/paperSaved'  // ← ADD THIS
 
 export default function HomeNavbar() {
     const pathname = usePathname()
@@ -23,7 +24,7 @@ export default function HomeNavbar() {
         return (
             <Link
                 href={href}
-                onClick={() => setMobileOpen(false)} // close on click
+                onClick={() => setMobileOpen(false)}
                 className={`group relative block rounded px-4 py-2 ${
                     isActive ? 'font-semibold text-blue-600' : ''
                 }`}
@@ -31,7 +32,6 @@ export default function HomeNavbar() {
                 <span className="hover:bg-accent relative z-10 p-2 sm:hover:bg-transparent">
                     {label}
                 </span>
-                {/* underline animation */}
                 <span className="absolute bottom-0 left-0 hidden h-0.5 w-0 bg-blue-400 transition-all duration-300 group-hover:w-full sm:block"></span>
             </Link>
         )
@@ -39,7 +39,7 @@ export default function HomeNavbar() {
 
     return (
         <nav className="border-b-2 px-6 py-3 bg-accent">
-            <div className="container mx-auto flex items-center justify-between ">
+            <div className="container mx-auto flex items-center justify-between">
                 {/* Logo / Title */}
                 <div className="flex place-items-center">
                     <div className="sm:hidden">
@@ -64,7 +64,6 @@ export default function HomeNavbar() {
                         <DropdownMenuTrigger className="group relative flex items-center rounded px-4 py-2 focus:outline-none">
                             <span className="relative z-10">Data Entry</span>
                             <ChevronDown className="ml-1 h-4 w-4" />
-                            {/* underline animation */}
                             <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-blue-400 transition-all duration-300 group-hover:w-full"></span>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-44">
@@ -77,6 +76,11 @@ export default function HomeNavbar() {
                     </DropdownMenu>
 
                     {navItem('Contact', '/home/contact')}
+
+                    {/* ✅ Paper Saved Badge — desktop */}
+                    <span className="flex items-center gap-1 text-xs font-medium text-green-800 bg-green-100 border border-green-300 rounded-full px-3 py-1 dark:bg-green-900 dark:text-green-200 dark:border-green-700">
+                        {paperSavedLabel}
+                    </span>
                 </div>
 
                 {/* Mobile Hamburger */}
@@ -94,12 +98,11 @@ export default function HomeNavbar() {
                     mobileOpen ? 'mt-2 max-h-96 opacity-100' : 'max-h-0 opacity-0'
                 }`}
             >
-                <div className="flex flex-col space-y-1  pt-2">
+                <div className="flex flex-col space-y-1 pt-2">
                     {navItem('Home', '/home', true)}
                     {navItem('About', '/home/about')}
                     {navItem('Reports', '/home/reports')}
 
-                    {/* Data Entry toggle in mobile */}
                     <button
                         onClick={() => setMobileDataEntryOpen(!mobileDataEntryOpen)}
                         className="flex items-center gap-2 px-6"
@@ -125,14 +128,20 @@ export default function HomeNavbar() {
                                 className="ml-2 block pl-4 hover:bg-amber-100"
                             >
                                 <span className="relative z-10">{link.name}</span>
-                                {/* underline animation */}
                             </Link>
                         ))}
                     </div>
 
                     {navItem('Contact', '/home/contact')}
+
+                    {/* ✅ Paper Saved Badge — mobile */}
+                    <span className="mx-4 flex items-center gap-1 text-xs font-medium text-green-800 bg-green-100 border border-green-300 rounded-full px-3 py-1 dark:bg-green-900 dark:text-green-200 dark:border-green-700">
+                        {paperSavedLabel}
+                    </span>
                 </div>
             </div>
         </nav>
     )
 }
+
+

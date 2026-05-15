@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { ModeToggle } from '../ui/toggle'
 import SignOutButton from './SignOutButton'
+import { paperSavedLabel } from '@/lib/paperSaved'
 
 
 export default function Navbar() {
@@ -33,12 +34,20 @@ export default function Navbar() {
         fetchUsername()
     }, [])
 
+    
     return (
         <nav className="bg-background flex items-center justify-between border-b px-4 py-3 shadow md:px-8">
             {/* Logo */}
             <Link href="/" className="text-2xl font-bold text-green-600">
                 PuduCan
             </Link>
+
+
+            {/* ✅ Paper Saved Badge — visible on all screen sizes */}
+            <span className="flex items-center gap-1 text-xs font-medium text-green-800 bg-green-100 border border-green-300 rounded-full px-3 py-1 dark:bg-green-900 dark:text-green-200 dark:border-green-700">
+                {paperSavedLabel}
+            </span>
+
 
             {/* Hamburger */}
             <div className="md:hidden">
