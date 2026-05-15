@@ -2,6 +2,7 @@ import { Inter } from 'next/font/google'
 import { ReactNode } from 'react'
 import './globals.css'
 import Providers from '@/components/layout/Providers'
+import { OfflineBanner } from '@/components/layout/OfflineBanner'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -19,6 +20,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 {/* <script crossOrigin="anonymous" src="//unpkg.com/react-scan/dist/auto.global.js" /> */}
             </head>
             <body className={inter.className}>
+                <OfflineBanner />
                 <Providers>{children}</Providers>
             </body>
         </html>
