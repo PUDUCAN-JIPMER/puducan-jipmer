@@ -321,50 +321,80 @@ interface VerticalBarProps {
 /**
  * Vertical bar chart for shorter category names (stages, ration cards, etc.).
  * Rotates X-axis labels to prevent overlap and adds top value labels.
+ * Tooltip shows on bar hover with bar darkening effect.
+ * Value labels remain permanently visible (no flickering on hover).
  */
 const VerticalBarChart = memo(({
     data,
     colorFn = (_, i) => getCategoricalColor(i),
     height = 260,
-}: VerticalBarProps) => (
-    <ResponsiveContainer width="100%" height={height}>
-        <BarChart
-            data={data}
-            margin={{ top: 24, right: 12, bottom: 36, left: 4 }}
-        >
-            <CartesianGrid strokeDasharray={GRID_DASH} vertical={false} stroke={CHART_COLORS.grid} />
-            <XAxis
-                dataKey="name"
-                tick={AXIS_TICK}
-                angle={-30}
-                textAnchor="end"
-                interval={0}
-                tickFormatter={toTitleCase}
-                axisLine={false}
-                tickLine={false}
-                height={52}
-            />
-            <YAxis
-                allowDecimals={false}
-                tick={AXIS_TICK}
-                axisLine={false}
-                tickLine={false}
-            />
-            <Tooltip content={<ChartTooltip />} />
-            <Bar dataKey="value" name="Patients" radius={[4, 4, 0, 0]} maxBarSize={40}>
-                {data.map((entry, i) => (
-                    <Cell key={entry.name} fill={colorFn(entry.name, i)} />
-                ))}
-                <LabelList
-                    dataKey="value"
-                    position="top"
-                    style={{ fontSize: 11, fill: CHART_COLORS.axis, fontWeight: 600 }}
+}: VerticalBarProps) => {
+    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+    return (
+        <ResponsiveContainer width="100%" height={height}>
+            <BarChart
+                data={data}
+                margin={{ top: 24, right: 12, bottom: 36, left: 4 }}
+            >
+                <CartesianGrid strokeDasharray={GRID_DASH} vertical={false} stroke={CHART_COLORS.grid} />
+                <XAxis
+                    dataKey="name"
+                    tick={AXIS_TICK}
+                    angle={-30}
+                    textAnchor="end"
+                    interval={0}
+                    tickFormatter={toTitleCase}
+                    axisLine={false}
+                    tickLine={false}
+                    height={52}
                 />
-            </Bar>
-        </BarChart>
-    </ResponsiveContainer>
-))
-VerticalBarChart.displayName = 'VerticalBarChart'
+                <YAxis
+                    allowDecimals={false}
+                    tick={AXIS_TICK}
+                    axisLine={false}
+                    tickLine={false}
+                />
+                {/* Using the same ChartTooltip as HorizontalBarChart and DonutChart */}
+                <Tooltip content={<ChartTooltip />} cursor={{ fill: 'transparent' }} />
+
+                <Bar
+                    dataKey="value"
+                    name="Patients"
+                    radius={[4, 4, 0, 0]}
+                    maxBarSize={40}
+                    isAnimationActive={false}
+                >
+                    {data.map((entry, i) => {
+                        const originalColor = colorFn(entry.name, i);
+                        const isHovered = hoveredIndex === i;
+                        const hoverColor = isHovered ? darkenColor(originalColor, 0.2) : originalColor;
+
+                        return (
+                            <Cell
+                                key={entry.name}
+                                fill={hoverColor}
+                                style={{
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease-in-out',
+                                }}
+                                onMouseEnter={() => setHoveredIndex(i)}
+                                onMouseLeave={() => setHoveredIndex(null)}
+                            />
+                        );
+                    })}
+                    <LabelList
+                        dataKey="value"
+                        position="top"
+                        style={{ fontSize: 11, fill: CHART_COLORS.axis, fontWeight: 600 }}
+                        offset={5}
+                    />
+                </Bar>
+            </BarChart>
+        </ResponsiveContainer>
+    );
+});
+VerticalBarChart.displayName = 'VerticalBarChart';
 
 interface DonutChartProps {
     data: DataPoint[]
