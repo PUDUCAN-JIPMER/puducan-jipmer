@@ -1,7 +1,7 @@
 <div align="center">
 
 # 🩺 PuduCan
-**PUDUcherry CANcer Patient Management Dashboard**
+**PUDUcherry Cancer Patient Management Dashboard**
 
 A modern healthcare platform built for ASHA workers, nurses, and doctors to manage cancer patient data efficiently — part of a national study led by JIPMER and sponsored by ICMR.
 
