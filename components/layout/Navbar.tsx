@@ -42,7 +42,7 @@ export default function Navbar() {
                 {/* Desktop Menu */}
                 <div className="hidden md:flex items-center gap-4">
                     {/* added info for shortcuts */}
-                    <div className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-black">
+                    <div className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors">
                         Press <kbd className="rounded border bg-muted px-1.5 py-0.5 text-xs">?</kbd> for shortcuts
                     </div>
                     {canViewStats && (
