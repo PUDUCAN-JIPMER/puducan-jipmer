@@ -14,13 +14,11 @@ export default function ViewDetailsDialog({
     onOpenChange,
     rowData,
     fieldsToDisplay,
-    variant = 'vertical',
-}: {
+    }: {
     open: boolean
     onOpenChange: (open: boolean) => void
     rowData: RowDataType
     fieldsToDisplay: FieldToDisplay[]
-    variant?: 'vertical' | 'grid'
 }) {
     function renderValue(key: string, value: any): string {
         if (value == null) return 'N/A'
@@ -53,27 +51,15 @@ export default function ViewDetailsDialog({
                     </DialogTitle>
                 </DialogHeader>
                 <ScrollArea className="max-h-[70vh] pr-2">
-                    {variant === 'vertical' ? (
-                        <div className="flex flex-col">
-                            {fieldsToDisplay.map(({ label, key }, index) => (
-                                <Info
-                                    key={key}
-                                    label={label}
-                                    value={renderValue(key, rowData[key as keyof typeof rowData])}
-                                    last={index === fieldsToDisplay.length - 1}
-                                />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="grid gap-4 text-sm md:grid-cols-2">
-                            {fieldsToDisplay.map(({ label, key }) => (
-                                <p key={key}>
-                                    <span className="text-muted-foreground font-medium">{label}:</span>{' '}
-                                    <span>{renderValue(key, rowData[key as keyof typeof rowData])}</span>
-                                </p>
-                            ))}
-                        </div>
-                    )}
+                    <div className="flex flex-col">
+                        {fieldsToDisplay.map(({ label, key }) => (
+                            <Info
+                                key={key}
+                                label={label}
+                                value={renderValue(key, rowData[key as keyof typeof rowData])}
+                            />
+                        ))}
+                    </div>
                     {'followUps' in rowData && (rowData.followUps?.length ?? 0) > 0 && (
                         <div className="mt-4">
                             <p className="text-muted-foreground mb-2 text-xs font-semibold uppercase tracking-wide">
@@ -82,7 +68,7 @@ export default function ViewDetailsDialog({
                             <ul className="space-y-2">
                                 {rowData.followUps?.map((f, i) => (
                                     <li key={i} className="border-border border-t py-2">
-                                        <Info label="Remarks" value={f?.remarks ?? 'No remarks'} last={true} />
+                                        <Info label="Remarks" value={f?.remarks ?? 'No remarks'} />
                                     </li>
                                 ))}
                             </ul>
@@ -94,9 +80,9 @@ export default function ViewDetailsDialog({
     )
 }
 
-function Info({ label, value, last }: { label: string; value: string; last?: boolean }) {
+function Info({ label, value }: { label: string; value: string }) {
     return (
-        <div className={`py-3 ${!last ? 'border-b border-border' : ''}`}>
+        <div className="border-b border-border py-3 last:border-0">
             <p className="text-muted-foreground mb-0.5 text-xs font-medium uppercase tracking-wide">
                 {label}
             </p>
