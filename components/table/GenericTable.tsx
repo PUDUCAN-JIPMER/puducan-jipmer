@@ -24,14 +24,8 @@ import { useResponsiveRows } from '@/hooks/table/useResponsiveRows'
 import { TabDataMap, RowDataBase, ModalType } from '@/types/table/types'
 import { GenericMobileRow } from './GenericMobileRow'
 import { ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react'
-import {
-Tooltip,
-TooltipContent,
-TooltipProvider,
-TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useSorting, SORTABLE_KEYS } from '@/hooks/table/useSorting'
-
 
 export function GenericTable({
     headers,
@@ -76,7 +70,7 @@ export function GenericTable({
     const searchFields = SEARCH_FIELDS[activeTab]
 
     const isPatientTab = activeTab === 'patients'
-    const isHospitalTab = activeTab =='hospitals'
+    const isHospitalTab = activeTab == 'hospitals'
     const patients = (data as Patient[]) ?? []
     const filteredPatients = useFilteredPatients(isPatientTab ? patients : [])
 
@@ -90,8 +84,8 @@ export function GenericTable({
         setSearchTerm,
     } = useSearch<ActiveDataType>(baseData, searchFields)
 
-     // ✅ Apply sorting after search
-const { sorting, toggle, sortedData } = useSorting(searchedData)
+    // ✅ Apply sorting after search
+    const { sorting, toggle, sortedData } = useSorting(searchedData)
 
     // ✅ Use searchedData for pagination
     const dataToPaginate = useMemo(() => sortedData, [sortedData])
@@ -102,7 +96,8 @@ const { sorting, toggle, sortedData } = useSorting(searchedData)
 
     const tableStats = useStats({
         TableData: searchedData ?? [],
-        isPatientTab, isHospitalTab
+        isPatientTab,
+        isHospitalTab,
     })
 
     useEffect(() => {
@@ -110,10 +105,9 @@ const { sorting, toggle, sortedData } = useSorting(searchedData)
     }, [filteredPatients.length, setCurrentPage])
 
     // Reset to page 1 whenever sorting changes
-     useEffect(() => {
-    setCurrentPage(1)
-  },  [sorting,setCurrentPage])
-
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [sorting, setCurrentPage])
 
     const handleRowAction = useCallback(
         (row: RowDataBase, action: ModalType) => {
@@ -150,56 +144,57 @@ const { sorting, toggle, sortedData } = useSorting(searchedData)
                             S/NO
                         </TableHead>
                         {headers.map((header, id) => {
-                   const isSortable = SORTABLE_KEYS.includes(header.key)
-                   const isActive = sorting[0]?.id === header.key
-                   const direction = sorting[0]?.desc ? 'desc' : 'asc'
+                            const isSortable = SORTABLE_KEYS.includes(header.key)
+                            const isActive = sorting[0]?.id === header.key
+                            const direction = sorting[0]?.desc ? 'desc' : 'asc'
 
-             return (
-                  <TableHead
-             className="border-border w-12 border-r text-center"
-                key={id}
-                >
-               {isSortable ? (
-               <TooltipProvider>
-               <Tooltip>
-              <TooltipTrigger asChild>
-              <button
-              onClick={() => toggle(header.key)}
-            className="flex items-center justify-center gap-1 w-full font-medium hover:text-foreground"
-            >
-           {header.name}
-          {isActive && direction === 'asc' && (
-          <ArrowUp className="w-3 h-3" />
-          )}
-          {isActive && direction === 'desc' && (
-         <ArrowDown className="w-3 h-3" />
-          )}
-        {!isActive && (
-       <ArrowUpDown className="w-3 h-3 opacity-40" />
-        )}
-       </button>
-      </TooltipTrigger>
-      <TooltipContent>
-      {!isActive 
-       ? 'Sort ascending'           // not sorted yet → first click = asc
-       : direction === 'asc' 
-       ? 'Sort descending'        // currently asc → next click = desc
-       : 'Sort ascending'         // currently desc → next click = asc
-      }
-       </TooltipContent>
-       </Tooltip>
-       </TooltipProvider>
-        ) : (
-       header.name
-       )}
-      </TableHead>
-      )                          
-     })}
-              <TableHead className="border-border w-12 border-r text-center">
-                  Actions
-                  </TableHead>
-                  </TableRow>
-                  </TableHeader>
+                            return (
+                                <TableHead
+                                    className="border-border w-12 border-r text-center"
+                                    key={id}
+                                >
+                                    {isSortable ? (
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <button
+                                                        onClick={() => toggle(header.key)}
+                                                        className="hover:text-foreground flex w-full items-center justify-center gap-1 font-medium"
+                                                    >
+                                                        {header.name}
+                                                        {isActive && direction === 'asc' && (
+                                                            <ArrowUp className="h-3 w-3" />
+                                                        )}
+                                                        {isActive && direction === 'desc' && (
+                                                            <ArrowDown className="h-3 w-3" />
+                                                        )}
+                                                        {!isActive && (
+                                                            <ArrowUpDown className="h-3 w-3 opacity-40" />
+                                                        )}
+                                                    </button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    {
+                                                        !isActive
+                                                            ? 'Sort ascending' // not sorted yet → first click = asc
+                                                            : direction === 'asc'
+                                                              ? 'Sort descending' // currently asc → next click = desc
+                                                              : 'Sort ascending' // currently desc → next click = asc
+                                                    }
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    ) : (
+                                        header.name
+                                    )}
+                                </TableHead>
+                            )
+                        })}
+                        <TableHead className="border-border w-12 border-r text-center">
+                            Actions
+                        </TableHead>
+                    </TableRow>
+                </TableHeader>
 
                 <TableBody>
                     {paginatedData.length > 0 ? (
