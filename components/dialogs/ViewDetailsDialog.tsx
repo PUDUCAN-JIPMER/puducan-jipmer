@@ -14,21 +14,17 @@ export default function ViewDetailsDialog({
     onOpenChange,
     rowData,
     fieldsToDisplay,
-}: {
+    }: {
     open: boolean
     onOpenChange: (open: boolean) => void
-    // Use the generic type here
     rowData: RowDataType
     fieldsToDisplay: FieldToDisplay[]
 }) {
-    // Helper function to render specific data types
     function renderValue(key: string, value: any): string {
         if (value == null) return 'N/A'
 
         if (Array.isArray(value)) {
-            // diseases: ["cancer", "diabetes"]
             if (typeof value[0] === 'string') return value.join(', ')
-            // followUps: [{ date, remarks }]
             if (typeof value[0] === 'object') {
                 return value.map((v) => `${v.date || ''} - ${v.remarks || ''}`).join('; ')
             }
@@ -36,9 +32,9 @@ export default function ViewDetailsDialog({
 
         if (typeof value === 'object') {
             if (key === 'gpsLocation') return `Lat: ${value.lat}, Lng: ${value.lng}`
-            if (key === 'assignedHospital') return `${value.name} (ID: ${value.id})`
+            if (key === 'assignedHospital') return `${value.name}`
             if (key === 'insurance') return `${value.type}${value.id ? ` (${value.id})` : ''}`
-            return JSON.stringify(value) // fallback
+            return JSON.stringify(value)
         }
 
         if (typeof value === 'boolean') return value ? 'Yes' : 'No'
@@ -48,34 +44,30 @@ export default function ViewDetailsDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="bg-card text-card-foreground rounded-xl shadow-md md:w-1/2 lg:w-1/3">
+            <DialogContent className="bg-card text-card-foreground rounded-xl shadow-md sm:max-w-md">
                 <DialogHeader>
-                    {/* Make the title dynamic based on the data */}
                     <DialogTitle className="text-lg font-semibold">
-                        Details of {rowData['name']}
+                        {rowData['name']}
                     </DialogTitle>
                 </DialogHeader>
                 <ScrollArea className="max-h-[70vh] pr-2">
-                    <div className="grid gap-6 text-sm md:grid-cols-2">
-                        {/* Dynamically render the fields */}
+                    <div className="flex flex-col">
                         {fieldsToDisplay.map(({ label, key }) => (
                             <Info
-                                key={key as string}
+                                key={key}
                                 label={label}
                                 value={renderValue(key, rowData[key as keyof typeof rowData])}
                             />
                         ))}
                     </div>
-                    {/* Follow-ups section can be a conditional render */}
                     {'followUps' in rowData && (rowData.followUps?.length ?? 0) > 0 && (
-                        <div className="md:col-span-2">
-                            <p className="mt-4 font-semibold">Follow Ups:</p>
-                            <ul className="mt-2 space-y-3">
+                        <div className="mt-4">
+                            <p className="text-muted-foreground mb-2 text-xs font-semibold uppercase tracking-wide">
+                                Follow Ups
+                            </p>
+                            <ul className="space-y-2">
                                 {rowData.followUps?.map((f, i) => (
-                                    <li
-                                        key={i}
-                                        className="border-border bg-muted/20 rounded-lg border p-3"
-                                    >
+                                    <li key={i} className="border-border border-t py-2">
                                         <Info label="Remarks" value={f?.remarks ?? 'No remarks'} />
                                     </li>
                                 ))}
@@ -90,8 +82,11 @@ export default function ViewDetailsDialog({
 
 function Info({ label, value }: { label: string; value: string }) {
     return (
-        <p>
-            <span className="text-muted-foreground font-medium">{label}:</span> <span>{value}</span>
-        </p>
+        <div className="border-b border-border py-3 last:border-0">
+            <p className="text-muted-foreground mb-0.5 text-xs font-medium uppercase tracking-wide">
+                {label}
+            </p>
+            <p className="text-sm text-foreground">{value}</p>
+        </div>
     )
 }
