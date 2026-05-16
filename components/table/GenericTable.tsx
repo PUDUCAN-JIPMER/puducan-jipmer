@@ -198,7 +198,6 @@ export function GenericTable({
                     isPatientTab={isPatientTab}
                 />
             </div>
-
             {selectedRow && modal === 'view' && (
                 <>
                     <ViewDetailsDialog
