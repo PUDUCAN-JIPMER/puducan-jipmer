@@ -1,7 +1,7 @@
 <div align="center">
 
 # 🩺 PuduCan
-**PUDUcherry CANcer Patient Management Dashboard**
+**PUDUcherry Cancer Patient Management Dashboard**
 
 A modern healthcare platform built for ASHA workers, nurses, and doctors to manage cancer patient data efficiently — part of a national study led by JIPMER and sponsored by ICMR.
 
@@ -20,7 +20,7 @@ A modern healthcare platform built for ASHA workers, nurses, and doctors to mana
 ### Focus Area
 We are eagerly looking to launch the version v1.1 so kindly focus on the v1.1 related issues [LINK](https://github.com/lourduradjou/puducan-jipmer/issues?q=is%3Aissue%20state%3Aopen%20milestone%3Av1.1.1)
 
-## Screenshots
+## Screenshots of the Project
  
 #### 🏠 Home Page
 ![Home Page](screenshots/home-page.webp)
@@ -28,6 +28,9 @@ We are eagerly looking to launch the version v1.1 so kindly focus on the v1.1 re
 #### 🧑‍💼 Admin — Patients View (Dark theme)
 ![Admin Patients View Dark](screenshots/patients-view-admin.webp)
  
+#### 🧑‍💼 Admin - Patients View (Light theme)
+![Admin Patients View Light](screenshots/admin-view-hospital-light-theme.png)
+=======
 #### 🧑‍💼 Admin — Patients View (Light theme)
 ![Admin Patients View Light](screenshots/admin-view-hospital-light-theme.webp)
  
