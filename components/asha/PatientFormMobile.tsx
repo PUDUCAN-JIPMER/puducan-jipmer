@@ -1,8 +1,16 @@
 'use client'
 
+import { useAuth } from '@/contexts/AuthContext'
+import { updatePatient } from '@/lib/api/patient.api'
 import { Patient } from '@/schema'
-import { useState } from 'react'
-import { PatientHeader } from '.'
+import { PatientFormInputs, PatientSchema } from '@/schema/patient'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
+import { useCallback, useState } from 'react'
+import { FormProvider, useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import { ColumnFive, ColumnFour, ColumnOne, ColumnThree, ColumnTwo } from '../forms/patient'
+import { PatientHeader, ActionButtons, SwipeableColumns } from '.'  
 import { PatientWizardDialog } from './Patientwizarddialog'
 
 export default function PatientFormMobile({ patient }: { patient: Patient }) {
