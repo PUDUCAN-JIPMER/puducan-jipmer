@@ -53,7 +53,7 @@ export default function HomeNavbar() {
                         <h1 className="text-xl font-semibold xl:text-2xl">PuduCan</h1>
 
                         <p className="text-xs text-gray-100 xl:text-sm">
-                            Improving Patient Reported Outcomes and Care Experiences
+                            Improving Cancer Patient Healthcare Management
                         </p>
                     </div>
                 </div>
@@ -66,7 +66,7 @@ export default function HomeNavbar() {
                     {navItem('Reports', '/home/reports')}
 
                     <DropdownMenu>
-                        <DropdownMenuTrigger className="group relative flex items-center rounded px-4 py-2 focus:outline-none">
+                        <DropdownMenuTrigger className="group relative flex items-center rounded px-2 py-1 text-[13px] text-white transition-all duration-300 focus:outline-none md:px-3 md:py-2 lg:px-4">
                             <span className="relative z-10">Data Entry</span>
 
                             <ChevronDown className="ml-1 h-4 w-4" />
@@ -105,7 +105,7 @@ export default function HomeNavbar() {
                     mobileOpen ? 'mt-3 max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
                 }`}
             >
-                <div className="flex flex-col space-y-1 pt-2 text-white">
+                <div className="mx-auto flex w-fit flex-col space-y-1 pt-2 text-left text-white">
                     {navItem('Home', '/home', true)}
 
                     {navItem('About', '/home/about')}
@@ -115,7 +115,7 @@ export default function HomeNavbar() {
                     {/* Mobile Data Entry */}
                     <button
                         onClick={() => setMobileDataEntryOpen(!mobileDataEntryOpen)}
-                        className="flex items-center gap-2 px-4 py-2"
+                        className="flex items-center gap-2 rounded px-4 py-2 text-sm"
                     >
                         <span>Data Entry</span>
 
