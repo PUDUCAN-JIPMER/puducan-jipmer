@@ -16,7 +16,7 @@ import DeleteEntityDialog from '@/components/dialogs/DeleteEntityDialog'
 import { hospitalFields, patientFields, SEARCH_FIELDS, userFields } from '@/constants'
 import { useSearch, useStats, useTableData } from '@/hooks'
 import { Hospital, Patient, UserDoc } from '@/schema'
-import { useCallback, useEffect, useMemo } from 'react'
+import { use, useCallback, useEffect, useMemo } from 'react'
 import ViewDetailsDialog from '../dialogs/ViewDetailsDialog'
 import { GenericPagination, GenericRow, GenericToolbar } from './'
 import { useTableStore } from '@/store'
@@ -24,9 +24,13 @@ import { useResponsiveRows } from '@/hooks/table/useResponsiveRows'
 import { TabDataMap, RowDataBase, ModalType } from '@/types/table/types'
 import { GenericMobileRow } from './GenericMobileRow'
 import TableSkeleton from '@/components/skeletons/TableSkeleton'
-import { ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react'
+import { ArrowUp, ArrowDown, ArrowUpDown ,Trash2, UserPlus, Download, } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useSorting, SORTABLE_KEYS } from '@/hooks/table/useSorting'
+import { BulkAction, BulkActionBar } from './BulkActionBar'
+import { useBulkSelectionStore } from '@/store/bulk-selection-store'
+import { Checkbox } from '../ui/checkbox'
+import BulkDeleteDialog from '../dialogs/BulkDeleteDialog'
 
 export function GenericTable({
     headers,
@@ -48,6 +52,8 @@ export function GenericTable({
     }
 
     const { selectedRow, modal, setSelectedRow, openModal, closeModal } = useTableStore()
+
+    const { selectedIds, toggleRow, selectAll, clearSelection, isSelected, selectedIdsArray, selectionCount } = useBulkSelectionStore()
 
     const queryProps = {
         orgId,
@@ -101,6 +107,7 @@ export function GenericTable({
         isHospitalTab,
     })
 
+    //clear selection when filters change or page changes
     useEffect(() => {
         setCurrentPage(1)
     }, [filteredPatients.length, setCurrentPage])
@@ -109,6 +116,12 @@ export function GenericTable({
     useEffect(() => {
         setCurrentPage(1)
     }, [sorting, setCurrentPage])
+    
+    useEffect(() => {
+        clearSelection()
+    }, [currentPage, searchFields, filteredPatients.length, clearSelection])
+
+
 
     const handleRowAction = useCallback(
         (row: RowDataBase, action: ModalType) => {
@@ -128,6 +141,47 @@ export function GenericTable({
         return data ?? []
     }
 
+    const currentPageIds = useMemo(() => paginatedData.map((row) => row.id), [paginatedData])
+    const allCurrentSelected = currentPageIds.length> 0 && currentPageIds.every((id) => selectedIds.has(id))
+    const someCurrentPageSelected = !allCurrentSelected && currentPageIds.some((id) => selectedIds.has(id))
+
+    const bulkActions: BulkAction[] = useMemo(() => [
+        {
+            key: 'delete',
+            label: 'Delete',
+            icon: <Trash2 className="h-3 w-3" />,   
+            variant: 'destructive',
+            onClick: (ids) => {
+                    openModal('bulkDelete')
+            }
+         },
+         {
+            key: 'Assign',
+            label: 'Assign',
+            icon: <UserPlus className="h-3 w-3" />,
+            onClick: (ids) => {
+                // handle assign action
+                console.log('Assigning IDs:', ids)
+            }
+         },
+         {
+            key: 'export',
+            label: 'Export',
+            icon: <Download className="h-3 w-3" />,
+            onClick: (ids) => {
+               
+                // handle export logic with exportData
+                console.log('Exporting data for IDs:', ids)
+            }   
+         }
+
+    ], [openModal, isPatientTab])
+
+
+    function selectectedCount(): number {
+        throw new Error('Function not implemented.')
+    }
+
     return (
         <div className="flex min-h-screen flex-col">
             <GenericToolbar
@@ -139,10 +193,30 @@ export function GenericTable({
                 isLoading={isLoading || isLoadingAuth}
             />
 
+            <BulkActionBar
+                selectedCount={selectionCount()}
+                selectedIds={selectedIdsArray()}
+                actions={bulkActions}
+                onClearSelection={clearSelection}
+            />
+
             <Table className="border-border flex-1 overflow-auto rounded-md border">
                 <TableHeader className="bg-muted hidden sm:table-header-group">
                     <TableRow className="border-border border-b">
-                        <TableHead className="border-border w-12 border-r text-center">
+                        {/* bulk actions */}
+                        <TableHead className="border-border w-12 border-r  text-center">
+                            <div className='flex items-center justify-center'>
+                                <Checkbox
+                                checked = {
+                                    allCurrentSelected ? true : someCurrentPageSelected ? 'indeterminate' : false
+                                }
+                                onCheckedChange={() => selectAll(currentPageIds)}
+                                aria-label='Select all rows on this page'
+                                />
+                            </div>
+                            
+                        </TableHead>
+                        <TableHead className="border-border w-12 border-r text-center items-center justify-center">
                             S/NO
                         </TableHead>
                         {headers.map((header, id) => {
@@ -218,6 +292,8 @@ export function GenericTable({
                                 onUpdate={(row) => handleRowAction(row, 'update')}
                                 onDelete={(row) => handleRowAction(row, 'delete')}
                                 headers={stableHeaders}
+                                isSelected={isSelected(data.id)}
+                                onToggleSelect={() => toggleRow(data.id)}
                             />
                         ))
                     ) : (
@@ -247,6 +323,8 @@ export function GenericTable({
                         onUpdate={(row) => handleRowAction(row, 'update')}
                         onDelete={(row) => handleRowAction(row, 'delete')}
                         headers={stableHeaders}
+                        isSelected={isSelected(data.id)}
+                        onToggleSelect={() => toggleRow(data.id)}
                     />
                 ))}
             </div>
@@ -277,6 +355,19 @@ export function GenericTable({
                 collectionName={activeTab} // 'patients' | 'hospitals' | 'doctors' | 'nurses' | 'ashas' | 'removedPatients'
                 onClose={closeModal}
             />
+
+             {/* Bulk delete confirmation dialog */}
+
+            <BulkDeleteDialog
+            open={modal === 'bulkDelete'}
+            collectionName={activeTab}
+            ids={selectedIdsArray()}
+            onClose={() =>{
+                closeModal(),
+                clearSelection()} }
+            
+            />
+           
         </div>
     )
 }
