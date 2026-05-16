@@ -54,21 +54,30 @@ export function GenericToolbar({
         const data = getExportData()
         exportToExcel(data, activeTab)
     }
-
     return (
-        <div className="mb-4 flex items-center justify-between">
-            {dashboardTitleContent}
-            <div className="flex items-center gap-2 w-full justify-center sm:w-auto">
-                {activeTab && (
+    <div className="mb-4 flex items-center justify-between">
+        {dashboardTitleContent}
+
+        <div className="flex flex-col gap-2 w-full sm:flex-row sm:items-center sm:justify-end">
+
+            {activeTab && (
+                <div className="w-full sm:min-w-[320px] sm:w-auto">
                     <SearchInput
                         value={searchTerm}
                         onChange={setSearchTerm}
                         placeholder={`Search ${activeTab} via ${searchFields.join(', ')}`}
                     />
-                )}
+                </div>
+            )}
+
+            <div className="flex flex-row items-center gap-2 self-center sm:self-auto">
+
                 {activeTab === 'patients' && <PatientFilter />}
+
                 {activeTab === 'patients' && <GenericPatientDialog mode="add" />}
+
                 {activeTab === 'hospitals' && <GenericHospitalDialog mode="add" />}
+
                 {['ashas', 'doctors', 'nurses'].includes(activeTab) && (
                     <GenericUserDialog mode="add" userType={activeTab} />
                 )}
@@ -80,12 +89,14 @@ export function GenericToolbar({
                             <MoreVertical className="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
+
                     <DropdownMenuContent align="end">
+
                         {/* Import */}
                         {activeTab === 'patients' && role === 'admin' && (
                             <DropdownMenuItem
                                 onSelect={(e) => {
-                                    e.preventDefault() // ✅ stop default closing behavior if needed
+                                    e.preventDefault()
                                     console.log('inside import button')
                                     document.getElementById('file-upload')?.click()
                                 }}
@@ -93,6 +104,7 @@ export function GenericToolbar({
                                 Import Patients
                             </DropdownMenuItem>
                         )}
+
                         <input
                             id="file-upload"
                             type="file"
@@ -105,20 +117,30 @@ export function GenericToolbar({
                         />
 
                         {/* Export */}
-                        <DropdownMenuItem onClick={handleExportCSV}>Export as CSV</DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleExportCSV}>
+                            Export as CSV
+                        </DropdownMenuItem>
+
                         <DropdownMenuItem onClick={handleExportExcel}>
                             Export as Excel
                         </DropdownMenuItem>
 
-                        {/* Report (only for patients) */}
+                        {/* Report */}
                         {activeTab === 'patients' && (
-                            <DropdownMenuItem onClick={() => generateDiseasePDF(getExportData())}>
+                            <DropdownMenuItem
+                                onClick={() => generateDiseasePDF(getExportData())}
+                            >
                                 Generate Report
                             </DropdownMenuItem>
                         )}
+
                     </DropdownMenuContent>
                 </DropdownMenu>
+
             </div>
         </div>
-    )
+    </div>
+)
 }
+
+    
