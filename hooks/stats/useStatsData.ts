@@ -13,7 +13,6 @@ interface UseStatsDataProps {
 
 export function useStatsData({ role, orgId }: UseStatsDataProps) {
     const isAdmin = role === 'admin'
-    const isPatientRole = role === 'doctor' || role === 'nurse'
 
     // ── Patients ──────────────────────────────────────────────────────
     const patientsQuery = useQuery<Patient[], Error>({
@@ -58,9 +57,9 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
         staleTime: 60 * 1000,
     })
 
-    const patients = patientsQuery.data ?? []
-    const hospitals = hospitalsQuery.data ?? []
-    const users = usersQuery.data ?? []
+    const patients = useMemo(() => patientsQuery.data ?? [], [patientsQuery.data])
+    const hospitals = useMemo(() => hospitalsQuery.data ?? [], [hospitalsQuery.data])
+    const users = useMemo(() => usersQuery.data ?? [], [usersQuery.data])
 
     // ── Derived patient stats (shared by all roles) ───────────────────
     const patientStats = useMemo(() => {
@@ -121,26 +120,6 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
         })
         const rationData = Object.entries(rationMap).map(([name, value]) => ({ name, value }))
 
-        // Monthly registrations – last 12 months
-        const monthMap: Record<string, number> = {}
-        const now = new Date()
-        for (let i = 11; i >= 0; i--) {
-            const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-            const key = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
-            monthMap[key] = 0
-        }
-        patients.forEach((p) => {
-            if (p.hospitalRegistrationDate) {
-                const d = new Date(p.hospitalRegistrationDate)
-                const key = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
-                if (key in monthMap) monthMap[key]++
-            }
-        })
-        const registrationTrend = Object.entries(monthMap).map(([month, count]) => ({
-            month,
-            count,
-        }))
-
         return {
             total,
             alive,
@@ -155,7 +134,6 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
             stageData,
             insuranceData,
             rationData,
-            registrationTrend,
             statusData: [
                 { name: 'Alive', value: alive },
                 { name: 'Not Alive', value: deceased },
@@ -220,6 +198,7 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
 
     return {
         patientStats,
+        patients,
         adminStats,
         isLoading:
             patientsQuery.isLoading ||
