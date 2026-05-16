@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { ModeToggle } from '../ui/toggle'
 import SignOutButton from './SignOutButton'
-import { paperSavedLabel } from '@/lib/paperSaved'
+import { paperSavedLabel } from '@/lib/papersaved'
 
 // Roles that can see the Stats link
 const STATS_ROLES = ['admin', 'doctor', 'nurse']

@@ -12,7 +12,7 @@ import { usePathname } from 'next/navigation'
 import { NAV_LINKS } from '@/constants/navbar'
 import { useState } from 'react'
 import Image from 'next/image'
-import { paperSavedLabel } from '@/lib/paperSaved'  // ← ADD THIS
+import { paperSavedLabel } from '@/lib/papersaved'  
 
 export default function HomeNavbar() {
     const pathname = usePathname()
