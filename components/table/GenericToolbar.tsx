@@ -20,18 +20,25 @@ import GenericUserDialog from '../forms/user/GenericUserDialog'
 import { SearchInput } from '../search/SearchInput'
 import { useAuth } from '@/contexts/AuthContext'
 
+// for keyboard shortcuts
+import { useRef, useState } from 'react'
+import { useKeyboardShortcurts } from '@/hooks/keyboardshortcut/keyboardShortcuts'
+import { KeyBoardShortcuts } from '../common/KeyBoardShortcuts'
+
 export function GenericToolbar({
     activeTab,
     getExportData,
     searchTerm,
     setSearchTerm,
     searchFields,
+    onOpenFilter,
 }: {
     activeTab: 'ashas' | 'hospitals' | 'doctors' | 'nurses' | 'patients' | 'removedPatients'
     getExportData: () => any[]
     searchTerm: string
     setSearchTerm: (val: string) => void
     searchFields: readonly string[]
+    onOpenFilter?: () => void
 }) {
     const pathname = usePathname()
     const queryClient = useQueryClient()
@@ -55,22 +62,66 @@ export function GenericToolbar({
         exportToExcel(data, activeTab)
     }
 
+    // for keyboard shortcuts
+    const searchInputRef = useRef<HTMLInputElement>(null)
+
+    const [shortcutDialogOpen, setShortcutDialogOpen] = useState(false)
+
+    // for reusable states
+    const [activeDialog, setActiveDialog] = useState<
+        'patients' | 'hospitals' | 'users' | null
+    >(null)
+
+    useKeyboardShortcurts({
+        onSearchFocus: () => {
+            searchInputRef.current?.focus()
+        },
+
+        onOpenShortcuts: () => {
+            setShortcutDialogOpen(true)
+        },
+
+        onCloseDialog: () => {
+            setShortcutDialogOpen(false)
+        },
+
+        onNewPatient: () => {
+            if (activeTab === "patients") {
+                setActiveDialog('patients')
+            }
+
+            if (activeTab === "hospitals") {
+                setActiveDialog('hospitals')
+            }
+
+            if (['ashas', 'doctors', 'nurses'].includes(activeTab)) {
+                setActiveDialog('users')
+            }
+        },
+
+        onOpenFilter,
+    })
     return (
         <div className="mb-4 flex items-center justify-between">
             {dashboardTitleContent}
+            <KeyBoardShortcuts
+                open={shortcutDialogOpen}
+                onOpenChange={setShortcutDialogOpen}
+            />
             <div className="flex items-center gap-2 w-full justify-center sm:w-auto">
                 {activeTab && (
                     <SearchInput
+                        ref={searchInputRef}
                         value={searchTerm}
                         onChange={setSearchTerm}
                         placeholder={`Search ${activeTab} via ${searchFields.join(', ')}`}
                     />
                 )}
                 {activeTab === 'patients' && <PatientFilter />}
-                {activeTab === 'patients' && <GenericPatientDialog mode="add" />}
-                {activeTab === 'hospitals' && <GenericHospitalDialog mode="add" />}
+                {activeTab === 'patients' && <GenericPatientDialog mode="add" open={activeDialog === 'patients'} onOpenChange={(open) => {setActiveDialog(open ? 'patients' : null)}} />}
+                {activeTab === 'hospitals' && <GenericHospitalDialog mode="add" open={activeDialog === 'hospitals'} onOpenChange={(open) => {setActiveDialog(open ? 'hospitals' : null)}} />}
                 {['ashas', 'doctors', 'nurses'].includes(activeTab) && (
-                    <GenericUserDialog mode="add" userType={activeTab} />
+                    <GenericUserDialog mode="add" userType={activeTab} open={activeDialog === 'users'} onOpenChange={(open) => {setActiveDialog(open ? 'users' : null)}} />
                 )}
 
                 {/* Three-dot Dropdown */}
