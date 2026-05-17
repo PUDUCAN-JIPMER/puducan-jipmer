@@ -185,9 +185,6 @@ export function GenericTable({
     ], [openModal, isPatientTab, exportSelected, data, stableHeaders, activeTab])
 
 
-    function selectectedCount(): number {
-        throw new Error('Function not implemented.')
-    }
 
     return (
         <div className="flex min-h-screen flex-col">
@@ -379,7 +376,7 @@ export function GenericTable({
             open={modal === 'bulkAssign'}
             ids={selectedIdsArray()}
             onClose={ () =>{
-                closeModal(),
+                closeModal()
                 clearSelection()}
                 
             }
