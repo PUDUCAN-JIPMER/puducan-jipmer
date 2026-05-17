@@ -11,7 +11,7 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { ColumnFive, ColumnFour, ColumnOne, ColumnThree, ColumnTwo } from '../forms/patient'
 import { PatientHeader, ActionButtons, SwipeableColumns } from '.'  
-import { PatientWizardDialog } from './Patientwizarddialog'
+import { PatientWizardDialog } from './PatientWizardDialog'
 
 export default function PatientFormMobile({ patient }: { patient: Patient }) {
     const [dialogOpen, setDialogOpen] = useState(false)
