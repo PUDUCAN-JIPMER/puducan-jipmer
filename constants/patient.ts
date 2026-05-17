@@ -29,8 +29,8 @@ export const patientFields = [
     { label: 'HBCR ID', key: 'hbcrID' },
     { label: 'Hospital Registration ID', key: 'hospitalRegistrationId' },
     { label: 'Stage of the Cancer', key: 'stageOfTheCancer' },
-    { label: 'Reason of Removal', key: 'reasonOfRemoval' },
+    //   { label: 'Reason of Removal', key: 'reasonOfRemoval' },
     { label: 'Treatment Details', key: 'treatmentDetails' },
-    { label: 'Other Treatment Details', key: 'otherTreatmentDetails' },
+    //   { label: 'Other Treatment Details', key: 'otherTreatmentDetails' },
     { label: 'Insurance', key: 'insurance' }, // object {type, id}
 ]
