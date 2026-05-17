@@ -35,39 +35,16 @@ export default function PatientStatusSelect({ control, form }: Props) {
                         <SelectTrigger className="w-full" required={true}>
                             <SelectValue className="tracking-wider">
                                 {field.value ? (
-                                    <span
-                                      className={cn(
-                                        'font-medium px-2 py-1 rounded',
-                                         {
-                                          'text-green-800 bg-green-100': field.value === 'Alive',
-                                          'text-red-800 bg-red-100': field.value === 'Not Alive',
-                                          'text-blue-800 bg-blue-100': field.value === 'Not Available',
-                                         }
-                                       )}
-                                     >
-                                       {field.value}
-                                     </span>
+                                    <span className="font-medium">{field.value}</span>
                                 ) : (
                                     'Select Status'
                                 )}
                             </SelectValue>
                         </SelectTrigger>
                         <SelectContent className="tracking-wider">
-                            <SelectItem value="Alive">
-                               <span className="text-green-800 bg-green-100 px-2 py-1 rounded">
-                              Alive
-                              </span>
-                            </SelectItem>
-                            <SelectItem value="Not Alive">
-                                <span className="text-red-800 bg-red-100 px-2 py-1 rounded">
-                              Not Alive
-                              </span>
-                            </SelectItem>
-                            <SelectItem value="Not Available">
-                               <span className="text-blue-800 bg-blue-100 px-2 py-1 rounded">
-                              Not Available
-                              </span>
-                            </SelectItem>
+                            <SelectItem value="Alive">Alive</SelectItem>
+                            <SelectItem value="Not Alive">Not Alive</SelectItem>
+                            <SelectItem value="Not Available">Not Available</SelectItem>
                         </SelectContent>
                     </Select>
                 )}
