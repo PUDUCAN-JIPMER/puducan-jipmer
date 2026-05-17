@@ -32,6 +32,16 @@ export function ColumnThree({ form, isAsha }: RightColumnProps) {
                             <HospitalSearch value={field.value} onChange={field.onChange} />
                         </FormControl>
                         <FormMessage />
+                        {form.formState.errors.assignedHospital?.id && (
+                            <p className="text-[0.8rem] font-medium text-destructive">
+                                {form.formState.errors.assignedHospital.id.message}
+                            </p>
+                        )}
+                        {form.formState.errors.assignedHospital?.name && (
+                            <p className="text-[0.8rem] font-medium text-destructive">
+                                {form.formState.errors.assignedHospital.name.message}
+                            </p>
+                        )}
                     </FormItem>
                 )}
             />
