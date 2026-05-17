@@ -99,7 +99,7 @@ export function GenericToolbar({
             }
         },
 
-        onOpenFilter,
+        
     })
     return (
         <div className="mb-4 flex items-center justify-between">
