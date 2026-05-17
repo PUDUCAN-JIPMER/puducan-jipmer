@@ -1,5 +1,3 @@
-// /app/home/layout.tsx
-
 import HomeNavbar from '@/components/home/HomeNavbar'
 import NavigationLoading from './NavigationLoading'
 import Footer from '@/components/ui/footer'
@@ -10,7 +8,7 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
             <HomeNavbar />
             <NavigationLoading />
 
-            <main className="p-4">
+            <main className="flex-1 p-4">
                 {children}
             </main>
 
