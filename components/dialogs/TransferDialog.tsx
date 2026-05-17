@@ -9,19 +9,21 @@ import {
     CommandItem,
 } from '@/components/ui/command'
 import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog'
+    Sheet,
+    SheetContent,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from '@/components/ui/sheet'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Label } from '@/components/ui/label'
 import { db } from '@/firebase'
 import { Patient } from '@/schema/patient'
 import { collection, getDocs } from 'firebase/firestore'
-import { Repeat2 } from 'lucide-react'
+import { Repeat2, Check, Hospital as HospitalIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { cn } from '@/lib/utils'
 
 type Hospital = {
     id: string
@@ -42,6 +44,7 @@ export default function TransferDialog({
     const [hospitals, setHospitals] = useState<Hospital[]>([])
     const [selectedHospital, setSelectedHospital] = useState<Hospital | null>(null)
     const [searchTerm, setSearchTerm] = useState('')
+    const [open, setOpen] = useState(false)
 
     useEffect(() => {
         const fetchHospitals = async () => {
@@ -60,70 +63,118 @@ export default function TransferDialog({
         fetchHospitals()
     }, [])
 
-    // console.log('hospitals', hospitals)
-
     const handleTransfer = () => {
         if (selectedHospital) {
             onTransfer(selectedHospital.id, selectedHospital.name)
+            setOpen(false)
         }
     }
 
-    const filteredHospitals = hospitals.filter((h) =>
-        (h.name ?? '').toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    const filteredHospitals = searchTerm 
+        ? hospitals.filter((h) => (h.name ?? '').toLowerCase().includes(searchTerm.toLowerCase())).slice(0, 3)
+        : hospitals
 
     return (
-        <Dialog>
-            <DialogTrigger asChild>
-    {trigger || (
-        <Button
-            size="icon"
-            variant="outline"
-            className="cursor-pointer"
-            title="Transfer Patient"
-        >
-            <Repeat2 className="h-4 w-4" />
-        </Button>
-    )}
-</DialogTrigger>
+        <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+                {trigger || (
+                    <Button
+                        size="icon"
+                        variant="outline"
+                        className="cursor-pointer"
+                        title="Transfer Patient"
+                    >
+                        <Repeat2 className="h-4 w-4" />
+                    </Button>
+                )}
+            </SheetTrigger>
 
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Transfer Patient</DialogTitle>
-                </DialogHeader>
+            <SheetContent side="right" className="w-full sm:max-w-md flex flex-col">
+                <SheetHeader>
+                    <SheetTitle className="flex items-center gap-2">
+                        <Repeat2 className="h-5 w-5" />
+                        Transfer Patient
+                    </SheetTitle>
+                    <p className="text-sm text-muted-foreground">
+                        Select a new Primary Health Centre (PHC) to transfer this patient.
+                    </p>
+                </SheetHeader>
 
-                <div className="space-y-2">
-                    <Label className="text-muted-foreground text-sm">Select Hospital</Label>
-                    <Command className="rounded-md border shadow-md">
-                        <CommandInput
-                            placeholder="Search hospital name..."
-                            onValueChange={(value) => setSearchTerm(value)}
-                        />
-                        <CommandEmpty>No hospital found.</CommandEmpty>
-                        <CommandGroup>
-                            {filteredHospitals.map((hospital) => (
-                                <CommandItem
-                                    key={hospital.id}
-                                    onSelect={() => setSelectedHospital(hospital)}
-                                >
-                                    <div>
-                                        <p className="font-medium">{hospital.name}</p>
-                                        <p className="text-muted-foreground text-sm">
-                                            {hospital.address}
-                                        </p>
-                                    </div>
-                                </CommandItem>
-                            ))}
-                        </CommandGroup>
-                    </Command>
+                <div className="flex-1 mt-6 space-y-4">
+                    <div className="space-y-2">
+                        <Label className="text-sm font-medium">Select Hospital</Label>
+                        <Command className="rounded-lg border shadow-sm">
+                            <CommandInput
+                                placeholder="Search hospital name..."
+                                onValueChange={(value) => setSearchTerm(value)}
+                            />
+                            <CommandEmpty>No hospital found.</CommandEmpty>
+                            <ScrollArea className="h-[280px]">
+                                <CommandGroup>
+                                    {filteredHospitals.map((hospital) => (
+                                        <CommandItem
+                                            key={hospital.id}
+                                            onSelect={() => setSelectedHospital(selectedHospital?.id === hospital.id ? null : hospital)}
+                                            className={cn(
+                                                "flex items-center justify-between p-3 cursor-pointer transition-colors",
+                                                selectedHospital?.id === hospital.id 
+                                                    ? "bg-primary/10" 
+                                                    : "hover:bg-muted"
+                                            )}
+                                        >
+                                            <div className="flex items-start gap-3">
+                                                <div className="mt-1">
+                                                    <HospitalIcon className="h-4 w-4 text-primary" />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="font-semibold text-sm leading-none">
+                                                        {hospital.name}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground line-clamp-1">
+                                                        {hospital.address}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            {selectedHospital?.id === hospital.id && (
+                                                <Check className="h-4 w-4 text-primary" />
+                                            )}
+                                        </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                            </ScrollArea>
+                        </Command>
+                        <p className="text-[10px] text-muted-foreground px-1 italic">
+                            {searchTerm 
+                                ? `Showing top ${filteredHospitals.length} search matches` 
+                                : `Showing all ${filteredHospitals.length} hospitals (scroll to view)`}
+                        </p>
+                    </div>
+
+                    {selectedHospital && (
+                        <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                Selected Destination
+                            </h4>
+                            <div className="space-y-1">
+                                <p className="text-sm font-bold">{selectedHospital.name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                    {selectedHospital.address}
+                                </p>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
-                <DialogFooter className="mt-4">
-                    <Button onClick={handleTransfer} disabled={!selectedHospital}>
+                <SheetFooter className="mt-auto pt-6 border-t">
+                    <Button 
+                        onClick={handleTransfer} 
+                        disabled={!selectedHospital}
+                        className="w-full"
+                    >
                         Confirm Transfer
                     </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+                </SheetFooter>
+            </SheetContent>
+        </Sheet>
     )
 }
