@@ -123,7 +123,7 @@ importers:
         specifier: ^9.9.0
         version: 9.14.0(react@19.2.6)
       react-dom:
-        specifier: ^19.2.6
+        specifier: ^19.0.0
         version: 19.2.6(react@19.2.6)
       react-hook-form:
         specifier: ^7.73.1
