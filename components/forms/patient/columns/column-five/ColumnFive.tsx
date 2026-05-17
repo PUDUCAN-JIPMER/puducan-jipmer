@@ -4,21 +4,99 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
-import { Plus } from 'lucide-react'
-import { useState } from 'react'
-import { useFormContext } from 'react-hook-form'
+import { MapPin, Navigation, Plus } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { useFormContext, useWatch } from 'react-hook-form'
 import { PatientFormInputs } from '@/schema/patient'
 import clsx from 'clsx'
 
+type LocationValue = {
+    lat: number
+    lng: number
+    accuracy?: number | null
+    placeName?: string | null
+}
+
 export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
-    const { getValues, setValue } = useFormContext<PatientFormInputs>()
-    const patient = getValues()
+    const { control, setValue } = useFormContext<PatientFormInputs>()
+    const patient = useWatch({ control }) as PatientFormInputs
 
     const [isAddingFollowUp, setIsAddingFollowUp] = useState(false)
     const [newRemark, setNewRemark] = useState('')
     const [savingLocation, setSavingLocation] = useState(false)
+    const [locationError, setLocationError] = useState('')
     const [manualLat, setManualLat] = useState<string>('')
     const [manualLng, setManualLng] = useState<string>('')
+    const [reverseGeocoding, setReverseGeocoding] = useState(false)
+
+    const currentLocation = patient.gpsLocation as LocationValue | null | undefined
+
+    const googleMapsUrl = useMemo(() => {
+        if (!currentLocation?.lat || !currentLocation?.lng) return ''
+        return `https://www.google.com/maps/search/?api=1&query=${currentLocation.lat},${currentLocation.lng}`
+    }, [currentLocation?.lat, currentLocation?.lng])
+
+    useEffect(() => {
+        if (!currentLocation?.lat || !currentLocation?.lng) return
+        setManualLat(String(currentLocation.lat))
+        setManualLng(String(currentLocation.lng))
+    }, [currentLocation?.lat, currentLocation?.lng])
+
+    const reverseGeocodeLocation = async (lat: number, lng: number) => {
+        setReverseGeocoding(true)
+        try {
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=jsonv2&accept-language=en&lat=${lat}&lon=${lng}`
+            )
+            if (!response.ok) return null
+            const data = await response.json()
+            return data?.display_name ?? null
+        } catch (error) {
+            console.error('Error fetching place name:', error)
+            return null
+        } finally {
+            setReverseGeocoding(false)
+        }
+    }
+
+    const clearPreviousLocation = (clearInputs = false) => {
+        setLocationError('')
+        setValue('gpsLocation', null, { shouldDirty: true })
+        if (clearInputs) {
+            setManualLat('')
+            setManualLng('')
+        }
+    }
+
+    const saveLocation = async (coords: LocationValue) => {
+        const roundedCoords = {
+            ...coords,
+            lat: Number(coords.lat.toFixed(6)),
+            lng: Number(coords.lng.toFixed(6)),
+        }
+        const placeName = await reverseGeocodeLocation(roundedCoords.lat, roundedCoords.lng)
+        setValue('gpsLocation', { ...roundedCoords, placeName }, { shouldDirty: true })
+        setLocationError('')
+    }
+
+    const parseManualCoordinates = () => {
+        const lat = Number(manualLat)
+        const lng = Number(manualLng)
+
+        if (!manualLat || !manualLng || Number.isNaN(lat) || Number.isNaN(lng)) {
+            return { error: 'Please enter valid latitude and longitude.' }
+        }
+
+        if (lat < -90 || lat > 90) {
+            return { error: 'Latitude must be between -90 and 90.' }
+        }
+
+        if (lng < -180 || lng > 180) {
+            return { error: 'Longitude must be between -180 and 180.' }
+        }
+
+        return { coords: { lat, lng, accuracy: null } }
+    }
 
     /** Save new follow-up (optimistic, in form state) */
     const handleSaveNewFollowUp = () => {
@@ -37,23 +115,31 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
     /** Save GPS from browser */
     const handleSaveLocation = async () => {
         setSavingLocation(true)
+        clearPreviousLocation(true)
         try {
             if (!navigator.geolocation) {
-                alert('Geolocation is not supported by your browser')
+                setLocationError('Geolocation is not supported by your browser.')
+                setSavingLocation(false)
                 return
             }
             navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const coords = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude,
-                        accuracy: position.coords.accuracy,
+                async (position) => {
+                    try {
+                        await saveLocation({
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                            accuracy: position.coords.accuracy,
+                        })
+                    } catch (error) {
+                        console.error('Error saving location:', error)
+                        setLocationError('Could not save GPS location. Please try again.')
+                    } finally {
+                        setSavingLocation(false)
                     }
-                    setValue('gpsLocation', coords, { shouldDirty: true })
-                    setSavingLocation(false)
                 },
                 (err) => {
                     console.error('Error saving location:', err)
+                    setLocationError('Could not get your GPS location. Check browser location permission and try again.')
                     setSavingLocation(false)
                 },
                 {
@@ -64,22 +150,19 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
             )
         } catch (e) {
             console.error(e)
+            setLocationError('Could not save GPS location. Please try again.')
             setSavingLocation(false)
         }
     }
 
-    /** Save manually entered lat/lng */
-    const handleSaveManualLocation = () => {
-        if (!manualLat || !manualLng) {
-            alert('Please enter both latitude and longitude')
+    const handleSaveManualLocation = async () => {
+        const parsed = parseManualCoordinates()
+        if (parsed.error) {
+            setLocationError(parsed.error)
             return
         }
-        const coords = {
-            lat: parseFloat(manualLat),
-            lng: parseFloat(manualLng),
-            accuracy: null,
-        }
-        setValue('gpsLocation', coords, { shouldDirty: true })
+        clearPreviousLocation()
+        await saveLocation(parsed.coords!)
     }
 
     return (
@@ -153,57 +236,91 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
             </div>
 
             {/* --- GPS Section --- */}
-            <div className="space-y-4 pt-2">
-                {/* Auto GPS */}
-                <Button variant={'outline'} onClick={handleSaveLocation} disabled={savingLocation}>
-                    {savingLocation ? 'Saving GPS...' : 'Use Current GPS Location'}
-                </Button>
-
-                {/* Manual Lat/Lng Input */}
-                <div className="space-y-2 rounded-lg border p-3">
-                    <Label className="text-sm">Manual Location Entry</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            type="number"
-                            step="any"
-                            placeholder="Latitude"
-                            value={manualLat}
-                            onChange={(e) => setManualLat(e.target.value)}
-                        />
-                        <Input
-                            type="number"
-                            step="any"
-                            placeholder="Longitude"
-                            value={manualLng}
-                            onChange={(e) => setManualLng(e.target.value)}
-                        />
+            <div className="space-y-3 rounded-xl border bg-muted/20 p-3">
+                <div className="flex items-center justify-between gap-2">
+                    <div>
+                        <Label className="text-sm font-medium">Patient Location</Label>
                     </div>
-                    <Button className="mt-2 w-full" variant="outline" size="sm" onClick={handleSaveManualLocation}>
-                        Save Manual Location
+                    <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleSaveLocation}
+                        disabled={savingLocation || reverseGeocoding}
+                        className="h-8 shrink-0 rounded-full bg-transparent px-3 text-xs text-white hover:bg-gray-600 border border-gray-600"
+                    >
+                        <Navigation className="h-4 w-4" />
+                        {savingLocation ? 'Saving...' : 'Get Location'}
                     </Button>
                 </div>
 
-                {/* Show Saved Location */}
-                {patient.gpsLocation && (
-                    <>
-                        <p className="text-muted-foreground text-center text-xs">
-                            Location: {patient?.gpsLocation?.lat?.toFixed(4) ?? 'N/A'},{' '}
-                            {patient?.gpsLocation?.lng?.toFixed(4) ?? 'N/A'}
-                        </p>
+                <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Latitude</Label>
+                            <Input
+                                type="number"
+                                step="any"
+                                min="-90"
+                                max="90"
+                                placeholder="Lat"
+                                value={manualLat}
+                                onChange={(e) => setManualLat(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Longitude</Label>
+                            <Input
+                                type="number"
+                                step="any"
+                                min="-180"
+                                max="180"
+                                placeholder="Lng"
+                                value={manualLng}
+                                onChange={(e) => setManualLng(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <Button type="button" className="w-full" variant="outline" size="sm" onClick={handleSaveManualLocation} disabled={reverseGeocoding}>
+                        {reverseGeocoding ? 'Finding place...' : 'Save Coordinates'}
+                    </Button>
+                </div>
+
+                {locationError && (
+                    <p className="text-center text-xs text-red-600">{locationError}</p>
+                )}
+
+                {currentLocation && (
+                    <div className="space-y-2 rounded-lg bg-background p-2 text-xs">
+                        <div className="flex items-start gap-2">
+                            <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+                            <div className="min-w-0 flex-1 space-y-1">
+                                <p className="font-medium">Saved location</p>
+                                <p className="text-muted-foreground">
+                                    {currentLocation.lat?.toFixed(6) ?? 'N/A'}, {currentLocation.lng?.toFixed(6) ?? 'N/A'}
+                                </p>
+                                {typeof currentLocation.accuracy === 'number' && (
+                                    <p className="text-muted-foreground">
+                                        Accuracy: ±{Math.round(currentLocation.accuracy)}m
+                                    </p>
+                                )}
+                                {currentLocation.placeName && (
+                                    <p className="text-muted-foreground line-clamp-2">
+                                        {currentLocation.placeName}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
 
                         <Button
-                            className="w-full"
+                            type="button"
+                            className="h-8 w-full text-xs"
                             variant='outline'
-                            onClick={() =>
-                                window.open(
-                                    `https://maps.google.com/?q=${patient.gpsLocation!.lat},${patient.gpsLocation!.lng}`,
-                                    '_blank'
-                                )
-                            }
+                            onClick={() => window.open(googleMapsUrl, '_blank', 'noopener,noreferrer')}
                         >
-                            View in Google Maps
+                            <MapPin className="h-3.5 w-3.5" />
+                            Open in Google Maps
                         </Button>
-                    </>
+                    </div>
                 )}
             </div>
         </div>

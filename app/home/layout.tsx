@@ -1,18 +1,16 @@
-// /app/home/layout.tsx
 import HomeNavbar from '@/components/home/HomeNavbar'
-import HomeHeader from '@/components/home/HomeHeader'
 import NavigationLoading from './NavigationLoading'
-import { Suspense } from 'react'
 import Footer from '@/components/ui/footer'
 
 export default function HomeLayout({ children }: { children: React.ReactNode }) {
     return (
-        <div className="flex h-screen flex-col ">
-            <HomeHeader />
+        <div className="flex min-h-screen flex-col">
             <HomeNavbar />
             <NavigationLoading />
 
-            <main className="p-4 min-h-screen">{children}</main>
+            <main className="flex-1 p-4">
+                {children}
+            </main>
 
             <Footer />
         </div>
