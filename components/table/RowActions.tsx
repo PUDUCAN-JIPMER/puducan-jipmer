@@ -17,23 +17,14 @@ import type { Patient } from '@/schema/patient'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { deleteDoc, doc, setDoc, updateDoc } from 'firebase/firestore'
-
-import {
-    Eye,
-    MoreVertical,
-    Pencil,
-    RotateCcw,
-    Trash2,
-    Repeat2,
-    UserCheck,
-    UserPlus,
-} from 'lucide-react'
+import { Eye, Lightbulb, MoreVertical, Pencil, RotateCcw, Trash2, Repeat2, UserCheck, UserPlus} from 'lucide-react'
 
 import { useState } from 'react'
 import { toast } from 'sonner'
 
 import AshaSearchDialog from '../dialogs/AshaSearchDialog'
 import TransferDialog from '../dialogs/TransferDialog'
+import { PatientSummaryDialog } from '../dialogs/PatientSummaryDialog'
 import GenericHospitalDialog from '../forms/hospital/GenericHospitalDialog'
 import GenericPatientDialog from '../forms/patient/GenericPatientDialog'
 import GenericUserDialog from '../forms/user/GenericUserDialog'
@@ -62,11 +53,12 @@ export function RowActions({
     onDelete,
 }: RowActionsProps) {
     const [assignedAshaId, setAssignedAshaId] = useState((rowData as Patient).assignedAsha || '')
-
-    const [open, setOpen] = useState(false)
+    const [summaryOpen, setSummaryOpen] = useState(false)
+    const [retrieveOpen, setRetrieveOpen] = useState(false)
 
     const queryClient = useQueryClient()
     const { role } = useAuth()
+    const canShowPatientSummary = isPatientTab && ['doctor', 'nurse'].includes(role)
 
     const handleRetrieve = async () => {
         try {
@@ -111,6 +103,18 @@ export function RowActions({
                         <Eye className="mr-2 h-4 w-4" />
                         {`View ${activeTab === 'ashas' ? 'ASHA' : activeTab === 'hospitals' ? 'Hospital' : activeTab === 'doctors' ? 'Doctor' : activeTab === 'nurses' ? 'Nurse' : activeTab === 'removedPatients' ? 'Patient' : 'Patient'}`}
                     </DropdownMenuItem>
+
+                    {canShowPatientSummary && (
+                        <DropdownMenuItem
+                            onSelect={(e) => {
+                                e.preventDefault()
+                                setSummaryOpen(true)
+                            }}
+                        >
+                            <Lightbulb className="mr-2 h-4 w-4" />
+                            AI Summary
+                        </DropdownMenuItem>
+                    )}
 
                     {/* Edit Patient */}
                     {isPatientTab && (
@@ -201,7 +205,7 @@ export function RowActions({
                             <DropdownMenuItem
                                 onSelect={(e) => {
                                     e.preventDefault()
-                                    setOpen(true)
+                                    setRetrieveOpen(true)
                                 }}
                                 className="text-green-600"
                             >
@@ -210,8 +214,8 @@ export function RowActions({
                             </DropdownMenuItem>
 
                             <ConfirmRetrieveDialog
-                                open={open}
-                                onOpenChange={setOpen}
+                                open={retrieveOpen}
+                                onOpenChange={setRetrieveOpen}
                                 patientName={rowData.name as string}
                                 onConfirm={handleRetrieve}
                             />
@@ -227,6 +231,15 @@ export function RowActions({
                     )}
                 </DropdownMenuContent>
             </DropdownMenu>
+
+            {canShowPatientSummary && (
+                <PatientSummaryDialog
+                    open={summaryOpen}
+                    onOpenChange={setSummaryOpen}
+                    patient={rowData as Patient}
+                    patientName={(rowData as Patient).name || 'Unknown Patient'}
+                />
+            )}
         </>
     )
 }
