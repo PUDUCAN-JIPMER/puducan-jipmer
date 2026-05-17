@@ -23,6 +23,10 @@ import { useTableStore } from '@/store'
 import { useResponsiveRows } from '@/hooks/table/useResponsiveRows'
 import { TabDataMap, RowDataBase, ModalType } from '@/types/table/types'
 import { GenericMobileRow } from './GenericMobileRow'
+import TableSkeleton from '@/components/skeletons/TableSkeleton'
+import { ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { useSorting, SORTABLE_KEYS } from '@/hooks/table/useSorting'
 
 export function GenericTable({
     headers,
@@ -62,12 +66,12 @@ export function GenericTable({
     } as const
 
     const fieldsToDisplay = fieldsMap[activeTab]
-    const { data = [] } = useTableData(queryProps) ?? {}
+    const { data = [], isLoading } = useTableData(queryProps) ?? {}
 
     const searchFields = SEARCH_FIELDS[activeTab]
 
     const isPatientTab = activeTab === 'patients'
-    const isHospitalTab = activeTab =='hospitals'
+    const isHospitalTab = activeTab == 'hospitals'
     const patients = (data as Patient[]) ?? []
     const filteredPatients = useFilteredPatients(isPatientTab ? patients : [])
 
@@ -81,8 +85,11 @@ export function GenericTable({
         setSearchTerm,
     } = useSearch<ActiveDataType>(baseData, searchFields)
 
+    // ✅ Apply sorting after search
+    const { sorting, toggle, sortedData } = useSorting(searchedData)
+
     // ✅ Use searchedData for pagination
-    const dataToPaginate = useMemo(() => searchedData, [searchedData])
+    const dataToPaginate = useMemo(() => sortedData, [sortedData])
 
     const tableData = usePagination<(typeof dataToPaginate)[number]>(dataToPaginate, rowsPerPage)
 
@@ -90,12 +97,18 @@ export function GenericTable({
 
     const tableStats = useStats({
         TableData: searchedData ?? [],
-        isPatientTab, isHospitalTab
+        isPatientTab,
+        isHospitalTab,
     })
 
     useEffect(() => {
         setCurrentPage(1)
     }, [filteredPatients.length, setCurrentPage])
+
+    // Reset to page 1 whenever sorting changes
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [sorting, setCurrentPage])
 
     const handleRowAction = useCallback(
         (row: RowDataBase, action: ModalType) => {
@@ -123,6 +136,7 @@ export function GenericTable({
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 searchFields={SEARCH_FIELDS[activeTab]}
+                isLoading={isLoading || isLoadingAuth}
             />
 
             <Table className="border-border flex-1 overflow-auto rounded-md border">
@@ -131,11 +145,53 @@ export function GenericTable({
                         <TableHead className="border-border w-12 border-r text-center">
                             S/NO
                         </TableHead>
-                        {headers.map((header, id) => (
-                            <TableHead className="border-border w-12 border-r text-center" key={id}>
-                                {header.name}
-                            </TableHead>
-                        ))}
+                        {headers.map((header, id) => {
+                            const isSortable = SORTABLE_KEYS.includes(header.key)
+                            const isActive = sorting[0]?.id === header.key
+                            const direction = sorting[0]?.desc ? 'desc' : 'asc'
+
+                            return (
+                                <TableHead
+                                    className="border-border w-12 border-r text-center"
+                                    key={id}
+                                >
+                                    {isSortable ? (
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <button
+                                                        onClick={() => toggle(header.key)}
+                                                        className="hover:text-foreground flex w-full items-center justify-center gap-1 font-medium"
+                                                    >
+                                                        {header.name}
+                                                        {isActive && direction === 'asc' && (
+                                                            <ArrowUp className="h-3 w-3" />
+                                                        )}
+                                                        {isActive && direction === 'desc' && (
+                                                            <ArrowDown className="h-3 w-3" />
+                                                        )}
+                                                        {!isActive && (
+                                                            <ArrowUpDown className="h-3 w-3 opacity-40" />
+                                                        )}
+                                                    </button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    {
+                                                        !isActive
+                                                            ? 'Sort ascending' // not sorted yet → first click = asc
+                                                            : direction === 'asc'
+                                                              ? 'Sort descending' // currently asc → next click = desc
+                                                              : 'Sort ascending' // currently desc → next click = asc
+                                                    }
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    ) : (
+                                        header.name
+                                    )}
+                                </TableHead>
+                            )
+                        })}
                         <TableHead className="border-border w-12 border-r text-center">
                             Actions
                         </TableHead>
@@ -143,7 +199,13 @@ export function GenericTable({
                 </TableHeader>
 
                 <TableBody>
-                    {paginatedData.length > 0 ? (
+                    {isLoading || isLoadingAuth ? (
+                        <TableRow>
+                            <TableCell colSpan={headers.length + 2}>
+                                <TableSkeleton />
+                            </TableCell>
+                        </TableRow>
+                    ) : paginatedData.length > 0 ? (
                         paginatedData.map((data, index) => (
                             <GenericRow
                                 key={data.id}
@@ -161,7 +223,7 @@ export function GenericTable({
                     ) : (
                         <TableRow>
                             <TableCell
-                                colSpan={8}
+                                colSpan={headers.length + 2}
                                 className="text-muted-foreground py-10 text-center text-sm"
                             >
                                 No matching patients found.
@@ -196,9 +258,9 @@ export function GenericTable({
                     onPageChange={setCurrentPage}
                     stats={tableStats} // only show stats for patients
                     isPatientTab={isPatientTab}
+                    isLoading={isLoading || isLoadingAuth}
                 />
             </div>
-
             {selectedRow && modal === 'view' && (
                 <>
                     <ViewDetailsDialog
