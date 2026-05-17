@@ -23,42 +23,42 @@ We are eagerly looking to launch the version v1.1 so kindly focus on the v1.1 re
 ## Screenshots
  
 #### 🏠 Home Page
-![Home Page](screenshots/home-page.png)
+![Home Page](screenshots/home-page.webp)
  
 #### 🧑‍💼 Admin — Patients View (Dark theme)
-![Admin Patients View Dark](screenshots/patients-view-admin.png)
+![Admin Patients View Dark](screenshots/patients-view-admin.webp)
  
 #### 🧑‍💼 Admin — Patients View (Light theme)
-![Admin Patients View Light](screenshots/admin-view-hospital-light-theme.png)
+![Admin Patients View Light](screenshots/admin-view-hospital-light-theme.webp)
  
 #### 📊 Patient Disease Report
-![Patient Report](screenshots/disease-report.png)
+![Patient Report](screenshots/disease-report.webp)
  
 #### ➕ Add Doctor / Nurse / ASHA
 > The same form is used for all staff types — field labels change based on role.
  
-![Add Doctor](screenshots/add-doctor-admin.png)
+![Add Doctor](screenshots/add-doctor-admin.webp)
  
 #### 🏥 Add Hospital
-![Add Hospital](screenshots/add-hospital-admin.png)
+![Add Hospital](screenshots/add-hospital-admin.webp)
  
 #### ♻️ Admin — Recover Deleted Patient
-![Recover Patient](screenshots/recover-patient-view-admin.png)
+![Recover Patient](screenshots/recover-patient-view-admin.webp)
  
 #### 👨‍⚕️ Doctor — Patients View
-![Doctor View](screenshots/doctor-view-patients.png)
+![Doctor View](screenshots/doctor-view-patients.webp)
  
 #### 👩‍⚕️ Nurse — Patients View
-![Nurse View](screenshots/nurse-view-patients.png)
+![Nurse View](screenshots/nurse-view-patients.webp)
  
 #### 📋 Add Patient Form
-![Add Patient Form](screenshots/add-patient-form.png)
+![Add Patient Form](screenshots/add-patient-form.webp)
  
 #### 📱 ASHA Worker — Patients View (Mobile)
-![ASHA Mobile View](screenshots/asha-view-patients.png)
+![ASHA Mobile View](screenshots/asha-view-patients.webp)
  
 #### 🗑️ Delete Patient View
-![Delete Patient](screenshots/delete-patient-admin-view.png)
+![Delete Patient](screenshots/delete-patient-admin-view.webp)
  
 ---
 ## ✨ Core Features

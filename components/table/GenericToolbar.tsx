@@ -20,6 +20,11 @@ import GenericUserDialog from '../forms/user/GenericUserDialog'
 import { SearchInput } from '../search/SearchInput'
 import { useAuth } from '@/contexts/AuthContext'
 
+// for keyboard shortcuts
+import { useRef, useState } from 'react'
+import { useKeyboardShortcurts } from '@/hooks/keyboardshortcut/keyboardShortcuts'
+import { KeyBoardShortcuts } from '../common/KeyBoardShortcuts'
+
 export function GenericToolbar({
     activeTab,
     getExportData,
@@ -57,6 +62,45 @@ export function GenericToolbar({
         exportToExcel(data, activeTab)
     }
 
+    // for keyboard shortcuts
+    const searchInputRef = useRef<HTMLInputElement>(null)
+
+    const [shortcutDialogOpen, setShortcutDialogOpen] = useState(false)
+
+    // for reusable states
+    const [activeDialog, setActiveDialog] = useState<
+        'patients' | 'hospitals' | 'users' | null
+    >(null)
+
+    useKeyboardShortcurts({
+        onSearchFocus: () => {
+            searchInputRef.current?.focus()
+        },
+
+        onOpenShortcuts: () => {
+            setShortcutDialogOpen(true)
+        },
+
+        onCloseDialog: () => {
+            setShortcutDialogOpen(false)
+        },
+
+        onNewPatient: () => {
+            if (activeTab === "patients") {
+                setActiveDialog('patients')
+            }
+
+            if (activeTab === "hospitals") {
+                setActiveDialog('hospitals')
+            }
+
+            if (['ashas', 'doctors', 'nurses'].includes(activeTab)) {
+                setActiveDialog('users')
+            }
+        },
+
+        onOpenFilter,
+    })
     return (
         <div className="mb-4 flex items-center justify-between">
             {dashboardTitleContent}

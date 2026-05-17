@@ -207,7 +207,6 @@ export function GenericTable({
                     isLoading={isLoading || isLoadingAuth}
                 />
             </div>
-
             {selectedRow && modal === 'view' && (
                 <>
                     <ViewDetailsDialog
