@@ -140,29 +140,47 @@ export function GenericTable({
             />
 
             <Table className="border-border flex-1 overflow-auto rounded-md border">
+    <caption className="sr-only">
+        {activeTab} management table
+    </caption>
                 <TableHeader className="bg-muted hidden sm:table-header-group">
                     <TableRow className="border-border border-b">
-                        <TableHead className="border-border w-12 border-r text-center">
-                            S/NO
-                        </TableHead>
+                       <TableHead
+    scope="col"
+    className="border-border w-12 border-r text-center"
+>
+    S/NO
+</TableHead>
                         {headers.map((header, id) => {
                             const isSortable = SORTABLE_KEYS.includes(header.key)
                             const isActive = sorting[0]?.id === header.key
                             const direction = sorting[0]?.desc ? 'desc' : 'asc'
 
                             return (
-                                <TableHead
-                                    className="border-border w-12 border-r text-center"
-                                    key={id}
-                                >
+                               <TableHead
+    scope="col"
+    aria-sort={
+        isSortable
+            ? isActive
+                ? direction === 'asc'
+                    ? 'ascending'
+                    : 'descending'
+                : 'none'
+            : undefined
+    }
+    className="border-border w-12 border-r text-center"
+    key={id}
+>
                                     {isSortable ? (
                                         <TooltipProvider>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <button
-                                                        onClick={() => toggle(header.key)}
-                                                        className="hover:text-foreground flex w-full items-center justify-center gap-1 font-medium"
-                                                    >
+                                                   <button
+    type="button"
+    onClick={() => toggle(header.key)}
+    aria-label={`Sort by ${header.name}`}
+    className="hover:text-foreground focus-visible:ring-ring flex w-full items-center justify-center gap-1 rounded font-medium focus-visible:ring-2 focus-visible:outline-none"
+>
                                                         {header.name}
                                                         {isActive && direction === 'asc' && (
                                                             <ArrowUp className="h-3 w-3" />
@@ -192,9 +210,12 @@ export function GenericTable({
                                 </TableHead>
                             )
                         })}
-                        <TableHead className="border-border w-12 border-r text-center">
-                            Actions
-                        </TableHead>
+                       <TableHead
+    scope="col"
+    className="border-border w-12 border-r text-center"
+>
+    Actions
+</TableHead>
                     </TableRow>
                 </TableHeader>
 
@@ -226,7 +247,7 @@ export function GenericTable({
                                 colSpan={headers.length + 2}
                                 className="text-muted-foreground py-10 text-center text-sm"
                             >
-                                No matching patients found.
+                                No matching records found for the current search.
                             </TableCell>
                         </TableRow>
                     )}
