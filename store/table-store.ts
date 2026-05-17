@@ -11,9 +11,9 @@ export const isUserDoc = (row: any): row is UserDoc => row && 'userId' in row
 
 interface TableState {
     selectedRow: TableRow
-    modal: 'view' | 'update' | 'delete' | 'bulkDelete' | null
+    modal: 'view' | 'update' | 'delete' | 'bulkDelete' | 'bulkAssign' | null
     setSelectedRow: (row: TableRow | null) => void
-    openModal: (type: 'view' | 'update' | 'delete' | 'bulkDelete') => void
+    openModal: (type: 'view' | 'update' | 'delete' | 'bulkDelete' | 'bulkAssign') => void
     closeModal: () => void
 }
 

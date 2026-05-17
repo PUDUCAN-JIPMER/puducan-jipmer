@@ -31,6 +31,8 @@ import { BulkAction, BulkActionBar } from './BulkActionBar'
 import { useBulkSelectionStore } from '@/store/bulk-selection-store'
 import { Checkbox } from '../ui/checkbox'
 import BulkDeleteDialog from '../dialogs/BulkDeleteDialog'
+import { useBulkExport } from '@/hooks/table/useBulkExport'
+import {BulkAssignDialog} from '../dialogs/BulkAssignDialog'
 
 export function GenericTable({
     headers,
@@ -54,6 +56,7 @@ export function GenericTable({
     const { selectedRow, modal, setSelectedRow, openModal, closeModal } = useTableStore()
 
     const { selectedIds, toggleRow, selectAll, clearSelection, isSelected, selectedIdsArray, selectionCount } = useBulkSelectionStore()
+    const { exportSelected } = useBulkExport()
 
     const queryProps = {
         orgId,
@@ -151,17 +154,18 @@ export function GenericTable({
             label: 'Delete',
             icon: <Trash2 className="h-3 w-3" />,   
             variant: 'destructive',
-            onClick: (ids) => {
+            onClick: () => {
                     openModal('bulkDelete')
             }
          },
          {
             key: 'Assign',
             label: 'Assign',
+            hidden: !isPatientTab, // only show for patients
             icon: <UserPlus className="h-3 w-3" />,
-            onClick: (ids) => {
+            onClick: () => {
                 // handle assign action
-                console.log('Assigning IDs:', ids)
+                openModal('bulkAssign')
             }
          },
          {
@@ -169,13 +173,16 @@ export function GenericTable({
             label: 'Export',
             icon: <Download className="h-3 w-3" />,
             onClick: (ids) => {
-               
-                // handle export logic with exportData
-                console.log('Exporting data for IDs:', ids)
+               exportSelected(
+                ids,
+                stableHeaders,
+                activeTab,
+                data as Record<string, unknown>[],
+               )
             }   
          }
 
-    ], [openModal, isPatientTab])
+    ], [openModal, isPatientTab, exportSelected, data, stableHeaders, activeTab])
 
 
     function selectectedCount(): number {
@@ -366,6 +373,16 @@ export function GenericTable({
                 closeModal(),
                 clearSelection()} }
             
+            />
+
+            <BulkAssignDialog
+            open={modal === 'bulkAssign'}
+            ids={selectedIdsArray()}
+            onClose={ () =>{
+                closeModal(),
+                clearSelection()}
+                
+            }
             />
            
         </div>
