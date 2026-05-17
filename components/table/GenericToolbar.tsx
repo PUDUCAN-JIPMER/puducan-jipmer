@@ -1,5 +1,5 @@
 'use client'
-
+import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import {
     DropdownMenu,
@@ -31,25 +31,25 @@ export function GenericToolbar({
     searchTerm,
     setSearchTerm,
     searchFields,
-    onOpenFilter,
+    isLoading,
 }: {
     activeTab: 'ashas' | 'hospitals' | 'doctors' | 'nurses' | 'patients' | 'removedPatients'
     getExportData: () => any[]
     searchTerm: string
     setSearchTerm: (val: string) => void
     searchFields: readonly string[]
-    onOpenFilter?: () => void
+    isLoading?: boolean
 }) {
     const pathname = usePathname()
     const queryClient = useQueryClient()
     const { role } = useAuth()
 
     const dashboardTitleContent = pathname.includes('/admin') ? (
-        <h1 className="text-2xl font-bold hidden sm:block">Admin Dashboard</h1>
+        <h1 className="hidden text-2xl font-bold sm:block">Admin Dashboard</h1>
     ) : pathname.includes('/nurse') ? (
-        <h1 className="text-2xl font-bold hidden sm:block">Nurse Dashboard</h1>
+        <h1 className="hidden text-2xl font-bold sm:block">Nurse Dashboard</h1>
     ) : (
-        <h1 className="text-2xl font-bold hidden sm:block">Doctor Dashboard</h1>
+        <h1 className="hidden text-2xl font-bold sm:block">Doctor Dashboard</h1>
     )
 
     const handleExportCSV = () => {
@@ -99,32 +99,40 @@ export function GenericToolbar({
             }
         },
 
-        onOpenFilter,
+        
     })
     return (
         <div className="mb-4 flex items-center justify-between">
             {dashboardTitleContent}
-            <KeyBoardShortcuts
-                open={shortcutDialogOpen}
-                onOpenChange={setShortcutDialogOpen}
-            />
-            <div className="flex items-center gap-2 w-full justify-center sm:w-auto">
-                {activeTab && (
-                    <SearchInput
-                        ref={searchInputRef}
-                        value={searchTerm}
-                        onChange={setSearchTerm}
-                        placeholder={`Search ${activeTab} via ${searchFields.join(', ')}`}
-                    />
+            <div className="flex w-full items-center justify-center gap-2 sm:w-auto">
+                {isLoading ? (
+                    <Skeleton className="h-10 w-[250px] rounded-md" />
+                ) : (
+                    activeTab && (
+                        <SearchInput
+                            value={searchTerm}
+                            onChange={setSearchTerm}
+                            placeholder={`Search ${activeTab} via ${searchFields.join(', ')}`}
+                        />
+                    )
                 )}
-                {activeTab === 'patients' && <PatientFilter />}
-                {activeTab === 'patients' && <GenericPatientDialog mode="add" open={activeDialog === 'patients'} onOpenChange={(open) => {setActiveDialog(open ? 'patients' : null)}} />}
-                {activeTab === 'hospitals' && <GenericHospitalDialog mode="add" open={activeDialog === 'hospitals'} onOpenChange={(open) => {setActiveDialog(open ? 'hospitals' : null)}} />}
-                {['ashas', 'doctors', 'nurses'].includes(activeTab) && (
-                    <GenericUserDialog mode="add" userType={activeTab} open={activeDialog === 'users'} onOpenChange={(open) => {setActiveDialog(open ? 'users' : null)}} />
+                {isLoading ? (
+                    <Skeleton className="h-10 w-32 rounded-md" />
+                ) : (
+                    <>
+                        {activeTab === 'patients' && <PatientFilter />}
+                        {activeTab === 'patients' && <GenericPatientDialog mode="add" />}
+                        {activeTab === 'hospitals' && <GenericHospitalDialog mode="add" />}
+                        {['ashas', 'doctors', 'nurses'].includes(activeTab) && (
+                            <GenericUserDialog mode="add" userType={activeTab} />
+                        )}
+                    </>
                 )}
 
                 {/* Three-dot Dropdown */}
+                {isLoading ? (
+    <Skeleton className="h-10 w-10 rounded-md" />
+) : (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="icon">
@@ -169,6 +177,7 @@ export function GenericToolbar({
                         )}
                     </DropdownMenuContent>
                 </DropdownMenu>
+            )}
             </div>
         </div>
     )
