@@ -23,7 +23,7 @@ export async function loginUser(page: Page, email: string, password: string, exp
     await signInButton.click()
 
     // 4. Verify redirect with high timeout for Firebase/Next.js
-    await expect(page).toHaveURL(new RegExp(expectedPath), { timeout: 15000 })
+    await expect(page).toHaveURL(new RegExp(expectedPath), { timeout: 30000 })
 
     // 5. CRITICAL: Stabilize post-login UI. 
     // Wait for the "Sign Out" button in the Navbar. 
