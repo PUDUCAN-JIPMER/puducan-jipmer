@@ -7,7 +7,7 @@ export default function TableSkeleton() {
       <Skeleton className="h-10 w-full rounded-md" />
 
       {/* Table Header */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {Array.from({ length: 5 }).map((_, i) => (
           <Skeleton key={i} className="h-8 w-full" />
         ))}
@@ -15,7 +15,10 @@ export default function TableSkeleton() {
 
       {/* Table Rows */}
       {Array.from({ length: 6 }).map((_, row) => (
-        <div key={row} className="grid grid-cols-5 gap-4">
+       <div
+           key={row}
+           className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
+        > 
           {Array.from({ length: 5 }).map((_, col) => (
             <Skeleton key={col} className="h-10 w-full" />
           ))}

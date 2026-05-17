@@ -201,7 +201,7 @@ export function GenericTable({
                 <TableBody>
                     {isLoading || isLoadingAuth ? (
                         <TableRow>
-                            <TableCell colSpan={8}>
+                            <TableCell colSpan={headers.length + 2}>
                                 <TableSkeleton />
                             </TableCell>
                         </TableRow>
@@ -223,7 +223,7 @@ export function GenericTable({
                     ) : (
                         <TableRow>
                             <TableCell
-                                colSpan={8}
+                                colSpan={headers.length + 2}
                                 className="text-muted-foreground py-10 text-center text-sm"
                             >
                                 No matching patients found.
