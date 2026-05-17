@@ -6,7 +6,7 @@ export const defaultUsers = [
     sex: "male",
     role: "admin",
     phoneNumber: "+919876543210",
-    orgId: "jipmer-main-001",
+    orgId: "jipmer-001",
     orgName: "JIPMER Puducherry"
   },
   {
