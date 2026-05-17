@@ -109,7 +109,7 @@ export function RowActions({
                     {/* View */}
                     <DropdownMenuItem onClick={() => onView(rowData)}>
                         <Eye className="mr-2 h-4 w-4" />
-                        {`View ${activeTab === 'ashas' ? 'ASHA' : activeTab === 'hospitals' ? 'Hospital' : activeTab === 'doctors' ? 'Doctor' : activeTab === 'nurses' ? 'Nurse' : activeTab === 'removedPatients' ? 'Patient' : 'Patient'}`}
+                        View Patient
                     </DropdownMenuItem>
 
                     {/* Edit Patient */}
