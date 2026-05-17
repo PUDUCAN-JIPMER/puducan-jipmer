@@ -42,14 +42,27 @@ export function GenericToolbar({
 }) {
     const pathname = usePathname()
     const queryClient = useQueryClient()
-    const { role } = useAuth()
+    
+    // Destructure role and our newly configured orgName from the auth context
+    const { role, orgName } = useAuth()
 
-    const dashboardTitleContent = pathname.includes('/admin') ? (
-        <h1 className="hidden text-2xl font-bold sm:block">Admin Dashboard</h1>
-    ) : pathname.includes('/nurse') ? (
-        <h1 className="hidden text-2xl font-bold sm:block">Nurse Dashboard</h1>
-    ) : (
-        <h1 className="hidden text-2xl font-bold sm:block">Doctor Dashboard</h1>
+    // Bundled dashboard title along with its adaptive organization subheading
+    const dashboardTitleContent = (
+        <div className="hidden sm:block">
+            {pathname.includes('/admin') ? (
+                <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+            ) : pathname.includes('/nurse') ? (
+                <h1 className="text-2xl font-bold">Nurse Dashboard</h1>
+            ) : (
+                <h1 className="text-2xl font-bold">Doctor Dashboard</h1>
+            )}
+            
+            {orgName && (
+                <p className="mt-0.5 text-sm font-medium text-muted-foreground dark:text-slate-400">
+                    {orgName}
+                </p>
+            )}
+        </div>
     )
 
     const handleExportCSV = () => {
@@ -98,9 +111,8 @@ export function GenericToolbar({
                 setActiveDialog('users')
             }
         },
-
-        
     })
+
     return (
         <div className="mb-4 flex items-center justify-between">
             {dashboardTitleContent}
@@ -131,53 +143,53 @@ export function GenericToolbar({
 
                 {/* Three-dot Dropdown */}
                 {isLoading ? (
-    <Skeleton className="h-10 w-10 rounded-md" />
-) : (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        {/* Import */}
-                        {activeTab === 'patients' && role === 'admin' && (
-                            <DropdownMenuItem
-                                onSelect={(e) => {
-                                    e.preventDefault() // ✅ stop default closing behavior if needed
-                                    console.log('inside import button')
-                                    document.getElementById('file-upload')?.click()
+                    <Skeleton className="h-10 w-10 rounded-md" />
+                ) : (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="icon">
+                                <MoreVertical className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            {/* Import */}
+                            {activeTab === 'patients' && role === 'admin' && (
+                                <DropdownMenuItem
+                                    onSelect={(e) => {
+                                        e.preventDefault() 
+                                        console.log('inside import button')
+                                        document.getElementById('file-upload')?.click()
+                                    }}
+                                >
+                                    Import Patients
+                                </DropdownMenuItem>
+                            )}
+                            <input
+                                id="file-upload"
+                                type="file"
+                                accept=".csv, .xlsx, .xls"
+                                className="hidden"
+                                onChange={(e) => {
+                                    console.log('inside file upload')
+                                    importData(e, queryClient)
                                 }}
-                            >
-                                Import Patients
-                            </DropdownMenuItem>
-                        )}
-                        <input
-                            id="file-upload"
-                            type="file"
-                            accept=".csv, .xlsx, .xls"
-                            className="hidden"
-                            onChange={(e) => {
-                                console.log('inside file upload')
-                                importData(e, queryClient)
-                            }}
-                        />
+                            />
 
-                        {/* Export */}
-                        <DropdownMenuItem onClick={handleExportCSV}>Export as CSV</DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleExportExcel}>
-                            Export as Excel
-                        </DropdownMenuItem>
-
-                        {/* Report (only for patients) */}
-                        {activeTab === 'patients' && (
-                            <DropdownMenuItem onClick={() => generateDiseasePDF(getExportData())}>
-                                Generate Report
+                            {/* Export */}
+                            <DropdownMenuItem onClick={handleExportCSV}>Export as CSV</DropdownMenuItem>
+                            <DropdownMenuItem onClick={handleExportExcel}>
+                                Export as Excel
                             </DropdownMenuItem>
-                        )}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            )}
+
+                            {/* Report (only for patients) */}
+                            {activeTab === 'patients' && (
+                                <DropdownMenuItem onClick={() => generateDiseasePDF(getExportData())}>
+                                    Generate Report
+                                </DropdownMenuItem>
+                            )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                )}
             </div>
         </div>
     )
