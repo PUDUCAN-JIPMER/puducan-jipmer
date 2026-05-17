@@ -47,8 +47,8 @@ const preprocessPatientRow = async (
     // Phone numbers (comma separated → array)
     cleaned.phoneNumber = row.phoneNumber
         ? String(row.phoneNumber)
-              .split(',')
-              .map((p) => p.trim())
+            .split(',')
+            .map((p) => p.trim())
         : []
 
     // Handle dob or age
@@ -82,14 +82,14 @@ const preprocessPatientRow = async (
     // Arrays
     cleaned.diseases = row.disease
         ? String(row.disease)
-              .split(',')
-              .map((d) => d.trim())
+            .split(',')
+            .map((d) => d.trim())
         : []
 
     cleaned.treatmentDetails = row.treatmentDetails
         ? String(row.treatmentDetails)
-              .split(',')
-              .map((d) => d.trim())
+            .split(',')
+            .map((d) => d.trim())
         : []
 
     // Copy over optional fields directly
@@ -110,7 +110,35 @@ const preprocessPatientRow = async (
         transferredFrom: row.transferredFrom ?? '',
         hbcrID: row.hbcrID ?? '',
         hospitalRegistrationId: row.hospitalRegistrationId ?? '',
-        stageOfTheCancer: row.stageOfTheCancer ?? '',
+        // Parse stage strings like "Stage II", "Stage III + B", "II B", etc.
+        stageOfTheCancer: (() => {
+            const raw = String(row.stageOfTheCancer ?? '').trim()
+            if (!raw) return { stage: '', subStage: '' }
+
+            // Normalize common patterns
+            const stageRegex = /(Stage\s*0|Stage\s*I|Stage\s*II|Stage\s*III|Stage\s*IV|\b0\b|\bI\b|\bII\b|\bIII\b|\bIV\b)/i
+            const subRegex = /\b([A-D])\b/i
+
+            const stageMatch = raw.match(stageRegex)
+            const subMatch = raw.match(subRegex)
+
+            let stage = ''
+            if (stageMatch) {
+                stage = stageMatch[0]
+                // Normalize to canonical form like "Stage II"
+                if (/0/i.test(stage)) stage = 'Stage 0'
+                else if (/^\s*I\s*$/i.test(stage) || /Stage\s*I/i.test(stage)) stage = 'Stage I'
+                else if (/^\s*II\s*$/i.test(stage) || /Stage\s*II/i.test(stage)) stage = 'Stage II'
+                else if (/^\s*III\s*$/i.test(stage) || /Stage\s*III/i.test(stage)) stage = 'Stage III'
+                else if (/^\s*IV\s*$/i.test(stage) || /Stage\s*IV/i.test(stage)) stage = 'Stage IV'
+            }
+
+            const sub = subMatch ? subMatch[1].toUpperCase() : ''
+
+            if (!stage) return undefined
+
+            return { stage, subStage: sub }
+        })(),
         reasonOfRemoval: row.reasonOfRemoval ?? '',
         otherTreatmentDetails: row.otherTreatmentDetails ?? '',
     })

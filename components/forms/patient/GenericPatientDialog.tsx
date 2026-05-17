@@ -30,7 +30,7 @@ interface GenericPatientDialogProps {
     onSuccess?: () => void
     // for keyboard shortcuts
     open?: boolean
-    onOpenChange?: (open:boolean) => void
+    onOpenChange?: (open: boolean) => void
 }
 
 export default function GenericPatientDialog({
@@ -50,7 +50,7 @@ export default function GenericPatientDialog({
 
     const setIsOpen = onOpenChange ?? setInternalOpen
 
-    const {orgId} = useAuth()
+    const { orgId } = useAuth()
 
     const form = useForm<PatientFormInputs>({
         resolver: zodResolver(PatientSchema),
@@ -79,7 +79,7 @@ export default function GenericPatientDialog({
             hasAadhaar: true,
             suspectedCase: false,
             biopsyNumber: '',
-            stageOfTheCancer: '',
+            stageOfTheCancer: undefined,
             treatmentDetails: [],
             otherTreatmentDetails: '',
         },
