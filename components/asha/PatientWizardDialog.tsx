@@ -1,6 +1,6 @@
 'use client'
 
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { useAuth } from '@/contexts/AuthContext'
 import { updatePatient } from '@/lib/api/patient.api'
 import { Patient } from '@/schema'
@@ -41,7 +41,6 @@ export function PatientWizardDialog({
         },
     })
 
-    // Reset step when dialog opens
     useEffect(() => {
         if (open) setActiveIndex(0)
     }, [open])
@@ -114,14 +113,16 @@ export function PatientWizardDialog({
 
     return (
         <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-            <DialogContent className="max-w-2xl w-full h-[90vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground">
+            {/* ✅ Removed default close button by not importing DialogTitle */}
+            <DialogContent className="w-[95vw] max-w-2xl h-[90vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground [&>button]:hidden">
+                {/* ^^^ Added [&>button]:hidden to hide default close button */}
 
-                {/* ── Header ── */}
-                <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-border shrink-0">
+                {/* Header with custom close button only */}
+                <div className="flex items-start justify-between px-4 sm:px-6 pt-5 pb-4 border-b border-border shrink-0">
                     <div className="min-w-0">
-                        <DialogTitle className="text-base font-semibold text-foreground truncate">
+                        <h2 className="text-base font-semibold text-foreground truncate">
                             {patient.name || 'Unnamed Patient'}
-                        </DialogTitle>
+                        </h2>
                         <p className="text-xs text-muted-foreground mt-0.5 truncate">
                             {patient.address}
                         </p>
@@ -129,14 +130,14 @@ export function PatientWizardDialog({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="ml-4 shrink-0 rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                        className="shrink-0 rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                         aria-label="Close"
                     >
                         <X size={18} />
                     </button>
                 </div>
 
-                {/* ── Progress bar ── */}
+                {/* Progress bar */}
                 <div className="h-1 w-full bg-muted shrink-0">
                     <div
                         className="h-full bg-primary transition-all duration-300 ease-out"
@@ -144,8 +145,8 @@ export function PatientWizardDialog({
                     />
                 </div>
 
-                {/* ── Step indicators ── */}
-                <div className="flex items-center justify-center gap-1 px-6 py-3 shrink-0">
+                {/* Step indicators - responsive */}
+                <div className="flex items-center justify-center gap-1 px-4 sm:px-6 py-3 shrink-0 overflow-x-auto">
                     {steps.map((_, i) => (
                         <button
                             key={i}
@@ -160,7 +161,7 @@ export function PatientWizardDialog({
                                     }, 220)
                                 }
                             }}
-                            className="flex flex-col items-center gap-1 group"
+                            className="flex flex-col items-center gap-1 group shrink-0"
                         >
                             <div className={`
                                 h-1.5 rounded-full transition-all duration-300
@@ -180,21 +181,17 @@ export function PatientWizardDialog({
                     ))}
                 </div>
 
-                {/* ── Current step label (mobile) ── */}
+                {/* Current step label (mobile) */}
                 <div className="sm:hidden text-center pb-1 shrink-0">
                     <span className="text-xs font-semibold uppercase tracking-widest text-primary">
                         {STEP_LABELS[activeIndex]}
                     </span>
                 </div>
 
-                {/* ── Scrollable form content ── */}
+                {/* Scrollable form content */}
                 <FormProvider {...form}>
-                    <form
-                        onSubmit={handleSubmit}
-                        className="flex flex-1 flex-col min-h-0"
-                    >
-                        {/* Content with slide animation */}
-                        <div className="flex-1 overflow-y-auto px-6 py-4 min-h-0">
+                    <form onSubmit={handleSubmit} className="flex flex-1 flex-col min-h-0">
+                        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 min-h-0">
                             <div
                                 key={activeIndex}
                                 className={`
@@ -211,10 +208,9 @@ export function PatientWizardDialog({
                             </div>
                         </div>
 
-                        {/* ── Navigation footer ── */}
-                        <div className="shrink-0 border-t border-border px-6 py-4">
+                        {/* Navigation footer */}
+                        <div className="shrink-0 border-t border-border px-4 sm:px-6 py-4">
                             {isLast ? (
-                                /* Last step: Save + Done */
                                 <div className="flex flex-col gap-3">
                                     <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                                         <ChevronLeft size={14} />
@@ -233,19 +229,17 @@ export function PatientWizardDialog({
                                     />
                                 </div>
                             ) : (
-                                /* All other steps: Prev + Next */
                                 <div className="flex items-center justify-between gap-3">
                                     <button
                                         type="button"
                                         onClick={() => navigate('back')}
                                         disabled={isFirst}
-                                        className="flex items-center gap-1.5 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+                                        className="flex items-center gap-1.5 rounded-lg border border-border px-3 sm:px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
                                     >
                                         <ChevronLeft size={16} />
-                                        Previous
+                                        <span className="hidden sm:inline">Previous</span>
                                     </button>
 
-                                    {/* Step count */}
                                     <span className="text-xs text-muted-foreground tabular-nums">
                                         {activeIndex + 1} / {totalSteps}
                                     </span>
@@ -254,9 +248,9 @@ export function PatientWizardDialog({
                                         type="button"
                                         onClick={() => navigate('forward')}
                                         disabled={isLast}
-                                        className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed"
+                                        className="flex items-center gap-1.5 rounded-lg bg-primary px-3 sm:px-4 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-30 disabled:cursor-not-allowed"
                                     >
-                                        Next
+                                        <span className="hidden sm:inline">Next</span>
                                         <ChevronRight size={16} />
                                     </button>
                                 </div>
