@@ -1,14 +1,11 @@
 'use client'
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Patient } from '@/schema/patient'
 import { UserDoc } from '@/schema/user'
 import { Hospital } from '@/schema/hospital'
-
 type RowDataType = Patient | UserDoc | Hospital
 type FieldToDisplay = { label: string; key: string }
-
 export default function ViewDetailsDialog({
     open,
     onOpenChange,
@@ -23,7 +20,6 @@ export default function ViewDetailsDialog({
     function renderValue(key: string, value: any): string {
         if (value == null) return 'N/A'
         if (value === '') return 'N/A'
-
         if (Array.isArray(value)) {
             if (value.length === 0) return 'N/A'
             if (typeof value[0] === 'string') return value.join(', ')
@@ -31,23 +27,25 @@ export default function ViewDetailsDialog({
                 return value.map((v) => `${v.date || ''} - ${v.remarks || ''}`).join('; ')
             }
         }
-
         if (typeof value === 'object') {
             if (key === 'gpsLocation') return `Lat: ${value.lat}, Lng: ${value.lng}`
             if (key === 'assignedHospital') return `${value.name}`
             if (key === 'insurance') return `${value.type}${value.id ? ` (${value.id})` : ''}`
             return JSON.stringify(value)
         }
-
         if (typeof value === 'boolean') return value ? 'Yes' : 'No'
-
+        if (typeof value === 'number') {
+            if (key.toLowerCase().includes('date') || key.toLowerCase().includes('year')) {
+                const date = new Date((value - 25569) * 86400 * 1000)
+                return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+            }
+            return String(value)
+        }
         if (typeof value === 'string') {
             return value.charAt(0).toUpperCase() + value.slice(1)
         }
-
         return String(value)
     }
-
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="bg-card text-card-foreground rounded-xl shadow-md sm:max-w-md">
@@ -85,7 +83,6 @@ export default function ViewDetailsDialog({
         </Dialog>
     )
 }
-
 function Info({ label, value }: { label: string; value: string }) {
     return (
         <div className="border-b border-border py-3 last:border-0">
