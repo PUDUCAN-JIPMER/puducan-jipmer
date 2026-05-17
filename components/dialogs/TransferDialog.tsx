@@ -34,10 +34,13 @@ type Hospital = {
 
 export default function TransferDialog({
     onTransfer,
+    trigger,
 }: {
     patient: Patient
     onTransfer: (hospitalId: string, hospitalName: string) => void
-}) {
+    trigger?: React.ReactNode
+})
+ {
     const [hospitals, setHospitals] = useState<Hospital[]>([])
     const [selectedHospital, setSelectedHospital] = useState<Hospital | null>(null)
     const [searchTerm, setSearchTerm] = useState('')
@@ -74,14 +77,16 @@ export default function TransferDialog({
     return (
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-                <Button
-                    size="icon"
-                    variant="outline"
-                    className="cursor-pointer"
-                    title="Transfer Patient"
-                >
-                    <Repeat2 className="h-4 w-4" />
-                </Button>
+                {trigger || (
+                    <Button
+                        size="icon"
+                        variant="outline"
+                        className="cursor-pointer"
+                        title="Transfer Patient"
+                    >
+                        <Repeat2 className="h-4 w-4" />
+                    </Button>
+                )}
             </SheetTrigger>
 
             <SheetContent side="right" className="w-full sm:max-w-md flex flex-col">
