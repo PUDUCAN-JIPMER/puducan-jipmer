@@ -11,20 +11,14 @@ import { ChevronDown, ChevronRight, ChevronUp, Menu, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { NAV_LINKS } from '@/constants/navbar'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Image from 'next/image'
 import { ModeToggle } from '../ui/toggle'
-import { getPaperSavedLabel } from '@/lib/papersaved'
 
 export default function HomeNavbar() {
     const pathname = usePathname()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [mobileDataEntryOpen, setMobileDataEntryOpen] = useState(false)
-    const [paperLabel, setPaperLabel] = useState('🌿 Loading...')
-
-    useEffect(() => {
-        getPaperSavedLabel().then(setPaperLabel)
-    }, [])
 
     const navItem = (label: string, href: string, exact = false) => {
         const isActive = exact ? pathname === href : pathname.startsWith(href)
@@ -87,11 +81,6 @@ export default function HomeNavbar() {
 
                     {navItem('Contact', '/home/contact')}
 
-                    {/* ✅ Paper Saved Badge — desktop */}
-                    <span className="flex items-center gap-1 text-xs font-medium text-green-800 bg-green-100 border border-green-300 rounded-full px-3 py-1 dark:bg-green-900 dark:text-green-200 dark:border-green-700">
-                        {paperLabel}
-                    </span>
-
                     <div className="text-foreground ml-2">
                         <ModeToggle />
                     </div>
@@ -151,11 +140,6 @@ export default function HomeNavbar() {
                     </div>
 
                     {navItem('Contact', '/home/contact')}
-
-                    {/* ✅ Paper Saved Badge — mobile */}
-                    <span className="mx-4 flex items-center gap-1 text-xs font-medium text-green-800 bg-green-100 border border-green-300 rounded-full px-3 py-1 dark:bg-green-900 dark:text-green-200 dark:border-green-700">
-                        {paperLabel}
-                    </span>
                 </div>
             </div>
         </nav>

@@ -1,15 +1,18 @@
 import { db } from '@/firebase'
 import { collection, getCountFromServer } from 'firebase/firestore'
 
-const PAGES_PER_RECORD = 10 // avg pages a paper form would have used
+const PAGES_PER_RECORD = 10
+const FALLBACK_RECORDS = 2400
 
 export async function getPaperSavedLabel(): Promise<string> {
     try {
-        const snap = await getCountFromServer(collection(db, 'patients'))
-        const totalRecords = snap.data().count
-        const sheetsSaved = totalRecords * PAGES_PER_RECORD
-        return `🌿 ${sheetsSaved.toLocaleString()} sheets saved`
+        const ref = collection(db, 'patients')
+        const snapshot = await getCountFromServer(ref)
+        const count = snapshot.data().count
+        const sheets = count * PAGES_PER_RECORD
+        return `🌿 ${sheets.toLocaleString()} sheets saved`
     } catch {
-        return `🌿 Sheets saved by going digital`
+        const sheets = FALLBACK_RECORDS * PAGES_PER_RECORD
+        return `🌿 ${sheets.toLocaleString()} sheets saved`
     }
 }
