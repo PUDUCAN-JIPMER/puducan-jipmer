@@ -12,6 +12,7 @@ import {
 } from '@/constants'
 import { GenericTable } from '@/components/table'
 import { withAuth } from '@/components/hoc/withAuth'
+import WelcomeBanner from '@/components/dashboard/WelcomeBanner'
 import { ROLE_CONFIG } from '@/constants/auth'
 import {
     Select,
@@ -86,7 +87,8 @@ function AdminPageContent() {
             </div>
 
             {/* Tablet+ : horizontal buttons */}
-            <div className="hidden sm:flex flex-wrap gap-2 ">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-wrap gap-2">
                 {(
                     [
                         'hospitals',
@@ -101,20 +103,24 @@ function AdminPageContent() {
                         key={tab}
                         onClick={() => handleTabChange(tab)}
                         variant={'default'}
-                        className={`uppercase text-foreground ${
-                            activeTab === tab ? '' : 'bg-border'
-                        }`}
+                        className={`uppercase text-foreground ${activeTab === tab ? '' : 'bg-border'
+                            }`}
                     >
                         {tabLabels[tab]}
                     </Button>
                 ))}
             </div>
 
-            {/* Table */}
-            <div className="mt-4">
-                <GenericTable headers={selectedHeaders} activeTab={activeTab} />
-            </div>
-        </div>
+            <WelcomeBanner />
+
+        </div> 
+            
+
+            {/* Table */ }
+    <div className="mt-4">
+        <GenericTable headers={selectedHeaders} activeTab={activeTab} />
+    </div>
+        </div >
     )
 }
 
