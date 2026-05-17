@@ -21,12 +21,16 @@ import GenericPatientForm from './GenericPatientForm'
 import clsx from 'clsx'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/contexts/AuthContext'
+import { int } from 'zod'
 
 interface GenericPatientDialogProps {
     mode: 'add' | 'edit'
     trigger?: React.ReactNode
     patientData?: PatientFormInputs & { id?: string }
     onSuccess?: () => void
+    // for keyboard shortcuts
+    open?: boolean
+    onOpenChange?: (open:boolean) => void
 }
 
 export default function GenericPatientDialog({
@@ -34,10 +38,18 @@ export default function GenericPatientDialog({
     trigger,
     patientData,
     onSuccess,
+    // for keyboard shortcuts
+    open,
+    onOpenChange,
 }: GenericPatientDialogProps) {
-    const [open, setOpen] = useState(false)
+    const [internalOpen, setInternalOpen] = useState(false)
     const isEdit = mode === 'edit'
     const queryClient = useQueryClient()
+
+    const isOpen = open ?? internalOpen
+
+    const setIsOpen = onOpenChange ?? setInternalOpen
+
     const {orgId} = useAuth()
 
     const form = useForm<PatientFormInputs>({
@@ -107,7 +119,7 @@ export default function GenericPatientDialog({
 
     // Load from localStorage (for add mode only)
     useEffect(() => {
-        if (open && !isEdit) {
+        if (isOpen && !isEdit) {
             const saved = localStorage.getItem('addPatientFormData')
             if (saved) {
                 try {
@@ -142,7 +154,7 @@ export default function GenericPatientDialog({
                 queryClient.invalidateQueries({ queryKey: ['patients'] })
             }
 
-            setOpen(false)
+            setIsOpen(false)
             reset()
             onSuccess?.()
         } catch (err) {
@@ -163,7 +175,8 @@ export default function GenericPatientDialog({
 
     return (
         <FormProvider {...form}>
-            <Dialog open={open} onOpenChange={setOpen}>
+            {/* added isOpen to handle both keyboard shortcut and click */}
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
 
                 <DialogContent

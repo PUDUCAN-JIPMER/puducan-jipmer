@@ -1,3 +1,4 @@
+// components/HomeNavbar.tsx
 'use client'
 
 import {
@@ -62,15 +63,19 @@ export default function HomeNavbar() {
 
                 <div className="hidden items-center space-x-1 text-nowrap sm:flex md:space-x-2 lg:space-x-3">
                     {navItem('Home', '/home', true)}
+
                     {navItem('About', '/home/about')}
+
                     {navItem('Reports', '/home/reports')}
 
                     <DropdownMenu>
                         <DropdownMenuTrigger className="group relative flex items-center rounded px-2 py-1 text-[13px] text-white transition-all duration-300 focus:outline-none md:px-3 md:py-2 lg:px-4">
                             <span className="relative z-10">Data Entry</span>
+
                             <ChevronDown className="ml-1 h-4 w-4" />
                             <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-white transition-all duration-300 group-hover:w-full"></span>
                         </DropdownMenuTrigger>
+
                         <DropdownMenuContent className="w-44">
                             {NAV_LINKS.map((link) => (
                                 <DropdownMenuItem asChild key={link.name}>
@@ -109,7 +114,9 @@ export default function HomeNavbar() {
             >
                 <div className="mx-auto flex w-fit flex-col space-y-1 pt-2 text-left text-white">
                     {navItem('Home', '/home', true)}
+
                     {navItem('About', '/home/about')}
+
                     {navItem('Reports', '/home/reports')}
 
                     {/* Mobile Data Entry */}
@@ -118,6 +125,7 @@ export default function HomeNavbar() {
                         className="flex items-center gap-2 rounded px-4 py-2 text-sm"
                     >
                         <span>Data Entry</span>
+
                         {mobileDataEntryOpen ? (
                             <ChevronUp className="h-4 w-4" />
                         ) : (
