@@ -47,7 +47,7 @@ export default function ContactPage() {
 
             <div className="mt-8 mb-20 overflow-hidden rounded-xl shadow-lg">
                <iframe
-    src="https://maps.google.com/maps?q=JIPMER%20Campus%20Gorimedu%20Puducherry&z=17&output=embed"
+    src="https://maps.google.com/maps?q=11.9542313,79.7971406&z=17&output=embed"
     width="100%"
     height="350"
     style={{ border: 0 }}
