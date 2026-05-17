@@ -14,39 +14,38 @@ export default function ViewDetailsDialog({
     onOpenChange,
     rowData,
     fieldsToDisplay,
-    }: {
+}: {
     open: boolean
     onOpenChange: (open: boolean) => void
     rowData: RowDataType
     fieldsToDisplay: FieldToDisplay[]
 }) {
     function renderValue(key: string, value: any): string {
-    if (value == null) return 'N/A'
-    if (value === '') return 'N/A'
+        if (value == null) return 'N/A'
+        if (value === '') return 'N/A'
 
-    if (Array.isArray(value)) {
-        if (value.length === 0) return 'N/A'
-        if (typeof value[0] === 'string') return value.join(', ')
-        if (typeof value[0] === 'object') {
-            return value.map((v) => `${v.date || ''} - ${v.remarks || ''}`).join('; ')
+        if (Array.isArray(value)) {
+            if (value.length === 0) return 'N/A'
+            if (typeof value[0] === 'string') return value.join(', ')
+            if (typeof value[0] === 'object') {
+                return value.map((v) => `${v.date || ''} - ${v.remarks || ''}`).join('; ')
+            }
         }
-    }
 
-    if (typeof value === 'object') {
-        if (key === 'gpsLocation') return `Lat: ${value.lat}, Lng: ${value.lng}`
-        if (key === 'assignedHospital') return `${value.name}`
-        if (key === 'insurance') return `${value.type}${value.id ? ` (${value.id})` : ''}`
-        return JSON.stringify(value)
-    }
+        if (typeof value === 'object') {
+            if (key === 'gpsLocation') return `Lat: ${value.lat}, Lng: ${value.lng}`
+            if (key === 'assignedHospital') return `${value.name}`
+            if (key === 'insurance') return `${value.type}${value.id ? ` (${value.id})` : ''}`
+            return JSON.stringify(value)
+        }
 
-    if (typeof value === 'boolean') return value ? 'Yes' : 'No'
+        if (typeof value === 'boolean') return value ? 'Yes' : 'No'
 
-    if (typeof value === 'string') {
-        return value.charAt(0).toUpperCase() + value.slice(1)
-    }
+        if (typeof value === 'string') {
+            return value.charAt(0).toUpperCase() + value.slice(1)
+        }
 
-    return String(value)
-}
+        return String(value)
     }
 
     return (
