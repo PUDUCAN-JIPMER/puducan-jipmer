@@ -92,7 +92,7 @@ export const checkNamePhoneDuplicate = async (
 
         const phoneMatch = cleanedPhoneNumbers.some((num) => patientPhoneNumbers.includes(num))
 
-        if ((nameMatch && phoneMatch) || cleanedName.length > 0) {
+        if (nameMatch && phoneMatch){
             possibleMatchFound = true
             matchedPatientId = doc.id
             break
