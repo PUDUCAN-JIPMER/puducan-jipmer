@@ -23,6 +23,7 @@ import { useTableStore } from '@/store'
 import { useResponsiveRows } from '@/hooks/table/useResponsiveRows'
 import { TabDataMap, RowDataBase, ModalType } from '@/types/table/types'
 import { GenericMobileRow } from './GenericMobileRow'
+import TableSkeleton from '@/components/skeletons/TableSkeleton'
 import { ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useSorting, SORTABLE_KEYS } from '@/hooks/table/useSorting'
@@ -65,7 +66,7 @@ export function GenericTable({
     } as const
 
     const fieldsToDisplay = fieldsMap[activeTab]
-    const { data = [] } = useTableData(queryProps) ?? {}
+    const { data = [], isLoading } = useTableData(queryProps) ?? {}
 
     const searchFields = SEARCH_FIELDS[activeTab]
 
@@ -135,6 +136,7 @@ export function GenericTable({
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 searchFields={SEARCH_FIELDS[activeTab]}
+                isLoading={isLoading || isLoadingAuth}
             />
 
             <Table className="border-border flex-1 overflow-auto rounded-md border">
@@ -197,7 +199,13 @@ export function GenericTable({
                 </TableHeader>
 
                 <TableBody>
-                    {paginatedData.length > 0 ? (
+                    {isLoading || isLoadingAuth ? (
+                        <TableRow>
+                            <TableCell colSpan={headers.length + 2}>
+                                <TableSkeleton />
+                            </TableCell>
+                        </TableRow>
+                    ) : paginatedData.length > 0 ? (
                         paginatedData.map((data, index) => (
                             <GenericRow
                                 key={data.id}
@@ -215,7 +223,7 @@ export function GenericTable({
                     ) : (
                         <TableRow>
                             <TableCell
-                                colSpan={8}
+                                colSpan={headers.length + 2}
                                 className="text-muted-foreground py-10 text-center text-sm"
                             >
                                 No matching patients found.
@@ -250,6 +258,7 @@ export function GenericTable({
                     onPageChange={setCurrentPage}
                     stats={tableStats} // only show stats for patients
                     isPatientTab={isPatientTab}
+                    isLoading={isLoading || isLoadingAuth}
                 />
             </div>
             {selectedRow && modal === 'view' && (
