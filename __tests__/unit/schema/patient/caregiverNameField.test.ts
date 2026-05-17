@@ -13,8 +13,6 @@ describe('PatientSchema - caregiverName field validation', () => {
             assignedHospital: { id: 'h1', name: 'Test Hospital' },
         })
 
-        console.log(result)
-
         expect(result.success).toBe(true)
     })
 
