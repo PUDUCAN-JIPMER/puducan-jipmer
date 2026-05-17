@@ -14,7 +14,6 @@ import { Input } from '@/components/ui/input'
 import { db } from '@/firebase'
 import { deleteDoc, doc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { toast } from 'sonner'
-import { count } from 'console'
 
 type Collections = 'patients' | 'hospitals' | 'doctors' | 'nurses' | 'ashas' | 'removedPatients'
 
@@ -81,17 +80,15 @@ export default function BulkDeleteDialog({
                 if (!reason.trim())
                     throw new Error('Please enter a reason before deleting these patients.')
                 // entries to removedPatients
-               await Promise.all(
-                ids.map(async (id) => {
+               await Promise.all(ids.map(async (id) => {
                     const patientData = rowsData.find((row: any) => row.id === id) ?? { id}
 
                     await setDoc(doc(db, 'removedPatients', id), {
                         ...patientData,
                         deletionReason: reason,
                         deletedAt: serverTimestamp(),
-                        removeFrom: 'patients'
+                        removedFrom: 'patients'
                     })
-                    // 2) delete from patients
                 await deleteDoc(doc(db, 'patients', id))
                 })
                )

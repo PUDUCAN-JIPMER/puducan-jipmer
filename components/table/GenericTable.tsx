@@ -366,6 +366,7 @@ export function GenericTable({
             open={modal === 'bulkDelete'}
             collectionName={activeTab}
             ids={selectedIdsArray()}
+            rowsData={paginatedData as Record<string, any>[]}
             onClose={() =>{
                 closeModal(),
                 clearSelection()} }
