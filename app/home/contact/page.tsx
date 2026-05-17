@@ -14,12 +14,10 @@ export default function ContactPage() {
                 <div>
                     <TypographyP className="font-semibold">Institution:</TypographyP>
 
-                    <div>
-                        <TypographyMuted>
-                            Jawaharlal Institute of Postgraduate Medical Education and Research
-                            (JIPMER)
-                        </TypographyMuted>
-                    </div>
+                    <TypographyMuted>
+                        Jawaharlal Institute of Postgraduate Medical Education and Research
+                        (JIPMER)
+                    </TypographyMuted>
                 </div>
 
                 <div>
@@ -33,21 +31,25 @@ export default function ContactPage() {
                 <div>
                     <TypographyP className="font-semibold">Email:</TypographyP>
 
-                    <TypographyMuted>PuduCan-support@jipmer.edu.in</TypographyMuted>
+                    <TypographyMuted>
+                        PuduCan-support@jipmer.edu.in
+                    </TypographyMuted>
                 </div>
 
                 <div>
                     <TypographyP className="font-semibold">Phone:</TypographyP>
 
-                    <TypographyMuted>+91 2222 2222</TypographyMuted>
+                    <TypographyMuted>
+                        +91 2222 2222
+                    </TypographyMuted>
                 </div>
             </div>
 
-            <div className="mt-6 overflow-hidden rounded-xl shadow">
+            <div className="mt-8 rounded-xl overflow-hidden shadow-lg">
                 <iframe
                     src="https://maps.google.com/maps?q=11.9416,79.8083&z=15&output=embed"
                     width="100%"
-                    height="300"
+                    height="500"
                     style={{ border: 0 }}
                     allowFullScreen
                     loading="lazy"
