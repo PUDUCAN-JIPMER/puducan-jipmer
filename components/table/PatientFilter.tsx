@@ -21,8 +21,9 @@ import {
 import { AVAILABLE_DISEASES_LIST } from '@/constants/diseases'
 import { usePatientFilterStore } from '@/store/patient-filter-store'
 import { ListFilter, X, RotateCcw } from 'lucide-react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
+import { useKeyboardShortcurts } from '@/hooks/keyboardshortcut/keyboardShortcuts'
 
 const AGE_OPTIONS = [
     { label: 'Under 5 years', value: 'lt5' },
@@ -43,6 +44,9 @@ const TRANSFER_OPTIONS = [
 export function PatientFilter() {
     const { filters, setFilter, toggleFilterItem, reset } = usePatientFilterStore()
 
+    // shortcut for filter
+    const [filterOpen, setFilterOpen] = useState(false);
+
     const activeFilterCount = useMemo(() => {
         let count = 0
         count += filters.sexes.length
@@ -55,9 +59,16 @@ export function PatientFilter() {
         return count
     }, [filters])
 
+    // for filter shortcut
+    useKeyboardShortcurts({
+        onOpenFilter: () => {
+            setFilterOpen(true)
+        }
+    })
+
     return (
         <div className="flex flex-col gap-4 md:flex-row md:items-center">
-            <Sheet>
+            <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
                 <SheetTrigger asChild>
                     <Button className="cursor-pointer" variant="outline">
                         <ListFilter className="mr-1 h-4 w-4" />

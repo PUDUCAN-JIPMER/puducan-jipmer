@@ -14,7 +14,7 @@ export default function ViewDetailsDialog({
     onOpenChange,
     rowData,
     fieldsToDisplay,
-    }: {
+}: {
     open: boolean
     onOpenChange: (open: boolean) => void
     rowData: RowDataType
@@ -22,8 +22,10 @@ export default function ViewDetailsDialog({
 }) {
     function renderValue(key: string, value: any): string {
         if (value == null) return 'N/A'
+        if (value === '') return 'N/A'
 
         if (Array.isArray(value)) {
+            if (value.length === 0) return 'N/A'
             if (typeof value[0] === 'string') return value.join(', ')
             if (typeof value[0] === 'object') {
                 return value.map((v) => `${v.date || ''} - ${v.remarks || ''}`).join('; ')
@@ -38,6 +40,10 @@ export default function ViewDetailsDialog({
         }
 
         if (typeof value === 'boolean') return value ? 'Yes' : 'No'
+
+        if (typeof value === 'string') {
+            return value.charAt(0).toUpperCase() + value.slice(1)
+        }
 
         return String(value)
     }
