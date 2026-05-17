@@ -339,49 +339,7 @@ For detailed guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md) and [ARCHITECTUR
 
 ---
 
-## 👥 Contributors
 
-Thanks to these wonderful people who've contributed to PuduCan:
-
-<!-- ALL-CONTRIBUTORS-LIST:START -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-<table>
-  <tbody>
-    <tr>
-      <td align="center" valign="top" width="14.28%">
-        <a href="http://www.lourduradjou.xyz">
-          <img src="https://avatars.githubusercontent.com/u/131673216?v=4?s=100" width="100px;" alt="Lourdu Radjou"/>
-          <br />
-          <sub><b>Lourdu Radjou 🎶</b></sub>
-        </a>
-        <br />
-        <a href="#code-lourduradjou" title="Code">💻</a>
-        <a href="#doc-lourduradjou" title="Documentation">📖</a>
-        <a href="#maintenance-lourduradjou" title="Maintenance">🚧</a>
-      </td>
-      <td align="center" valign="top" width="14.28%">
-        <a href="https://github.com/MozamilS">
-          <img src="https://avatars.githubusercontent.com/u/70207400?v=4?s=100" width="100px;" alt="Sayed Subhan"/>
-          <br />
-          <sub><b>Sayed Subhan Shah Sadat</b></sub>
-        </a>
-        <br />
-        <a href="#code-MozamilS" title="Code">💻</a>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->
-
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
-### Want to add your name here? 🌟
-Contribute to PuduCan and be recognized in this list!
-
----
 
 ## 📝 License
 
