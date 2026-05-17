@@ -8,11 +8,12 @@ import { HospitalFormInputs, UserDoc } from '@/schema'
 import type { Patient } from '@/schema/patient'
 import { useQueryClient } from '@tanstack/react-query'
 import { deleteDoc, doc, setDoc, updateDoc } from 'firebase/firestore'
-import { Eye, Pencil, RotateCcw, Trash2 } from 'lucide-react'
+import { Eye, Pencil, RotateCcw, Trash2, Lightbulb } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import AshaSearchDialog from '../dialogs/AshaSearchDialog'
 import TransferDialog from '../dialogs/TransferDialog'
+import {PatientSummaryDialog} from '../dialogs/PatientSummaryDialog'
 import GenericHospitalDialog from '../forms/hospital/GenericHospitalDialog'
 import GenericPatientDialog from '../forms/patient/GenericPatientDialog'
 import GenericUserDialog from '../forms/user/GenericUserDialog'
@@ -40,6 +41,7 @@ export function RowActions({
     onDelete,
 }: RowActionsProps) {
     const [assignedAshaId, setAssignedAshaId] = useState((rowData as Patient).assignedAsha || '')
+    const [summaryOpen, setSummaryOpen] = useState(false)
     const queryClient = useQueryClient()
     const { role } = useAuth()
 
@@ -74,6 +76,26 @@ export function RowActions({
             <Button size="icon" variant="outline" onClick={() => onView(rowData)} title="View">
                 <Eye className="h-4 w-4" />
             </Button>
+
+            {/* Patient Summary */}
+            {isPatientTab && (
+                <>
+                    <Button
+                        size="icon"
+                        variant="outline"
+                        onClick={() => setSummaryOpen(true)}
+                        title="Patient Summary"
+                    >
+                        <Lightbulb className="h-4 w-4" />
+                    </Button>
+                    <PatientSummaryDialog
+                        open={summaryOpen}
+                        onOpenChange={setSummaryOpen}
+                        patient={rowData as Patient}
+                        patientName={(rowData as Patient).name || 'Unknown Patient'}
+                    />
+                </>
+            )}
 
             {/* Patient Edit */}
             {isPatientTab && (
