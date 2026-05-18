@@ -2,13 +2,17 @@
 
 import { FOOTER_GROUPS } from '@/constants/footer'
 import { useEffect, useState } from 'react'
-import { getPaperSavedLabel } from '@/lib/papersaved'
+import { getPaperSavedCount, calculateSheetsSaved } from '@/lib/papersaved'
 
 export default function Footer() {
-    const [paperLabel, setPaperLabel] = useState<string>('🌿 Calculating...')
+    const [sheetsSaved, setSheetsSaved] = useState<number | null>(null)
 
     useEffect(() => {
-        getPaperSavedLabel().then(setPaperLabel)
+        getPaperSavedCount().then((count) => {
+            if (count > 0) {
+                setSheetsSaved(calculateSheetsSaved(count))
+            }
+        })
     }, [])
 
     return (
@@ -53,9 +57,12 @@ export default function Footer() {
                         🌿 93% cleaner than other websites
                     </a>
 
-                    <span className="inline-flex items-center gap-2 rounded-full border border-green-300 bg-green-50 px-3 py-1 text-xs text-green-700 dark:border-green-700 dark:bg-green-950 dark:text-green-300">
-                        {paperLabel}
-                    </span>
+                    {/* ✅ Only show if real data exists */}
+                    {sheetsSaved !== null && sheetsSaved > 0 && (
+                        <span className="inline-flex items-center gap-2 rounded-full border border-green-300 bg-green-50 px-3 py-1 text-xs text-green-700 dark:border-green-700 dark:bg-green-950 dark:text-green-300">
+                            🌿 {sheetsSaved.toLocaleString()} sheets saved
+                        </span>
+                    )}
                 </div>
 
                 <div className="mt-2 border-t border-gray-200 pt-2 text-center text-xs text-gray-500 dark:border-gray-800 dark:text-gray-100">
@@ -65,7 +72,5 @@ export default function Footer() {
         </footer>
     )
 }
-
-
 
 
