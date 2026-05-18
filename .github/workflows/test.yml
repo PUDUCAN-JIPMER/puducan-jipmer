@@ -27,7 +27,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
+<<<<<<< HEAD
       - uses: actions/setup-node@v6
+=======
+      - uses: actions/setup-node@v4
+>>>>>>> dba3532 (resolve)
         with:
           node-version: 22
           cache: 'pnpm'
