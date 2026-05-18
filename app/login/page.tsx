@@ -189,6 +189,7 @@ export default function LoginPage() {
                                 <Input
                                     placeholder="Email"
                                     type="email"
+                                    autoComplete="email"
                                     aria-label="Email"
                                     {...register('email')}
                                     className="h-11 border-gray-300 bg-gray-50 pl-9 focus-visible:ring-2 focus-visible:ring-emerald-500/40 dark:border-gray-700 dark:bg-gray-800/60"
@@ -208,6 +209,7 @@ export default function LoginPage() {
                                 <Input
                                     placeholder="Password"
                                     aria-label="Password"
+                                    autoComplete="current-password"
                                     type={showPassword ? 'text' : 'password'}
                                     {...register('password')}
                                     className="h-11 border-gray-300 bg-gray-50 pr-10 pl-9 focus-visible:ring-2 focus-visible:ring-emerald-500/40 dark:border-gray-700 dark:bg-gray-800/60"
