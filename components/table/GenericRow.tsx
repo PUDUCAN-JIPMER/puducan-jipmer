@@ -42,8 +42,9 @@ export const GenericRow = memo(function GenericRow(props: GenericRowProps) {
   return (
     <TableRow
       key={rowData.id}
-      className="border-border hidden border-b font-light sm:table-row"
-    >
+      onClick={() => onView(rowData)}
+      className="border-border hidden border-b font-light sm:table-row cursor-pointer hover:bg-muted/40 transition-colors"
+>
       <TableCell className="border-border border-r text-center">{index + 1}</TableCell>
 
       {headers.map((header, index) => (
@@ -61,7 +62,9 @@ export const GenericRow = memo(function GenericRow(props: GenericRowProps) {
         </TableCell>
       ))}
 
-      <TableCell className="space-x-2 text-center">
+      <TableCell className="space-x-2 text-center" 
+                 onClick={(e) => e.stopPropagation()}
+      >
         <RowActions
           rowData={rowData}
           activeTab={activeTab}

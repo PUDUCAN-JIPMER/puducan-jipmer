@@ -1,5 +1,5 @@
 'use client'
-
+import { Skeleton } from '@/components/ui/skeleton'
 import {
     Pagination,
     PaginationContent,
@@ -27,6 +27,7 @@ interface GenericPaginationProps {
     onPageChange: (page: number) => void
     stats?: Stats
     isPatientTab: boolean
+    isLoading?: boolean
 }
 function getPageRange(current: number, total: number, delta = 2): (number | '...')[] {
     const range: (number | '...')[] = [];
@@ -49,13 +50,31 @@ export function GenericPagination({
     onPageChange,
     stats,
     isPatientTab,
+    isLoading
 }: GenericPaginationProps) {
     const pages = getPageRange(currentPage, totalPages);
     return (
         <section className="">
             <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
                 {/* Stats Section */}
-                {stats && (
+    {isLoading ? (
+    <div className="flex w-full flex-wrap gap-2">
+        <Skeleton className="h-8 w-20 rounded-md" />
+        <Skeleton className="h-8 w-20 rounded-md" />
+        <Skeleton className="h-8 w-20 rounded-md" />
+        <Skeleton className="h-8 w-20 rounded-md" />
+
+        {isPatientTab && (
+            <>
+                <Skeleton className="h-8 w-24 rounded-md" />
+                <Skeleton className="h-8 w-24 rounded-md" />
+                <Skeleton className="h-8 w-20 rounded-md" />
+                <Skeleton className="h-8 w-24 rounded-md" />
+            </>
+        )}
+    </div>
+) : (
+                stats && (
                     <div className="flex w-full flex-wrap justify-between gap-2 text-xs font-light sm:text-sm md:flex-row">
                         <section className="flex flex-wrap gap-2 text-center">
                             <div className="border px-2 py-1">Total: {stats.total}</div>
@@ -74,7 +93,8 @@ export function GenericPagination({
                             </section>
                         )}
                     </div>
-                )}
+                )
+)}
 
                 {/* Pagination UI */}
                 <Pagination>
