@@ -27,26 +27,31 @@ export default function PatientStatusSelect({ control, form }: Props) {
     return (
         <div className="flex flex-col gap-4">
             {/* Patient Status Select */}
-            <Controller
+            <FormField
                 control={control}
                 name="patientStatus"
                 render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className="w-full" required={true}>
-                            <SelectValue className="tracking-wider">
-                                {field.value ? (
-                                    <span className="font-medium">{field.value}</span>
-                                ) : (
-                                    'Select Status'
-                                )}
-                            </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent className="tracking-wider">
-                            <SelectItem value="Alive">Alive</SelectItem>
-                            <SelectItem value="Not Alive">Not Alive</SelectItem>
-                            <SelectItem value="Not Available">Not Available</SelectItem>
-                        </SelectContent>
-                    </Select>
+                    <FormItem>
+                        <FormControl>
+                            <Select value={field.value} onValueChange={field.onChange}>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue className="tracking-wider" placeholder="Select Status">
+                                        {field.value ? (
+                                            <span className="font-medium">{field.value}</span>
+                                        ) : (
+                                            'Select Status'
+                                        )}
+                                    </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent className="tracking-wider">
+                                    <SelectItem value="Alive">Alive</SelectItem>
+                                    <SelectItem value="Not Alive">Not Alive</SelectItem>
+                                    <SelectItem value="Not Available">Not Available</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
                 )}
             />
 

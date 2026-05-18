@@ -1,4 +1,4 @@
-import { Controller, Control, useFormContext } from 'react-hook-form'
+import { Control, useFormContext } from 'react-hook-form'
 import {
     Select,
     SelectContent,
@@ -6,6 +6,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
+import { FormField, FormItem, FormControl, FormMessage } from '@/components/ui/form'
 import { AVAILABLE_DISEASES_LIST } from '@/constants/diseases'
 
 type Props = {
@@ -44,26 +45,31 @@ export default function SexSelect({ control }: Props) {
     }
 
     return (
-        <Controller
+        <FormField
             control={control}
             name="sex"
             render={({ field }) => (
-                <Select
-                    value={field.value}
-                    onValueChange={(val) => {
-                        field.onChange(val)
-                        clearGenderIncompatible() // ✅ works now
-                    }}
-                >
-                    <SelectTrigger className="w-full" required={true}>
-                        <SelectValue placeholder="Select Sex" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="male">Male</SelectItem>
-                        <SelectItem value="female">Female</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                </Select>
+                <FormItem>
+                    <FormControl>
+                        <Select
+                            value={field.value}
+                            onValueChange={(val) => {
+                                field.onChange(val)
+                                clearGenderIncompatible() // ✅ works now
+                            }}
+                        >
+                            <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select Sex" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="male">Male</SelectItem>
+                                <SelectItem value="female">Female</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
             )}
         />
     )

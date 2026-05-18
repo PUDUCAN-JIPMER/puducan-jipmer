@@ -1,5 +1,5 @@
 import React from 'react'
-import { Controller, UseFormReturn } from 'react-hook-form'
+import { UseFormReturn } from 'react-hook-form'
 import {
     Select,
     SelectTrigger,
@@ -9,7 +9,7 @@ import {
     SelectLabel,
 } from '@/components/ui/select'
 import { PatientFormInputs } from '@/schema/patient'
-import { Label } from '@/components/ui/label'
+import { FormField, FormItem, FormControl, FormMessage } from '@/components/ui/form'
 import { SelectGroup } from '@radix-ui/react-select'
 
 interface ReligionDropdownProps {
@@ -19,29 +19,34 @@ interface ReligionDropdownProps {
 
 const ReligionDropdown: React.FC<ReligionDropdownProps> = ({ form: { control } }) => {
     return (
-        <Controller
+        <FormField
             control={control}
             name="religion"
             render={({ field }) => (
-                <SelectGroup>
-                    <SelectLabel className="text-muted-foreground mb-1 text-sm">
-                        Religion
-                    </SelectLabel>
-                    <Select value={field.value} onValueChange={(val) => field.onChange(val)}>
-                        <SelectTrigger className="w-full text-muted-foreground mb-1 text-sm">
-                            <SelectValue placeholder="Select Religion" />
-                        </SelectTrigger>
-                        <SelectContent className="text-muted-foreground mb-1 text-sm">
-                            <SelectItem value="hinduism">Hinduism</SelectItem>
-                            <SelectItem value="islam">Islam</SelectItem>
-                            <SelectItem value="christianity">Christianity</SelectItem>
-                            <SelectItem value="sikhism">Sikhism</SelectItem>
-                            <SelectItem value="buddhism">Buddhism</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                            <SelectItem value="none">None / Prefer not to say</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </SelectGroup>
+                <FormItem>
+                    <FormControl>
+                        <SelectGroup>
+                            <SelectLabel className="text-muted-foreground mb-1 text-sm">
+                                Religion
+                            </SelectLabel>
+                            <Select value={field.value} onValueChange={(val) => field.onChange(val)}>
+                                <SelectTrigger className="w-full text-muted-foreground mb-1 text-sm">
+                                    <SelectValue placeholder="Select Religion" />
+                                </SelectTrigger>
+                                <SelectContent className="text-muted-foreground mb-1 text-sm">
+                                    <SelectItem value="hinduism">Hinduism</SelectItem>
+                                    <SelectItem value="islam">Islam</SelectItem>
+                                    <SelectItem value="christianity">Christianity</SelectItem>
+                                    <SelectItem value="sikhism">Sikhism</SelectItem>
+                                    <SelectItem value="buddhism">Buddhism</SelectItem>
+                                    <SelectItem value="other">Other</SelectItem>
+                                    <SelectItem value="none">None / Prefer not to say</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </SelectGroup>
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
             )}
         />
     )
