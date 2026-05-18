@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
-import { Plus } from 'lucide-react'
+import { MapPin, Navigation, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useFormContext } from 'react-hook-form'
 import { PatientFormInputs } from '@/schema/patient'
@@ -19,6 +19,20 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
     const [savingLocation, setSavingLocation] = useState(false)
     const [manualLat, setManualLat] = useState<string>('')
     const [manualLng, setManualLng] = useState<string>('')
+    const [locationError, setLocationError] = useState('')
+    const [reverseGeocoding] = useState(false)
+
+    const currentLocation = patient.gpsLocation as {
+        lat?: number
+        lng?: number
+        accuracy?: number | null
+        placeName?: string
+    }
+
+    const googleMapsUrl =
+        currentLocation?.lat && currentLocation?.lng
+            ? `https://www.google.com/maps?q=${currentLocation.lat},${currentLocation.lng}`
+            : '#'
 
     /** Save new follow-up (optimistic, in form state) */
     const handleSaveNewFollowUp = () => {
@@ -54,6 +68,9 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
                 },
                 (err) => {
                     console.error('Error saving location:', err)
+                    setLocationError(
+                        'Could not get your GPS location. Check browser location permission and try again.'
+                    )
                     setSavingLocation(false)
                 },
                 {
@@ -83,7 +100,12 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
     }
 
     return (
-        <div className={clsx('flex w-full flex-col sm:border-l-2 md:pl-4 gap-4 md:w-1/2 lg:w-1/3', isAsha && 'md:w-2/3 lg:w-full px-2 mx-auto border-none')} >
+        <div
+            className={clsx(
+                'flex w-full flex-col gap-4 sm:border-l-2 md:w-1/2 md:pl-4 lg:w-1/3',
+                isAsha && 'mx-auto border-none px-2 md:w-2/3 lg:w-full'
+            )}
+        >
             {/* --- Follow-Ups Section --- */}
             <div className="w-full space-y-3 pt-2">
                 <div className="flex items-center space-x-4">
@@ -91,7 +113,7 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
                     <Button
                         type="button"
                         size="icon"
-                        className='w-auto px-2 py-1'
+                        className="w-auto px-2 py-1"
                         onClick={() => setIsAddingFollowUp(!isAddingFollowUp)}
                     >
                         <Plus className="h-5 w-5" /> Add
@@ -108,13 +130,19 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
                         />
                         <div className="flex justify-end gap-2">
                             <Button
+                                type="button"
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setIsAddingFollowUp(false)}
                             >
                                 Cancel
                             </Button>
-                            <Button size="sm" variant={'outline'} onClick={handleSaveNewFollowUp}>
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant={'outline'}
+                                onClick={handleSaveNewFollowUp}
+                            >
                                 Save Follow-up
                             </Button>
                         </div>
@@ -153,57 +181,100 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
             </div>
 
             {/* --- GPS Section --- */}
-            <div className="space-y-4 pt-2">
-                {/* Auto GPS */}
-                <Button variant={'outline'} onClick={handleSaveLocation} disabled={savingLocation}>
-                    {savingLocation ? 'Saving GPS...' : 'Use Current GPS Location'}
-                </Button>
-
-                {/* Manual Lat/Lng Input */}
-                <div className="space-y-2 rounded-lg border p-3">
-                    <Label className="text-sm">Manual Location Entry</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            type="number"
-                            step="any"
-                            placeholder="Latitude"
-                            value={manualLat}
-                            onChange={(e) => setManualLat(e.target.value)}
-                        />
-                        <Input
-                            type="number"
-                            step="any"
-                            placeholder="Longitude"
-                            value={manualLng}
-                            onChange={(e) => setManualLng(e.target.value)}
-                        />
+            <div className="bg-muted/20 space-y-3 rounded-xl border p-3">
+                <div className="flex items-center justify-between gap-2">
+                    <div>
+                        <Label className="text-sm font-medium">Patient Location</Label>
                     </div>
-                    <Button className="mt-2 w-full" variant="outline" size="sm" onClick={handleSaveManualLocation}>
-                        Save Manual Location
+                    <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleSaveLocation}
+                        disabled={savingLocation || reverseGeocoding}
+                        className="h-8 shrink-0 rounded-full border border-gray-600 bg-transparent px-3 text-xs text-white hover:bg-gray-600"
+                    >
+                        <Navigation className="h-4 w-4" />
+                        {savingLocation ? 'Saving...' : 'Get Location'}
                     </Button>
                 </div>
 
-                {/* Show Saved Location */}
-                {patient.gpsLocation && (
-                    <>
-                        <p className="text-muted-foreground text-center text-xs">
-                            Location: {patient?.gpsLocation?.lat?.toFixed(4) ?? 'N/A'},{' '}
-                            {patient?.gpsLocation?.lng?.toFixed(4) ?? 'N/A'}
-                        </p>
+                <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                            <Label className="text-muted-foreground text-xs">Latitude</Label>
+                            <Input
+                                type="number"
+                                step="any"
+                                min="-90"
+                                max="90"
+                                placeholder="Lat"
+                                value={manualLat}
+                                onChange={(e) => setManualLat(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <Label className="text-muted-foreground text-xs">Longitude</Label>
+                            <Input
+                                type="number"
+                                step="any"
+                                min="-180"
+                                max="180"
+                                placeholder="Lng"
+                                value={manualLng}
+                                onChange={(e) => setManualLng(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <Button
+                        type="button"
+                        className="w-full"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSaveManualLocation}
+                        disabled={reverseGeocoding}
+                    >
+                        {reverseGeocoding ? 'Finding place...' : 'Save Coordinates'}
+                    </Button>
+                </div>
+
+                {locationError && (
+                    <p className="text-center text-xs text-red-600">{locationError}</p>
+                )}
+
+                {currentLocation && (
+                    <div className="bg-background space-y-2 rounded-lg p-2 text-xs">
+                        <div className="flex items-start gap-2">
+                            <MapPin className="text-primary mt-0.5 h-3.5 w-3.5 shrink-0" />
+                            <div className="min-w-0 flex-1 space-y-1">
+                                <p className="font-medium">Saved location</p>
+                                <p className="text-muted-foreground">
+                                    {currentLocation.lat?.toFixed(6) ?? 'N/A'},{' '}
+                                    {currentLocation.lng?.toFixed(6) ?? 'N/A'}
+                                </p>
+                                {typeof currentLocation.accuracy === 'number' && (
+                                    <p className="text-muted-foreground">
+                                        Accuracy: ±{Math.round(currentLocation.accuracy)}m
+                                    </p>
+                                )}
+                                {currentLocation.placeName && (
+                                    <p className="text-muted-foreground line-clamp-2">
+                                        {currentLocation.placeName}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
 
                         <Button
-                            className="w-full"
-                            variant='outline'
+                            type="button"
+                            className="h-8 w-full text-xs"
+                            variant="outline"
                             onClick={() =>
-                                window.open(
-                                    `https://maps.google.com/?q=${patient.gpsLocation!.lat},${patient.gpsLocation!.lng}`,
-                                    '_blank'
-                                )
+                                window.open(googleMapsUrl, '_blank', 'noopener,noreferrer')
                             }
                         >
                             View in Google Maps
                         </Button>
-                    </>
+                    </div>
                 )}
             </div>
         </div>
