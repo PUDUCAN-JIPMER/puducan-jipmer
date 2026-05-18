@@ -19,7 +19,9 @@ import GenericPatientDialog from '../forms/patient/GenericPatientDialog'
 import GenericUserDialog from '../forms/user/GenericUserDialog'
 import { SearchInput } from '../search/SearchInput'
 import { useAuth } from '@/contexts/AuthContext'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { useKeyboardShortcurts } from '@/hooks/keyboardshortcut/keyboardShortcuts'
+import { KeyBoardShortcuts } from '../common/KeyBoardShortcuts'
 
 export function GenericToolbar({
     activeTab,
@@ -44,6 +46,30 @@ export function GenericToolbar({
     const [mobileFilterOpen, setMobileFilterOpen] = useState(false)
     const [mobileAddOpen, setMobileAddOpen] = useState(false)
 
+    // Keyboard shortcuts
+    const searchInputRef = useRef<HTMLInputElement>(null)
+    const [shortcutDialogOpen, setShortcutDialogOpen] = useState(false)
+    const [activeDialog, setActiveDialog] = useState
+        'patients' | 'hospitals' | 'users' | null
+    >(null)
+
+    useKeyboardShortcurts({
+        onSearchFocus: () => {
+            searchInputRef.current?.focus()
+        },
+        onOpenShortcuts: () => {
+            setShortcutDialogOpen(true)
+        },
+        onCloseDialog: () => {
+            setShortcutDialogOpen(false)
+        },
+        onNewPatient: () => {
+            if (activeTab === 'patients') setActiveDialog('patients')
+            if (activeTab === 'hospitals') setActiveDialog('hospitals')
+            if (['ashas', 'doctors', 'nurses'].includes(activeTab)) setActiveDialog('users')
+        },
+    })
+
     const dashboardTitleContent = pathname.includes('/admin') ? (
         <h1 className="hidden text-2xl font-bold sm:block">Admin Dashboard</h1>
     ) : pathname.includes('/nurse') ? (
@@ -64,7 +90,6 @@ export function GenericToolbar({
                 {/* ── MOBILE TOOLBAR ── */}
                 <div className="flex flex-row items-center gap-2 w-full sm:hidden">
 
-                    {/* Search takes full width */}
                     {activeTab && (
                         <div className="flex-1">
                             <SearchInput
@@ -75,7 +100,6 @@ export function GenericToolbar({
                         </div>
                     )}
 
-                    {/* Hidden dialogs controlled by mobile menu */}
                     {activeTab === 'patients' && (
                         <>
                             <div className="hidden">
@@ -91,7 +115,6 @@ export function GenericToolbar({
                         </>
                     )}
 
-                    {/* Three-dot menu */}
                     {isLoading ? (
                         <Skeleton className="h-10 w-10 rounded-md flex-shrink-0" />
                     ) : (
@@ -105,33 +128,25 @@ export function GenericToolbar({
                             <DropdownMenuContent align="end">
 
                                 {activeTab === 'patients' && (
-                                    <DropdownMenuItem
-                                        onSelect={() => setMobileFilterOpen(true)}
-                                    >
+                                    <DropdownMenuItem onSelect={() => setMobileFilterOpen(true)}>
                                         Filter Patients
                                     </DropdownMenuItem>
                                 )}
 
                                 {activeTab === 'patients' && (
-                                    <DropdownMenuItem
-                                        onSelect={() => setMobileAddOpen(true)}
-                                    >
+                                    <DropdownMenuItem onSelect={() => setMobileAddOpen(true)}>
                                         Add Patient
                                     </DropdownMenuItem>
                                 )}
 
                                 {activeTab === 'hospitals' && (
-                                    <DropdownMenuItem
-                                        onSelect={() => document.querySelector<HTMLButtonElement>('[data-hospital-add]')?.click()}
-                                    >
+                                    <DropdownMenuItem onSelect={() => setActiveDialog('hospitals')}>
                                         Add Hospital
                                     </DropdownMenuItem>
                                 )}
 
                                 {['ashas', 'doctors', 'nurses'].includes(activeTab) && (
-                                    <DropdownMenuItem
-                                        onSelect={() => document.querySelector<HTMLButtonElement>('[data-user-add]')?.click()}
-                                    >
+                                    <DropdownMenuItem onSelect={() => setActiveDialog('users')}>
                                         Add {activeTab.slice(0, -1)}
                                     </DropdownMenuItem>
                                 )}
@@ -180,10 +195,27 @@ export function GenericToolbar({
                     )}
 
                     {activeTab === 'patients' && <PatientFilter />}
-                    {activeTab === 'patients' && <GenericPatientDialog mode="add" />}
-                    {activeTab === 'hospitals' && <GenericHospitalDialog mode="add" />}
+                    {activeTab === 'patients' && (
+                        <GenericPatientDialog
+                            mode="add"
+                            open={activeDialog === 'patients'}
+                            onOpenChange={(open) => setActiveDialog(open ? 'patients' : null)}
+                        />
+                    )}
+                    {activeTab === 'hospitals' && (
+                        <GenericHospitalDialog
+                            mode="add"
+                            open={activeDialog === 'hospitals'}
+                            onOpenChange={(open) => setActiveDialog(open ? 'hospitals' : null)}
+                        />
+                    )}
                     {['ashas', 'doctors', 'nurses'].includes(activeTab) && (
-                        <GenericUserDialog mode="add" userType={activeTab} />
+                        <GenericUserDialog
+                            mode="add"
+                            userType={activeTab}
+                            open={activeDialog === 'users'}
+                            onOpenChange={(open) => setActiveDialog(open ? 'users' : null)}
+                        />
                     )}
 
                     {isLoading ? (
@@ -238,6 +270,11 @@ export function GenericToolbar({
                 />
 
             </div>
+
+            <KeyBoardShortcuts
+                open={shortcutDialogOpen}
+                onOpenChange={setShortcutDialogOpen}
+            />
         </div>
     )
 }
