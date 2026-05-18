@@ -7,7 +7,8 @@ import { useStatsData } from '@/hooks/stats/useStatsData'
 import { PatientStatsSection } from '@/components/stats/PatientStatsSection'
 import { AdminStatsSection } from '@/components/stats/AdminStatsSection'
 import { Skeleton } from '@/components/ui/skeleton'
-import { AlertCircle, BarChart3 } from 'lucide-react'
+import { AlertCircle, BarChart3, ArrowLeft } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 // ── Allowed for admin, doctor, and nurse ────────────────────────────
 const STATS_ROLE_CONFIG = {
@@ -17,6 +18,7 @@ const STATS_ROLE_CONFIG = {
 
 function StatsPageContent() {
     const { role, orgId } = useAuth()
+    const router = useRouter()
 
     const { patientStats, adminStats, isLoading, isError } = useStatsData({
         role,
@@ -25,9 +27,9 @@ function StatsPageContent() {
 
     if (isLoading) {
         return (
-            <main className="mx-auto max-w-6xl px-4 py-6 space-y-6">
+            <main className="mx-auto max-w-6xl space-y-6 px-4 py-6">
                 <div className="flex items-center gap-2">
-                    <BarChart3 className="h-6 w-6 text-primary" />
+                    <BarChart3 className="text-primary h-6 w-6" />
                     <h1 className="text-2xl font-bold">Analytics</h1>
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -46,8 +48,8 @@ function StatsPageContent() {
 
     if (isError) {
         return (
-            <main className="mx-auto max-w-6xl px-4 py-12 flex flex-col items-center gap-3 text-center">
-                <AlertCircle className="h-10 w-10 text-destructive" />
+            <main className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 py-12 text-center">
+                <AlertCircle className="text-destructive h-10 w-10" />
                 <p className="text-lg font-medium">Failed to load analytics data.</p>
                 <p className="text-muted-foreground text-sm">
                     Check your connection and try refreshing the page.
@@ -57,21 +59,28 @@ function StatsPageContent() {
     }
 
     return (
-        <main className="mx-auto max-w-6xl px-4 py-6 lg:max-w-[1240px] xl:max-w-[1400px] space-y-8">
+        <main className="mx-auto max-w-6xl space-y-8 px-4 py-6 lg:max-w-[1240px] xl:max-w-[1400px]">
             {/* Page header */}
             <div className="flex items-center gap-2 border-b pb-3">
-                <BarChart3 className="h-6 w-6 text-primary" />
+                <button
+                    onClick={() => router.back()}
+                    className="text-muted-foreground hover:text-foreground bg-muted mr-6 flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back
+                </button>
+                <BarChart3 className="text-primary h-6 w-6" />
                 <h1 className="text-2xl font-bold">Analytics</h1>
-                <span className="ml-auto text-sm text-muted-foreground capitalize bg-muted px-2 py-1 rounded-md">
+                <span className="text-muted-foreground bg-muted ml-auto rounded-md px-2 py-1 text-sm capitalize">
                     {role}
                 </span>
             </div>
 
             {/* Patient stats — visible to all allowed roles */}
             <section>
-                <h2 className="mb-4 text-lg font-semibold flex items-center gap-2">
+                <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
                     Patient Insights
-                    <span className="text-xs text-muted-foreground font-normal">
+                    <span className="text-muted-foreground text-xs font-normal">
                         ({role === 'admin' ? 'All hospitals' : 'Your hospital'})
                     </span>
                 </h2>
