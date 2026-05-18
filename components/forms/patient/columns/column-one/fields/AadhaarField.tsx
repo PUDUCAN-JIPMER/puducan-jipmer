@@ -84,6 +84,12 @@ export default function AadhaarField({ form }: AadhaarFieldProps) {
                                 {...field}
                                 label="Aabha Number"
                                 autoComplete="off"
+                                maxLength={14}
+                                inputMode="numeric"
+                                onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '')
+                                field.onChange(value)
+                                }}
                             />
                         </FormControl>
                         <FormMessage />

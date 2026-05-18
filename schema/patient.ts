@@ -52,7 +52,12 @@ export const PatientSchema = z
         patientStatus: z.enum(['Alive', 'Not Alive', 'Not Available']).optional(),
         patientDeathDate: z.string().optional(),
         // treatmentStatus: z.enum(['Ongoing', 'FollowUp', 'Stopped', 'Not Available']).optional(),
-        aabhaId: z.string().optional(),
+        aabhaId: z
+            .string()
+            .trim()
+            .regex(/^\d{14}$/, "ABHA ID must contain exactly 14 digits")
+            .optional()
+            .or(z.literal("")),
         diagnosedDate: z.string().optional(),
         diagnosedYearsAgo: z.string().optional(),
         // new fields after second meet
