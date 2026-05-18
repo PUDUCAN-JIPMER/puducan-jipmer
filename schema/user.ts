@@ -11,7 +11,7 @@ export const UserSchema = z.object({
     phoneNumber: z.string().optional(),
     orgId: z.string(),
     orgName: z.string(),
-    organization: z.string().optional(), 
+    organization: z.string().optional(),
 })
 
 export type UserFormInputs = z.infer<typeof UserSchema>
@@ -22,7 +22,7 @@ export interface AuthState {
     userId: string | null
     role: string | null
     orgId: string | null
-    organization: string | null 
+    organization: string | null
     isLoadingAuth: boolean
-    error: any | null 
+    error: unknown | null
 }

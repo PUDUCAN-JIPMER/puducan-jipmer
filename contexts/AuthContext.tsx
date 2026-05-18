@@ -6,15 +6,12 @@ import { AuthState, UserDoc } from '@/schema/user'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { User as FirebaseAuthUser, onAuthStateChanged } from 'firebase/auth'
 import { collection, getDocs, query, where } from 'firebase/firestore'
-import { usePathname, useRouter } from 'next/navigation'
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react'
-import { toast } from 'sonner'
 
 // Consuming the core, updated AuthState schema model directly per reviewer feedback
 const AuthContext = createContext<AuthState | undefined>(undefined)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const router = useRouter()
     const queryClient = useQueryClient()
 
     const [firebaseUser, setFirebaseUser] = useState<FirebaseAuthUser | null>(null)
@@ -67,12 +64,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Handle user role errors
     useEffect(() => {
         if (isErrorUserRole && firebaseUser) {
-            toast.error(error?.message || 'Failed to load user profile. Please log in again.')
             auth.signOut()
-            router.push('/login')
             queryClient.removeQueries({ queryKey: ['userDoc', firebaseUser.uid] })
         }
-    }, [isErrorUserRole, firebaseUser, error, router, queryClient])
+    }, [isErrorUserRole, firebaseUser, queryClient])
 
     if (isLoadingAuth) {
         return (
@@ -85,7 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const authState: AuthState = {
         user: firebaseUser,
-        userId, 
+        userId,
         role,
         orgId,
         organization, // Passing the clean schema matching variable down
