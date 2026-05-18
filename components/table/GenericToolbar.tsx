@@ -34,7 +34,13 @@ export function GenericToolbar({
     searchFields,
     isLoading,
 }: {
-    activeTab: 'ashas' | 'hospitals' | 'doctors' | 'nurses' | 'patients' | 'removedPatients'
+    activeTab:
+        | 'ashas'
+        | 'hospitals'
+        | 'doctors'
+        | 'nurses'
+        | 'patients'
+        | 'removedPatients'
     getExportData: () => any[]
     searchTerm: string
     setSearchTerm: (val: string) => void
@@ -44,8 +50,8 @@ export function GenericToolbar({
     const pathname = usePathname()
     const queryClient = useQueryClient()
 
-    // Destructure role and orgName from auth context
-    const { role, orgName } = useAuth()
+    // Auth context
+    const { role, organization } = useAuth()
 
     // Dashboard title with organization name
     const dashboardTitleContent = (
@@ -58,9 +64,9 @@ export function GenericToolbar({
                 <h1 className="text-2xl font-bold">Doctor Dashboard</h1>
             )}
 
-            {orgName && (
+            {organization && (
                 <p className="mt-0.5 text-sm font-medium text-muted-foreground dark:text-slate-400">
-                    {orgName}
+                    {organization}
                 </p>
             )}
         </div>
@@ -135,12 +141,15 @@ export function GenericToolbar({
                 ) : (
                     <>
                         {activeTab === 'patients' && <PatientFilter />}
+
                         {activeTab === 'patients' && (
                             <GenericPatientDialog mode="add" />
                         )}
+
                         {activeTab === 'hospitals' && (
                             <GenericHospitalDialog mode="add" />
                         )}
+
                         {['ashas', 'doctors', 'nurses'].includes(activeTab) && (
                             <GenericUserDialog
                                 mode="add"
@@ -163,19 +172,22 @@ export function GenericToolbar({
 
                         <DropdownMenuContent align="end">
                             {/* Import */}
-                            {activeTab === 'patients' && role === 'admin' && (
-                                <DropdownMenuItem
-                                    onSelect={(e) => {
-                                        e.preventDefault()
-                                        console.log('inside import button')
-                                        document
-                                            .getElementById('file-upload')
-                                            ?.click()
-                                    }}
-                                >
-                                    Import Patients
-                                </DropdownMenuItem>
-                            )}
+                            {activeTab === 'patients' &&
+                                role === 'admin' && (
+                                    <DropdownMenuItem
+                                        onSelect={(e) => {
+                                            e.preventDefault()
+                                            console.log(
+                                                'inside import button'
+                                            )
+                                            document
+                                                .getElementById('file-upload')
+                                                ?.click()
+                                        }}
+                                    >
+                                        Import Patients
+                                    </DropdownMenuItem>
+                                )}
 
                             <input
                                 id="file-upload"

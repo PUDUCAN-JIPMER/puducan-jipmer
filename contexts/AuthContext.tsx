@@ -10,13 +10,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
-// 1. Extend the local representation of AuthState if you have inline typing issues, 
-// but modifying your schema file directly is ideal.
-interface ExtendedAuthState extends AuthState {
-    orgName: string | null
-}
-
-const AuthContext = createContext<ExtendedAuthState | undefined>(undefined)
+// Consuming the core, updated AuthState schema model directly per reviewer feedback
+const AuthContext = createContext<AuthState | undefined>(undefined)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const router = useRouter()
@@ -66,13 +61,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const userId = userDocData?.id || null
     const error = isErrorUserRole ? userRoleError : null
 
-    // 2. Extract the adaptive name field from your Firestore dataset safely
-    // (Matches hospitalName or orgName or assignedHospital keys)
-    const orgName = 
-        (userDocData?.data as any)?.organization || 
-        (userDocData?.data as any)?.hospitalName || 
-        (userDocData?.data as any)?.orgName || 
-        null
+    // Directly reading the organization property structure defined in your updated user model schema
+    const organization = userDocData?.data.organization || null
 
     // Handle user role errors
     useEffect(() => {
@@ -93,13 +83,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         )
     }
 
-    // 3. Pass the orgName down into your global context state provider
-    const authState: ExtendedAuthState = {
+    const authState: AuthState = {
         user: firebaseUser,
         userId, 
         role,
         orgId,
-        orgName,
+        organization, // Passing the clean schema matching variable down
         isLoadingAuth,
         error,
     }

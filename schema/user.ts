@@ -1,5 +1,4 @@
 import z from 'zod'
-
 import { User as FirebaseAuthUser } from 'firebase/auth'
 
 // User Schema (Doctor, Asha, Nurse, Admin)
@@ -12,6 +11,7 @@ export const UserSchema = z.object({
     phoneNumber: z.string().optional(),
     orgId: z.string(),
     orgName: z.string(),
+    organization: z.string().optional(), 
 })
 
 export type UserFormInputs = z.infer<typeof UserSchema>
@@ -22,6 +22,7 @@ export interface AuthState {
     userId: string | null
     role: string | null
     orgId: string | null
+    organization: string | null 
     isLoadingAuth: boolean
-    error: Error | null
+    error: any | null 
 }
