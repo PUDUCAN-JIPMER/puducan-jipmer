@@ -42,27 +42,16 @@ export function GenericToolbar({
     const queryClient = useQueryClient()
     const { role } = useAuth()
 
-    // Mobile dialog/filter open states
     const [mobileFilterOpen, setMobileFilterOpen] = useState(false)
     const [mobileAddOpen, setMobileAddOpen] = useState(false)
-
-    // Keyboard shortcuts
     const searchInputRef = useRef<HTMLInputElement>(null)
     const [shortcutDialogOpen, setShortcutDialogOpen] = useState(false)
-    const [activeDialog, setActiveDialog] = useState
-        'patients' | 'hospitals' | 'users' | null
-    >(null)
-
+    const [activeDialog, setActiveDialog] = useState<'patients' | 'hospitals' | 'users' | null>(null)
+    // deployment fix
     useKeyboardShortcurts({
-        onSearchFocus: () => {
-            searchInputRef.current?.focus()
-        },
-        onOpenShortcuts: () => {
-            setShortcutDialogOpen(true)
-        },
-        onCloseDialog: () => {
-            setShortcutDialogOpen(false)
-        },
+        onSearchFocus: () => { searchInputRef.current?.focus() },
+        onOpenShortcuts: () => { setShortcutDialogOpen(true) },
+        onCloseDialog: () => { setShortcutDialogOpen(false) },
         onNewPatient: () => {
             if (activeTab === 'patients') setActiveDialog('patients')
             if (activeTab === 'hospitals') setActiveDialog('hospitals')
@@ -87,7 +76,7 @@ export function GenericToolbar({
 
             <div className="flex flex-col gap-2 w-full sm:flex-row sm:items-center sm:justify-end">
 
-                {/* ── MOBILE TOOLBAR ── */}
+                {/* MOBILE TOOLBAR */}
                 <div className="flex flex-row items-center gap-2 w-full sm:hidden">
 
                     {activeTab && (
@@ -124,7 +113,6 @@ export function GenericToolbar({
                                     <MoreVertical className="h-4 w-4" />
                                 </Button>
                             </DropdownMenuTrigger>
-
                             <DropdownMenuContent align="end">
 
                                 {activeTab === 'patients' && (
@@ -181,7 +169,7 @@ export function GenericToolbar({
                     )}
                 </div>
 
-                {/* ── DESKTOP TOOLBAR ── */}
+                {/* DESKTOP TOOLBAR */}
                 <div className="hidden sm:flex sm:flex-row sm:items-center sm:justify-end sm:gap-2 w-full">
 
                     {activeTab && (
@@ -227,7 +215,6 @@ export function GenericToolbar({
                                     <MoreVertical className="h-4 w-4" />
                                 </Button>
                             </DropdownMenuTrigger>
-
                             <DropdownMenuContent align="end">
 
                                 {activeTab === 'patients' && role === 'admin' && (
