@@ -6,7 +6,7 @@ import Footer from '@/components/ui/footer'
 
 export default function HomeLayout({ children }: { children: React.ReactNode }) {
     return (
-        <div className="flex h-screen flex-col ">
+        <div className="flex min-h-screen flex-col ">
             <HomeNavbar />
             <NavigationLoading />
 
