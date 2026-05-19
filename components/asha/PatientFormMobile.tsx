@@ -11,12 +11,22 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { ColumnFive, ColumnFour, ColumnOne, ColumnThree, ColumnTwo } from '../forms/patient'
 import { PatientHeader, ActionButtons, SwipeableColumns } from '.'  
-import { PatientWizardDialog } from './Patientwizarddialog'
+import { PatientWizardDialog } from './PatientWizardDialog'
 
 export default function PatientFormMobile({ patient }: { patient: Patient }) {
     const [dialogOpen, setDialogOpen] = useState(false)
+    const [dialogOpen, setDialogOpen] = useState(false)
 
     return (
+        <>
+            {/* Clickable patient card */}
+            <div
+                role="button"
+                tabIndex={0}
+                onClick={() => setDialogOpen(true)}
+                onKeyDown={(e) => e.key === 'Enter' && setDialogOpen(true)}
+                className="w-full rounded-xl border border-border bg-card text-card-foreground shadow-sm cursor-pointer transition-all hover:shadow-md hover:border-primary/30 active:scale-[0.995]"
+            >
         <>
             {/* Clickable patient card */}
             <div
@@ -35,7 +45,21 @@ export default function PatientFormMobile({ patient }: { patient: Patient }) {
                     patientStatus={patient.patientStatus}
                     suspectedCase={patient.suspectedCase}
                 />
+                    isOpen={false}
+                    onToggle={() => setDialogOpen(true)}
+                    diseases={patient.diseases}
+                    patientStatus={patient.patientStatus}
+                    suspectedCase={patient.suspectedCase}
+                />
             </div>
+
+            {/* Wizard dialog */}
+            <PatientWizardDialog
+                patient={patient}
+                open={dialogOpen}
+                onClose={() => setDialogOpen(false)}
+            />
+        </>
 
             {/* Wizard dialog */}
             <PatientWizardDialog

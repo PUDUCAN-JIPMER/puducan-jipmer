@@ -45,6 +45,8 @@ export const PatientSchema = z
             .object({
                 lat: z.number().optional(),
                 lng: z.number().optional(),
+                accuracy: z.number().nullable().optional(),
+                placeName: z.string().nullable().optional(),
             })
             .optional()
             .nullable(),
