@@ -21,6 +21,7 @@ import GenericPatientForm from './GenericPatientForm'
 import clsx from 'clsx'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/contexts/AuthContext'
+import { int } from 'zod'
 
 interface GenericPatientDialogProps {
     mode: 'add' | 'edit'
@@ -29,7 +30,7 @@ interface GenericPatientDialogProps {
     onSuccess?: () => void
     // for keyboard shortcuts
     open?: boolean
-    onOpenChange?: (open: boolean) => void
+    onOpenChange?: (open:boolean) => void
 }
 
 export default function GenericPatientDialog({
@@ -37,6 +38,7 @@ export default function GenericPatientDialog({
     trigger,
     patientData,
     onSuccess,
+    // for keyboard shortcuts
     open,
     onOpenChange,
 }: GenericPatientDialogProps) {
@@ -48,7 +50,7 @@ export default function GenericPatientDialog({
 
     const setIsOpen = onOpenChange ?? setInternalOpen
 
-    const { orgId } = useAuth()
+    const {orgId} = useAuth()
 
     const form = useForm<PatientFormInputs>({
         resolver: zodResolver(PatientSchema),
@@ -175,6 +177,7 @@ export default function GenericPatientDialog({
 
     return (
         <FormProvider {...form}>
+            {/* added isOpen to handle both keyboard shortcut and click */}
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
 
