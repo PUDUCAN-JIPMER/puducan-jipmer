@@ -12,19 +12,23 @@ const queryClient = new QueryClient()
 
 export default function Providers({ children }: { children: ReactNode }) {
     return (
-        <QueryClientProvider client={queryClient}>
-            <AuthProvider>
-                <ThemeProvider
-                    attribute="class"
-                    defaultTheme="system"
-                    enableSystem
-                    disableTransitionOnChange
-                >
-                    <Toaster richColors />
-                    {children}
-                </ThemeProvider>
-            </AuthProvider>
-            <ReactQueryDevtools initialIsOpen={false} />
-        </QueryClientProvider>
+        <html lang="en" suppressHydrationWarning>
+            <body>
+                <QueryClientProvider client={queryClient}>
+                    <AuthProvider>
+                        <ThemeProvider
+                            attribute="class"
+                            defaultTheme="system"
+                            enableSystem
+                            disableTransitionOnChange
+                        >
+                            <Toaster richColors />
+                            {children}
+                        </ThemeProvider>
+                    </AuthProvider>
+                    <ReactQueryDevtools initialIsOpen={false} />
+                </QueryClientProvider>
+            </body>
+        </html>
     )
 }
