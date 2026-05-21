@@ -97,7 +97,7 @@ export function NormalizedNotePreview({ note, originalText }: Props) {
                                     <ul className="space-y-1.5 text-xs">
                                         {note.uncertainPhrases.map((u, i) => (
                                             <li key={i}>
-                                                <span className="font-mono">"{u.original}"</span>
+                                                <span className="font-mono">&quot;{u.original}&quot;</span>
                                                 {' → '}
                                                 <span>interpreted as: {u.interpretation}</span>
                                                 <div className="text-muted-foreground">

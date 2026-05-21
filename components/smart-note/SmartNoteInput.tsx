@@ -220,7 +220,7 @@ export function SmartNoteInput({
       {!stt.isSupported && (
         <Alert>
           <AlertDescription className="text-xs">
-            Voice input isn't available on this browser. You can still type your note phonetically below.
+            Voice input isn&apos;t available on this browser. You can still type your note phonetically below.
           </AlertDescription>
         </Alert>
       )}

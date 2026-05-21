@@ -15,7 +15,7 @@ class MockSpeechRecognition implements SpeechRecognition {
   interimResults = false;
   lang = '';
   maxAlternatives = 1;
-  onresult: SpeechRecognition['onresult'] = null;
+  onresult: ((ev: SpeechRecognitionEvent) => void) | null = null
   onerror:  SpeechRecognition['onerror']  = null;
   onend:    SpeechRecognition['onend']    = null;
   onstart:  SpeechRecognition['onstart']  = null;

@@ -105,7 +105,7 @@ describe('POST /api/notes/normalize', () => {
     expect(lastTurn.role).toBe('user');
     expect(lastTurn.parts[0].text).toContain('fever cough patient');
     // At least one model exemplar before the actual user input
-    expect(contents.some((t: any) => t.role === 'model')).toBe(true);
+    expect(contents.some((t: { role: string }) => t.role === 'model')).toBe(true);
   });
 
   it('returns 502 when Gemini returns non-JSON text', async () => {
