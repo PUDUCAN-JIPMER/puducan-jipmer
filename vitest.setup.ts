@@ -8,7 +8,7 @@ class ResizeObserver {
     unobserve() {}
     disconnect() {}
 }
-vi.stubGlobal('ResizeObserver', ResizeObserver as any)
+vi.stubGlobal('ResizeObserver', ResizeObserver)
 
 class MockSpeechRecognition implements SpeechRecognition {
   continuous = false;
@@ -26,7 +26,7 @@ class MockSpeechRecognition implements SpeechRecognition {
 
   addEventListener  = vi.fn();
   removeEventListener = vi.fn();
-  dispatchEvent     = vi.fn(() => true);
+  dispatchEvent = vi.fn(() => true);
 
   // Test helpers
   __emitResult(text: string, isFinal: boolean) {
