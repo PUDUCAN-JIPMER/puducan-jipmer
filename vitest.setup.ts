@@ -20,8 +20,8 @@ class MockSpeechRecognition implements SpeechRecognition {
   onend:    SpeechRecognition['onend']    = null;
   onstart:  SpeechRecognition['onstart']  = null;
 
-  start = vi.fn(() => queueMicrotask(() => this.onstart?.(new Event('start'))))
-  stop = vi.fn(() => queueMicrotask(() => this.onend?.(new Event('end'))))
+  start = vi.fn(() => queueMicrotask(() => this.onstart?.()))
+  stop = vi.fn(() => queueMicrotask(() => this.onend?.()))
   abort = vi.fn();
 
   addEventListener  = vi.fn();

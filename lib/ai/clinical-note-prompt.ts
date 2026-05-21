@@ -134,12 +134,14 @@ export const ClinicalNoteSchema = z.object({
     fastingGlucose: z.string().nullable().optional(),
     randomGlucose: z.string().nullable().optional(),
   }).nullable().optional(),
-  medications: z.array(z.object({
-    name: z.string(),
-    dose: z.string().nullable().optional(),
-    frequency: z.string().nullable().optional(),
-    notes: z.string().nullable().optional(),
-  })).optional().default([]),
+  medications: z.array(
+    z.object({
+      name: z.string(),
+      dose: z.string().nullable().optional(),
+      frequency: z.string().nullable().optional(),
+      notes: z.string().nullable().optional(),
+    })
+  ),
   suggestedFollowUp: z.array(z.string()),
   urgencyFlag: z.enum(['routine','urgent','emergency']),
   uncertainPhrases: z.array(z.object({
