@@ -21,11 +21,10 @@ export default function PatientFormMobile({ patient }: { patient: Patient }) {
                 <PatientHeader
                     name={patient.name}
                     address={patient.address}
-                    isOpen={false}
-                    onToggle={() => setDialogOpen(true)}
                     diseases={patient.diseases}
                     patientStatus={patient.patientStatus}
                     suspectedCase={patient.suspectedCase}
+                    _hasPendingWrites={patient._hasPendingWrites}
                 />
             </div>
 

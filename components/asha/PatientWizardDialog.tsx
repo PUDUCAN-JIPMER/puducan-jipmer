@@ -8,11 +8,13 @@ import { PatientFormInputs, PatientSchema } from '@/schema/patient'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { ColumnFive, ColumnFour, ColumnOne, ColumnThree, ColumnTwo } from '../forms/patient'
 import { ActionButtons } from '.'
+import { getDraftKey } from '@/lib/common/draft-utils'
+import { useFormPersistence } from '@/hooks/useFormPersistence'
 
 const STEP_LABELS = ['Personal', 'Medical', 'Diagnosis', 'Treatment', 'Follow-ups']
 
@@ -28,9 +30,20 @@ export function PatientWizardDialog({
     const { userId } = useAuth()
     const [isSaving, setIsSaving] = useState(false)
     const [activeIndex, setActiveIndex] = useState(0)
+    const [prevOpen, setPrevOpen] = useState(open)
     const [direction, setDirection] = useState<'forward' | 'back'>('forward')
     const [animating, setAnimating] = useState(false)
     const queryClient = useQueryClient()
+
+    // Reset index when dialog opens (Derived state pattern to avoid cascading render warning)
+    if (open && !prevOpen) {
+        setPrevOpen(true)
+        setActiveIndex(0)
+    } else if (!open && prevOpen) {
+        setPrevOpen(false)
+    }
+
+    const draftKey = userId ? getDraftKey('edit', userId, patient.id) : null
 
     const form = useForm<PatientFormInputs>({
         resolver: zodResolver(PatientSchema),
@@ -41,33 +54,22 @@ export function PatientWizardDialog({
         },
     })
 
-    useEffect(() => {
-        if (open) setActiveIndex(0)
-    }, [open])
-
-    // 1. Auto-Load Draft on Mount
-    useEffect(() => {
-        if (!patient.id || !open) return
-        const savedDraft = localStorage.getItem(`patient-draft-${patient.id}`)
-        if (savedDraft) {
-            try {
-                const draft = JSON.parse(savedDraft)
-                form.reset(draft)
-            } catch (e) {
-                console.error('Failed to load patient draft', e)
-            }
+    // Initialize Persistence Hook
+    const { flush, setSubmitting, setSubmitted } = useFormPersistence(form, {
+        key: draftKey,
+        enabled: open,
+        initialData: {
+            ...patient,
+            followUps: patient.followUps ?? [],
+            gpsLocation: patient.gpsLocation ?? null,
         }
-    }, [patient.id, open, form])
+    })
 
-    // 2. Auto-Save Draft on Change (Debounced)
-    const watchedValues = form.watch()
-    useEffect(() => {
-        if (!patient.id || !open) return
-        const timeoutId = setTimeout(() => {
-            localStorage.setItem(`patient-draft-${patient.id}`, JSON.stringify(watchedValues))
-        }, 1000)
-        return () => clearTimeout(timeoutId)
-    }, [watchedValues, patient.id, open])
+    // Reset isRestored when dialog closes
+    const handleClose = useCallback(() => {
+        flush() // Immediate flush before closing
+        onClose()
+    }, [flush, onClose])
 
     const steps = [
         <ColumnOne key="col1" form={form} isAsha />,
@@ -95,19 +97,20 @@ export function PatientWizardDialog({
         async (values) => {
             console.log('📝 ASHA: Submitting patient update (Optimistic)...', patient.id)
             setIsSaving(true)
+            setSubmitting(true)
 
             try {
                 if (!patient.id) throw new Error('Patient ID missing')
                 const cleanValues = Object.fromEntries(
-                    Object.entries(values).filter(([_, v]) => v !== undefined)
+                    Object.entries(values).filter(([, v]) => v !== undefined)
                 ) as PatientFormInputs
 
                 // Trigger update without awaiting for UI completion
                 const updatePromise = updatePatient(patient.id, cleanValues)
                 console.log('✅ ASHA: Update initiated')
 
-                // 3. Clear draft and show success immediately
-                localStorage.removeItem(`patient-draft-${patient.id}`)
+                // 4. Clear draft and show success immediately
+                setSubmitted()
                 toast.success('Patient updated successfully!')
 
                 // Background tasks
@@ -123,6 +126,7 @@ export function PatientWizardDialog({
             } catch (err) {
                 console.error('❌ ASHA: Immediate update error', err)
                 toast.error('Failed to process changes.')
+                setSubmitting(false)
             } finally {
                 setIsSaving(false)
             }
@@ -136,24 +140,27 @@ export function PatientWizardDialog({
     const handleDone = useCallback(async () => {
         try {
             setIsSaving(true)
+            setSubmitting(true)
             if (!patient.id) throw new Error('Patient ID missing')
             await updatePatient(patient.id, { assignedAsha: 'none' })
+            setSubmitted()
             toast.success('Patient marked as finished and unassigned.')
             onClose()
         } catch (err) {
             console.error(err)
             toast.error('Failed to update patient.')
+            setSubmitting(false)
         } finally {
             setIsSaving(false)
         }
-    }, [patient.id, onClose])
+    }, [patient.id, onClose, setSubmitting, setSubmitted])
 
     const isFirst = activeIndex === 0
     const isLast = activeIndex === totalSteps - 1
     const progress = ((activeIndex + 1) / totalSteps) * 100
 
     return (
-        <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+        <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
             {/* ✅ Removed default close button by not importing DialogTitle */}
             <DialogContent className="w-[95vw] max-w-2xl h-[90vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground [&>button]:hidden">
                 {/* ^^^ Added [&>button]:hidden to hide default close button */}

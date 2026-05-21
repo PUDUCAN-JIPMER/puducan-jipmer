@@ -14,6 +14,7 @@ interface PatientFormProps {
     reset: UseFormReset<PatientFormInputs>
     handleSubmit: UseFormHandleSubmit<PatientFormInputs>
     onSubmit: (data: PatientFormInputs) => Promise<void>
+    onClear?: () => void
     isEdit?: boolean
     isSaving?: boolean
 }
@@ -35,6 +36,7 @@ export default function GenericPatientForm({
     reset,
     handleSubmit,
     onSubmit,
+    onClear,
     isEdit = false,
     isSaving = false,
 }: PatientFormProps) {
@@ -187,7 +189,13 @@ export default function GenericPatientForm({
                         <div className="mt-4 flex justify-end">
                             <Button
                                 variant="outline"
-                                onClick={() => reset()}
+                                onClick={() => {
+                                    if (onClear) {
+                                        onClear()
+                                    } else {
+                                        reset()
+                                    }
+                                }}
                                 type="button"
                                 className="border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
                             >

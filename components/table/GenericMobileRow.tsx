@@ -2,8 +2,14 @@
 import { memo } from 'react'
 import { GenericCell } from './GenericCell'
 import { RowActions } from './RowActions'
-import { Check } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import { Checkbox } from '../ui/checkbox'
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 type Header = {
     name: string
@@ -13,6 +19,7 @@ type Header = {
 type RowDataBase = {
     id: string | number
     [key: string]: unknown
+    _hasPendingWrites?: boolean
 }
 
 type GenericMobileRowProps = {
@@ -58,7 +65,21 @@ export const GenericMobileRow = memo(function GenericMobileRow(props: GenericMob
                         aria-label={`Select row ${index + 1}`}
                      />
                 </div>
-                <div className="text-muted-foreground text-sm">#{index + 1}</div>
+                <div className="flex items-center gap-2">
+                    <div className="text-muted-foreground text-sm">#{index + 1}</div>
+                    {isPatientTab && Boolean(rowData._hasPendingWrites) && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <RefreshCw className="h-3.5 w-3.5 animate-spin text-amber-500" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Pending Sync: Changes will be uploaded when online.</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
+                </div>
 
                 <RowActions
                     rowData={rowData}
