@@ -3,7 +3,7 @@ import { Type } from '@google/genai';
 import { z } from 'zod';
 
 export const PROMPT_VERSION = 1;
-export const MODEL_ID = 'gemini-3-flash';
+export const MODEL_ID = 'gemini-2.5-flash';
 
 // ─── System instruction ────────────────────────────────────────────────
 export const SYSTEM_INSTRUCTION = `
