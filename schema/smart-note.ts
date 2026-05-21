@@ -25,7 +25,7 @@ export const SmartNoteSchema = z.object({
     model: z.string().nullable().optional(),
     promptVersion: z.number().int().nullable().optional(),
 
-    reviewed: z.boolean().default(false),
+    reviewed: z.boolean(),
     reviewedBy: z.string().nullable().optional(),
     reviewedAt: z.any().nullable().optional(),
 })

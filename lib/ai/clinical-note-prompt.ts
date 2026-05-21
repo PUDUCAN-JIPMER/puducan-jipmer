@@ -115,7 +115,7 @@ export const GEMINI_RESPONSE_SCHEMA = {
     'chiefComplaint','history','observations','vitals',
     'medications','suggestedFollowUp','urgencyFlag','uncertainPhrases'
   ],
-  required: ['chiefComplaint','history','observations','suggestedFollowUp','urgencyFlag','uncertainPhrases'],
+  required: ['chiefComplaint','history','observations', 'medications','suggestedFollowUp','urgencyFlag','uncertainPhrases'],
 };
 
 // ─── Zod mirror for runtime validation ─────────────────────────────────
@@ -168,7 +168,14 @@ export const FEW_SHOTS = [
       history: 'Lakshmi, 45 years old. Known diabetic. Received chemotherapy one week ago.',
       observations: ['Vomiting — 3 episodes yesterday','Severe headache','Fever 101°F'],
       vitals: { temperature: '101°F' },
-      medications: [],
+      medications: z.array(
+        z.object({
+          name: z.string(),
+          dose: z.string().nullable().optional(),
+          frequency: z.string().nullable().optional(),
+          notes: z.string().nullable().optional(),
+        })
+      ),
       suggestedFollowUp: ['Doctor review requested by ASHA worker'],
       urgencyFlag: 'urgent',
       uncertainPhrases: [],
