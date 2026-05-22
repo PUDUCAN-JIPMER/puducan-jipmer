@@ -28,7 +28,7 @@ export function PhoneCell({
                 <div key={i}>{num}</div>
             ))}
 
-            {numbers.filter((n) => typeof n === 'string' && n.trim()).length === 0 && <p>N/A</p>}
+            {numbers.filter((n) => typeof n === 'string' && n.trim()).length === 0 && <p className="text-muted-foreground">—</p>}
 
             {!showAll && remaining > 0 && (
                 <div

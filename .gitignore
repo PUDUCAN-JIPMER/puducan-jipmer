@@ -58,3 +58,8 @@ storybook-static
 # firebase
 serviceAccountKey.json
 firebase.*json
+
+# Playwright
+playwright-report/
+test-results/
+.playwright/
