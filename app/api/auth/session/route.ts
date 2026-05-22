@@ -1,7 +1,7 @@
 // app/api/auth/session/route.ts
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import { adminAuth } from '@/lib/firebase-admin'
+import { getAdminAuth } from '@/lib/firebase-admin'
 
 const SESSION_COOKIE_NAME = 'session'
 const SESSION_DURATION_MS = 5 * 24 * 60 * 60 * 1000 // 5 days
@@ -14,10 +14,10 @@ export async function POST(req: Request) {
         }
 
         // Verify the token is real (not just well-formed)
-        const decoded = await adminAuth.verifyIdToken(idToken)
+        const decoded = await getAdminAuth().verifyIdToken(idToken)
 
         // Issue a long-lived session cookie
-        const sessionCookie = await adminAuth.createSessionCookie(idToken, {
+        const sessionCookie = await getAdminAuth().createSessionCookie(idToken, {
             expiresIn: SESSION_DURATION_MS,
         })
 

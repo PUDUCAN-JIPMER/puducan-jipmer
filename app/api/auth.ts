@@ -1,8 +1,8 @@
 // lib/api/auth.ts
 import 'server-only'
 import { cookies } from 'next/headers'
-import { adminAuth, adminDb } from '@/lib/firebase-admin'
-import { FieldValue } from 'firebase-admin/firestore'
+import { getAdminAuth, getAdminDb } from '@/lib/firebase-admin'
+import { FieldValue, type Transaction } from 'firebase-admin/firestore'
 
 const SESSION_COOKIE_NAME = 'session'
 
@@ -12,6 +12,7 @@ export interface AuthenticatedUser {
     uid: string
     role: UserRole
     email?: string
+    userId: string
 }
 
 /**
@@ -34,17 +35,28 @@ export async function requireRole(
     let decoded
     try {
         // `true` = check revocation, slightly slower but correct after sign-out
-        decoded = await adminAuth.verifySessionCookie(sessionCookie, true)
+        decoded = await getAdminAuth().verifySessionCookie(sessionCookie, true)
     } catch {
         throw unauthorized('Invalid or expired session')
     }
 
-    const userSnap = await adminDb.collection('users').doc(decoded.uid).get()
-    if (!userSnap.exists) {
+    const email = decoded.email?.trim().toLowerCase()
+    if (!email) {
+        throw forbidden('User has no email in session token')
+    }
+
+    const userQuery = await getAdminDb()
+        .collection('users')
+        .where('email', '==', email)
+        .limit(1)
+        .get()
+
+    if (userQuery.empty) {
         throw forbidden('User record not found')
     }
 
-    const role = userSnap.data()?.role as UserRole | undefined
+    const userDoc = userQuery.docs[0]
+    const role = userDoc.data().role as UserRole | undefined
     if (!role) {
         throw forbidden('User has no role assigned')
     }
@@ -56,6 +68,7 @@ export async function requireRole(
         uid: decoded.uid,
         role,
         email: decoded.email,
+        userId: userDoc.id,
     }
 }
 
@@ -76,11 +89,11 @@ export async function assertRateLimit(
     windowMs: number
 ): Promise<void> {
     const docId = `${uid}_${key}`
-    const docRef = adminDb.collection('rate_limits').doc(docId)
+    const docRef = getAdminDb().collection('rate_limits').doc(docId)
     const now = Date.now()
     const windowStart = now - windowMs
 
-    await adminDb.runTransaction(async (tx) => {
+    await getAdminDb().runTransaction(async (tx: Transaction) => {
         const snap = await tx.get(docRef)
         const data = snap.data() as { timestamps?: number[] } | undefined
         const recent = (data?.timestamps ?? []).filter((t) => t > windowStart)
