@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatCard } from './StatCard'
-import { Building2, Stethoscope, Syringe, User2, ShieldCheck } from 'lucide-react'
+import { Building2, Stethoscope, Syringe, User2, ShieldCheck, Hospital } from 'lucide-react'
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
     ResponsiveContainer, PieChart, Pie, Cell, Legend,
@@ -46,6 +46,14 @@ interface AdminStats {
     ashaCoverageData: { name: string; covered: number; uncovered: number }[]
 }
 
+interface HospitalCoverage {
+    name: string
+    covered: number
+    uncovered: number
+    total: number
+    percentage: number
+}
+
 function ChartCard({ title, children, empty = false }: {
     title: string; children: React.ReactNode; empty?: boolean
 }) {
@@ -64,6 +72,16 @@ function ChartCard({ title, children, empty = false }: {
 }
 
 export function AdminStatsSection({ stats }: { stats: AdminStats }) {
+    // Prepare table data
+    const coverageData: HospitalCoverage[] = stats.ashaCoverageData
+        .filter(item => (item.covered + item.uncovered) > 0)
+        .map(item => {
+            const total = item.covered + item.uncovered
+            const percentage = total > 0 ? (item.covered / total) * 100 : 0
+            return { ...item, total, percentage }
+        })
+        .sort((a, b) => b.total - a.total)
+
     return (
         <div className="space-y-4">
             {/* Section header */}
@@ -72,7 +90,7 @@ export function AdminStatsSection({ stats }: { stats: AdminStats }) {
                 <h2 className="text-base font-semibold">Hospital &amp; Staff Overview</h2>
             </div>
 
-            {/* ── 5 KPI cards in one tight row ─────────────────── */}
+            {/* KPI cards */}
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
                 <StatCard title="Hospitals"   value={stats.totalHospitals} icon={Building2}   iconClassName="text-cyan-500" />
                 <StatCard title="Doctors"     value={stats.doctors}        icon={Stethoscope} iconClassName="text-blue-500" />
@@ -81,7 +99,7 @@ export function AdminStatsSection({ stats }: { stats: AdminStats }) {
                 <StatCard title="Total Staff" value={stats.totalStaff}     icon={User2}       iconClassName="text-violet-500" />
             </div>
 
-            {/* ── Staff pie + Patients-per-hospital bar ─────────── */}
+            {/* Staff pie + Patients per hospital */}
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <ChartCard title="Staff by Role" empty={!stats.staffRoleData.length}>
                     <ResponsiveContainer width="100%" height={220}>
@@ -115,21 +133,74 @@ export function AdminStatsSection({ stats }: { stats: AdminStats }) {
                 </ChartCard>
             </div>
 
-            {/* ── ASHA coverage stacked bar ─────────────────────── */}
-            {stats.ashaCoverageData.length > 0 && (
+            {/* TABLE-BASED ASHA COVERAGE */}
+            {coverageData.length > 0 && (
                 <ChartCard title="ASHA Coverage by Hospital">
-                    <ResponsiveContainer width="100%" height={200}>
-                        <BarChart data={stats.ashaCoverageData} margin={{ bottom: 16 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                            <XAxis dataKey="name" tick={{ fontSize: 11 }} angle={-20}
-                                textAnchor="end" interval={0} />
-                            <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Legend wrapperStyle={{ fontSize: 12 }} />
-                            <Bar dataKey="covered"   name="ASHA Assigned" stackId="a" fill="#4ade80" />
-                            <Bar dataKey="uncovered" name="No ASHA"       stackId="a" fill="#f87171" radius={[4, 4, 0, 0]} />
-                        </BarChart>
-                    </ResponsiveContainer>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="border-b bg-muted/50">
+                                    <th className="text-left py-3 px-2 font-medium text-muted-foreground">Hospital</th>
+                                    <th className="text-left py-3 px-2 font-medium text-muted-foreground">Coverage</th>
+                                    <th className="text-left py-3 px-2 font-medium text-muted-foreground">Assigned</th>
+                                    <th className="text-left py-3 px-2 font-medium text-muted-foreground">Status</th>
+                                 </tr>
+                            </thead>
+                            <tbody>
+                                {coverageData.map((hospital, idx) => {
+                                    const getStatus = () => {
+                                        if (hospital.percentage >= 70) return { label: 'Good', color: 'text-green-600', bg: 'bg-green-100', dot: 'bg-green-500' }
+                                        if (hospital.percentage >= 30) return { label: 'Needs attention', color: 'text-yellow-600', bg: 'bg-yellow-100', dot: 'bg-yellow-500' }
+                                        return { label: 'Critical', color: 'text-red-600', bg: 'bg-red-100', dot: 'bg-red-500' }
+                                    }
+                                    const status = getStatus()
+                                    
+                                    return (
+                                        <tr key={idx} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
+                                            <td className="py-3 px-2 font-medium">
+                                                <div className="flex items-center gap-2">
+                                                    <Hospital className="h-3.5 w-3.5 text-muted-foreground" />
+                                                    <span>{hospital.name}</span>
+                                                </div>
+                                             </td>
+                                            <td className="py-3 px-2 w-48">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                                        <div 
+                                                            className="h-full bg-primary rounded-full transition-all"
+                                                            style={{ width: `${hospital.percentage}%` }}
+                                                        />
+                                                    </div>
+                                                    <span className="text-xs font-mono w-10">
+                                                        {hospital.percentage.toFixed(0)}%
+                                                    </span>
+                                                </div>
+                                             </td>
+                                            <td className="py-3 px-2">
+                                                <span className="font-medium">{hospital.covered}</span>
+                                                <span className="text-muted-foreground">/{hospital.total}</span>
+                                             </td>
+                                            <td className="py-3 px-2">
+                                                <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${status.bg} ${status.color}`}>
+                                                    <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`}></span>
+                                                    {status.label}
+                                                </span>
+                                             </td>
+                                         </tr>
+                                    )
+                                })}
+                            </tbody>
+                         </table>
+                    </div>
+                    
+                    {/* Summary row */}
+                    <div className="mt-4 pt-3 border-t flex justify-between text-xs text-muted-foreground flex-wrap gap-2">
+                        <span>📊 Total Hospitals: {coverageData.length}</span>
+                        <span>✅ Good: {coverageData.filter(h => h.percentage >= 70).length}</span>
+                        <span>⚠️ Needs attention: {coverageData.filter(h => h.percentage >= 30 && h.percentage < 70).length}</span>
+                        <span>🔴 Critical: {coverageData.filter(h => h.percentage < 30).length}</span>
+                        <span>📈 Avg Coverage: {(coverageData.reduce((sum, h) => sum + h.percentage, 0) / coverageData.length).toFixed(0)}%</span>
+                    </div>
                 </ChartCard>
             )}
         </div>

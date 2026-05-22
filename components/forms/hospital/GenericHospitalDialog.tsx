@@ -23,6 +23,10 @@ interface GenericHospitalDialogProps {
     hospitalData?: HospitalFormInputs & { id?: string }
     trigger?: React.ReactNode
     onSuccess?: () => void
+
+    // for keyboard shortcuts
+    open?: boolean
+    onOpenChange?: (open:boolean) => void
 }
 
 export default function GenericHospitalDialog({
@@ -30,9 +34,17 @@ export default function GenericHospitalDialog({
     hospitalData,
     trigger,
     onSuccess,
+    // for keyboard shortcuts
+    open,
+    onOpenChange,
 }: GenericHospitalDialogProps) {
-    const [open, setOpen] = useState(false)
+    const [internalOpen, setInternalOpen] = useState(false)
     const queryClient = useQueryClient()
+
+    const isOpen = open ?? internalOpen
+
+    const setIsOpen = onOpenChange ?? setInternalOpen
+
     const isEdit = mode === 'edit'
 
     const onSubmit = async (data: HospitalFormInputs) => {
@@ -48,7 +60,7 @@ export default function GenericHospitalDialog({
             // ✅ Invalidate hospitals query so tables refresh
             queryClient.invalidateQueries({ queryKey: ['hospitals'] })
 
-            setOpen(false)
+            setIsOpen(false)
             onSuccess?.()
         } catch (err) {
             console.error(`Error ${isEdit ? 'updating' : 'adding'} hospital:`, err)
@@ -70,7 +82,7 @@ export default function GenericHospitalDialog({
     )
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
@@ -80,7 +92,7 @@ export default function GenericHospitalDialog({
                 </DialogHeader>
                 <GenericHospitalForm
                     initialData={hospitalData}
-                    onSuccess={() => setOpen(false)}
+                    onSuccess={() => setIsOpen(false)}
                     onSubmit={onSubmit}
                 />
             </DialogContent>
