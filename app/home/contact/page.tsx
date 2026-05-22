@@ -1,6 +1,19 @@
+'use client'
+
+import { useEffect } from 'react'
 import { TypographyH2, TypographyMuted, TypographyP } from '@/components/ui/typography'
 
 export default function ContactPage() {
+    
+
+    useEffect(() => {
+        window.scrollTo({
+            top: 0,
+            left: 0,
+            behavior: 'instant' 
+        })
+    }, [])
+
     return (
         <div className="mx-auto max-w-3xl p-4">
             <TypographyH2>Contact Us</TypographyH2>
@@ -46,15 +59,17 @@ export default function ContactPage() {
             </div>
 
             <div className="mt-8 mb-20 overflow-hidden rounded-xl shadow-lg">
-               <iframe
-    src="https://maps.google.com/maps?q=11.9542313,79.7971406&z=17&output=embed"
-    width="100%"
-    height="350"
-    style={{ border: 0 }}
-    allowFullScreen
-    loading="lazy"
-    referrerPolicy="no-referrer-when-downgrade"
-></iframe>
+                <iframe
+                    title="JIPMER Campus Google Map"
+                    src="https://maps.google.com/maps?q=11.9542313,79.7971406&z=17&output=embed"
+                    width="100%"
+                    height="350"
+                    style={{ border: 0, pointerEvents: 'auto' }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    tabIndex={-1}
+                ></iframe>
             </div>
         </div>
     )
