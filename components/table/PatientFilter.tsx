@@ -41,6 +41,20 @@ const TRANSFER_OPTIONS = [
     { label: 'Not Transferred', value: 'not_transferred' },
 ]
 
+const sectionHeadingClass =
+    'text-xs sm:text-sm font-semibold uppercase tracking-wider text-neutral-600 dark:text-muted-foreground flex items-center gap-2 md:gap-3'
+
+const sectionDividerClass = 'h-px flex-1 bg-border dark:bg-border/40'
+
+function getOptionLabelClass(isSelected: boolean) {
+    return cn(
+        'text-sm md:text-base font-medium capitalize cursor-pointer flex-1 leading-snug transition-colors',
+        isSelected
+            ? 'text-primary font-semibold'
+            : 'text-neutral-700 dark:text-muted-foreground group-hover:text-foreground'
+    )
+}
+
 export function PatientFilter() {
     const { filters, setFilter, toggleFilterItem, reset } = usePatientFilterStore()
 
@@ -81,11 +95,14 @@ export function PatientFilter() {
                     </Button>
                 </SheetTrigger>
 
-                <SheetContent side="right" className="w-full sm:max-w-md flex flex-col p-0 overflow-hidden border-l shadow-2xl">
-                    <SheetHeader className="px-6 py-5 border-b bg-muted/30">
-                        <div className="flex items-center justify-between">
-                            <SheetTitle className="text-xl flex items-center gap-2">
-                                <ListFilter className="h-5 w-5" />
+                <SheetContent
+                    side="right"
+                    className="w-full sm:max-w-md md:max-w-lg flex flex-col p-0 overflow-hidden border-l shadow-2xl"
+                >
+                    <SheetHeader className="shrink-0 px-4 py-4 sm:px-6 sm:py-5 border-b bg-muted/40 dark:bg-muted/30">
+                        <div className="flex items-center justify-between gap-3">
+                            <SheetTitle className="text-lg sm:text-xl md:text-2xl font-semibold text-foreground flex items-center gap-2">
+                                <ListFilter className="h-5 w-5 sm:h-6 sm:w-6 shrink-0" />
                                 Patient Filters
                             </SheetTitle>
                             {activeFilterCount > 0 && (
@@ -93,9 +110,9 @@ export function PatientFilter() {
                                     variant="ghost"
                                     size="sm"
                                     onClick={reset}
-                                    className="h-8 px-3 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                                    className="h-8 shrink-0 px-2.5 sm:px-3 text-xs sm:text-sm font-medium text-neutral-600 dark:text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                                 >
-                                    <RotateCcw className="mr-2 h-3.5 w-3.5" />
+                                    <RotateCcw className="mr-1.5 sm:mr-2 h-3.5 w-3.5" />
                                     Clear All
                                 </Button>
                             )}
@@ -103,15 +120,15 @@ export function PatientFilter() {
                     </SheetHeader>
 
                     <ScrollArea className="flex-1 overflow-y-auto">
-                        <div className="px-6 py-8 space-y-10">
+                        <div className="px-4 py-6 sm:px-6 sm:py-8 md:py-10 space-y-8 sm:space-y-10 md:space-y-12">
                             {/* Demographics Group */}
-                            <div className="space-y-5">
-                                <h4 className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
-                                    <span className="h-px flex-1 bg-border/40" />
+                            <div className="space-y-4 md:space-y-5">
+                                <h4 className={sectionHeadingClass}>
+                                    <span className={sectionDividerClass} />
                                     Demographics
-                                    <span className="h-px flex-1 bg-border/40" />
+                                    <span className={sectionDividerClass} />
                                 </h4>
-                                <div className="space-y-8">
+                                <div className="space-y-6 md:space-y-8">
                                     <FilterSection
                                         label="Sex"
                                         options={SEX_OPTIONS.map((opt) => ({ label: opt, value: opt }))}
@@ -131,11 +148,11 @@ export function PatientFilter() {
                             </div>
 
                             {/* Medical Group */}
-                            <div className="space-y-5">
-                                <h4 className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
-                                    <span className="h-px flex-1 bg-border/40" />
+                            <div className="space-y-4 md:space-y-5">
+                                <h4 className={sectionHeadingClass}>
+                                    <span className={sectionDividerClass} />
                                     Medical
-                                    <span className="h-px flex-1 bg-border/40" />
+                                    <span className={sectionDividerClass} />
                                 </h4>
                                 <FilterSection
                                     label="Disease"
@@ -150,13 +167,13 @@ export function PatientFilter() {
                             </div>
 
                             {/* Status Group */}
-                            <div className="space-y-5">
-                                <h4 className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
-                                    <span className="h-px flex-1 bg-border/40" />
+                            <div className="space-y-4 md:space-y-5">
+                                <h4 className={sectionHeadingClass}>
+                                    <span className={sectionDividerClass} />
                                     Care Status
-                                    <span className="h-px flex-1 bg-border/40" />
+                                    <span className={sectionDividerClass} />
                                 </h4>
-                                <div className="space-y-8">
+                                <div className="space-y-6 md:space-y-8">
                                     <FilterSection
                                         label="Patient Status"
                                         options={HEALTH_STATUS_OPTIONS.map((opt) => ({ label: opt, value: opt }))}
@@ -164,7 +181,7 @@ export function PatientFilter() {
                                         onToggle={(val) => toggleFilterItem('statuses', val)}
                                         onClear={() => setFilter('statuses', [])}
                                     />
-                                    <div className="grid grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                                         <FilterSection
                                             label="Assignment"
                                             type="radio"
@@ -186,11 +203,11 @@ export function PatientFilter() {
                             </div>
 
                             {/* Government Group */}
-                            <div className="space-y-5 pb-4">
-                                <h4 className="text-[12px] font-bold uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
-                                    <span className="h-px flex-1 bg-border/40" />
+                            <div className="space-y-4 md:space-y-5 pb-2 md:pb-4">
+                                <h4 className={sectionHeadingClass}>
+                                    <span className={sectionDividerClass} />
                                     Government
-                                    <span className="h-px flex-1 bg-border/40" />
+                                    <span className={sectionDividerClass} />
                                 </h4>
                                 <FilterSection
                                     label="Ration Card"
@@ -203,9 +220,9 @@ export function PatientFilter() {
                         </div>
                     </ScrollArea>
 
-                    <SheetFooter className="p-6 border-t bg-muted/10 gap-3 sm:flex-col">
+                    <SheetFooter className="shrink-0 px-4 py-4 sm:p-6 border-t bg-muted/30 dark:bg-muted/10 gap-3 sm:flex-col">
                         <SheetTrigger asChild>
-                            <Button className="w-full font-semibold">
+                            <Button className="w-full h-11 sm:h-12 text-sm sm:text-base font-semibold shadow-sm">
                                 Apply & Close
                             </Button>
                         </SheetTrigger>
@@ -243,55 +260,69 @@ function FilterSection({
     const activeCount = Array.isArray(selected) ? selected.length : selected ? 1 : 0
 
     const content = (
-        <div className="mt-2.5 space-y-2">
+        <div className="mt-2 space-y-2.5 sm:space-y-3">
             {type === 'checkbox' ? (
-                options.map((option) => (
-                    <div key={option.value} className="flex items-center space-x-2.5 group">
-                        <Checkbox
-                            id={`${label}-${option.value}`}
-                            checked={Array.isArray(selected) && selected.includes(option.value)}
-                            onCheckedChange={() => onToggle?.(option.value)}
-                            className="transition-transform group-hover:scale-105"
-                        />
-                        <Label
-                            htmlFor={`${label}-${option.value}`}
-                            className={cn(
-                                "text-xs font-medium capitalize cursor-pointer flex-1 transition-colors",
-                                Array.isArray(selected) && selected.includes(option.value) ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-                            )}
-                        >
-                            {option.label}
-                        </Label>
-                    </div>
-                ))
-            ) : (
-                <RadioGroup value={(selected as string) || ''} onValueChange={onSelect} className="gap-2">
-                    {options.map((option) => (
-                        <div key={option.value} className="flex items-center space-x-2.5 group">
-                            <RadioGroupItem value={option.value} id={`${label}-${option.value}`} />
+                options.map((option) => {
+                    const isSelected =
+                        Array.isArray(selected) && selected.includes(option.value)
+                    return (
+                        <div key={option.value} className="flex items-center gap-3 py-0.5 group">
+                            <Checkbox
+                                id={`${label}-${option.value}`}
+                                checked={isSelected}
+                                onCheckedChange={() => onToggle?.(option.value)}
+                                className="shrink-0 transition-transform group-hover:scale-105"
+                            />
                             <Label
                                 htmlFor={`${label}-${option.value}`}
-                                className={cn(
-                                    "text-xs font-medium capitalize cursor-pointer flex-1 transition-colors",
-                                    selected === option.value ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-                                )}
+                                className={getOptionLabelClass(isSelected)}
                             >
                                 {option.label}
                             </Label>
                         </div>
-                    ))}
+                    )
+                })
+            ) : (
+                <RadioGroup
+                    value={(selected as string) || ''}
+                    onValueChange={onSelect}
+                    className="gap-2.5 sm:gap-3"
+                >
+                    {options.map((option) => {
+                        const isSelected = selected === option.value
+                        return (
+                            <div
+                                key={option.value}
+                                className="flex items-center gap-3 py-0.5 group"
+                            >
+                                <RadioGroupItem
+                                    value={option.value}
+                                    id={`${label}-${option.value}`}
+                                    className="shrink-0"
+                                />
+                                <Label
+                                    htmlFor={`${label}-${option.value}`}
+                                    className={getOptionLabelClass(isSelected)}
+                                >
+                                    {option.label}
+                                </Label>
+                            </div>
+                        )
+                    })}
                 </RadioGroup>
             )}
         </div>
     )
 
     return (
-        <div className="flex flex-col min-w-[140px]">
-            <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-2">
-                    <span className="text-[13px] font-semibold text-foreground/90">{label}</span>
+        <div className="flex flex-col min-w-0 sm:min-w-[140px]">
+            <div className="flex items-center justify-between gap-2 mb-1.5 sm:mb-2">
+                <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-sm md:text-base lg:text-lg font-semibold text-foreground truncate">
+                        {label}
+                    </span>
                     {activeCount > 0 && (
-                        <span className="inline-flex items-center justify-center h-4 px-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold">
+                        <span className="inline-flex shrink-0 items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-primary/15 text-primary text-xs font-semibold">
                             {activeCount}
                         </span>
                     )}
@@ -301,14 +332,15 @@ function FilterSection({
                         variant="ghost"
                         size="sm"
                         onClick={onClear}
-                        className="h-5 w-5 p-0 text-muted-foreground/50 hover:text-destructive hover:bg-transparent"
+                        aria-label={`Clear ${label} filter`}
+                        className="h-6 w-6 shrink-0 p-0 text-neutral-500 dark:text-muted-foreground hover:text-destructive hover:bg-transparent"
                     >
                         <X className="h-3.5 w-3.5" />
                     </Button>
                 )}
             </div>
             {scrollable ? (
-                <ScrollArea className="h-[140px] mt-2 pr-3 -mr-1">
+                <ScrollArea className="h-[120px] sm:h-[140px] md:h-[160px] mt-1 pr-3 -mr-1">
                     {content}
                 </ScrollArea>
             ) : (
