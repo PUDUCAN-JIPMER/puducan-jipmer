@@ -56,8 +56,6 @@ export function RegistrationAnalytics({ patients }: RegistrationAnalyticsProps) 
         <AnalyticsToolbar
           selectedRange={selectedRange}
           onSelectRange={setSelectedRange}
-          chartType={chartType}
-          onChartTypeChange={setChartType}
           customStartDate={customStartDate}
           customEndDate={customEndDate}
           pickerOpen={pickerOpen}

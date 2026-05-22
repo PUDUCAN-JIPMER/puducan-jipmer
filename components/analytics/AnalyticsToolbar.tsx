@@ -8,8 +8,10 @@ import type { RegistrationRange, RegistrationChartType } from '@/hooks/stats/use
 interface AnalyticsToolbarProps {
   selectedRange: RegistrationRange
   onSelectRange: (range: RegistrationRange) => void
-  chartType: RegistrationChartType
-  onChartTypeChange: (chartType: RegistrationChartType) => void
+  /** Only required when showChartToggle is true (the default). */
+  chartType?: RegistrationChartType
+  /** Only required when showChartToggle is true (the default). */
+  onChartTypeChange?: (chartType: RegistrationChartType) => void
   customStartDate: Date | null
   customEndDate: Date | null
   pickerOpen: boolean
@@ -38,7 +40,9 @@ export function AnalyticsToolbar({
             <QuickTimelineFilters value={selectedRange} onChange={onSelectRange} />
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {showChartToggle ? <ChartTypeToggle value={chartType} onChange={onChartTypeChange} /> : null}
+            {showChartToggle && chartType !== undefined && onChartTypeChange !== undefined ? (
+              <ChartTypeToggle value={chartType} onChange={onChartTypeChange} />
+            ) : null}
             <CustomDateRangePicker
               startDate={customStartDate}
               endDate={customEndDate}

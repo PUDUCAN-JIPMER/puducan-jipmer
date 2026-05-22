@@ -5,6 +5,7 @@ import { UserDoc } from '@/schema/user'
 import { useQuery } from '@tanstack/react-query'
 import { collection, getDocs, query, where } from 'firebase/firestore'
 import { useMemo } from 'react'
+import { MAX_ANALYTICS_ITEMS } from '@/lib/analytics/analyticsUtils'
 
 interface UseStatsDataProps {
     role: string | null
@@ -86,7 +87,7 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
         const diseaseData = Object.entries(diseaseMap)
             .map(([name, value]) => ({ name, value }))
             .sort((a, b) => b.value - a.value)
-            .slice(0, 10) // top 10 diseases
+            .slice(0, MAX_ANALYTICS_ITEMS)
 
         // Cancer stage distribution
         const stageMap: Record<string, number> = {}
