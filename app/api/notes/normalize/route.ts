@@ -5,7 +5,7 @@ import {
   SYSTEM_INSTRUCTION, GEMINI_RESPONSE_SCHEMA, ClinicalNoteSchema,
   FEW_SHOTS, MODEL_ID, PROMPT_VERSION,
 } from '@/lib/ai/clinical-note-prompt';
-// import your existing auth + rate-limit helpers
+import { requireRole, assertRateLimit } from '@/app/api/auth'
 
 const InputZ = z.object({
   text: z.string().min(3).max(4000),
@@ -20,16 +20,29 @@ function getAI() {
 }
 
 export async function POST(req: Request) {
-  // 1. Auth — require ASHA / Nurse / Doctor
-  // const user = await requireRole(req, ['asha','nurse','doctor']);
-  // 2. Rate limit per uid (e.g. 30/min)
-  // await assertRateLimit(user.uid, 'normalize-note', 30, 60_000);
-
-  const parsed = InputZ.safeParse(await req.json());
-  if (!parsed.success) {
-    return NextResponse.json({ error: 'invalid_input', details: parsed.error.flatten() }, { status: 400 });
+  let user
+  try {
+    user = await requireRole(req, ['asha', 'nurse', 'doctor'])
+  } catch (response) {
+      if (response instanceof Response) return response
+      throw response
   }
-  const { text, language, source } = parsed.data;
+
+  try {
+    await assertRateLimit(user.uid, 'normalize-note', 30, 60_000)
+  } catch (response) {
+      if (response instanceof Response) return response
+      throw response
+  }
+
+  const parsed = InputZ.safeParse(await req.json())
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'invalid_input', details: parsed.error.flatten() },
+      { status: 400 }
+    )
+  }
+  const { text, language, source } = parsed.data
 
   try {
     const response = await getAI().models.generateContent({

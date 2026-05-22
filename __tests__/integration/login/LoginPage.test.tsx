@@ -11,11 +11,16 @@ import userEvent from '@testing-library/user-event'
 vi.mock('firebase/auth', () => {
     return {
         getAuth: vi.fn(() => ({
-            useDeviceLanguage: vi.fn(), // mock it so your code doesn't crash
+            useDeviceLanguage: vi.fn(),
         })),
-        signInWithEmailAndPassword: vi.fn(),
+        signInWithEmailAndPassword: vi.fn().mockResolvedValue({
+            user: {
+                getIdToken: vi.fn().mockResolvedValue('mock-id-token'),
+            },
+        }),
     }
 })
+
 vi.mock('sonner', () => ({
     toast: { error: vi.fn(), success: vi.fn() },
 }))
@@ -37,6 +42,10 @@ describe('LoginPage (Integration)', () => {
             role: null,
             isLoadingAuth: false,
         })
+        global.fetch = vi.fn().mockResolvedValue({
+            ok: true,
+            json: async () => ({ uid: 'mock-uid' }),
+        }) as unknown as typeof fetch
     })
 
     afterEach(() => {

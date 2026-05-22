@@ -68,7 +68,21 @@ export default function LoginPage() {
         try {
             setLoading(true)
 
-            await signInWithEmailAndPassword(auth, data.email.toLowerCase(), data.password)
+            const cred = await signInWithEmailAndPassword(auth, data.email.toLowerCase(), data.password)
+            const idToken = await cred.user.getIdToken()
+
+            // Exchange for HTTP-only session cookie
+            const res = await fetch('/api/auth/session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken }),
+            })
+
+            if (!res.ok) {
+                // Roll back the client-side sign-in so the user isn't in a half-authenticated state (signed in via Firebase Auth, but no server-side session).
+                await auth.signOut()
+                throw new Error('Session establishment failed')
+            }
 
             reset()
         } catch (error) {

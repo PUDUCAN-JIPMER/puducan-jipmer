@@ -57,3 +57,4 @@ storybook-static
 
 # firebase
 serviceAccountKey.json
+firebase.*json

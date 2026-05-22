@@ -21,7 +21,15 @@ export default function SignOutButton({ className }: { className?: string }) {
     const router = useRouter()
 
     const handleSignOut = async () => {
+        try {
+            // Clear server-side session cookie first
+            await fetch('/api/auth/session', { method: 'DELETE' })
+        } catch (err) {
+            console.warn('Failed to clear session cookie', err)
+            // Continue with sign-out anyway: Firebase Auth being signed out is more important than the cookie being cleared
+        }
         await signOut(auth)
+        await fetch('/api/auth/session', { method: 'DELETE' })
         router.push('/login')
     }
 

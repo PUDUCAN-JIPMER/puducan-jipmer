@@ -6,6 +6,17 @@ const { mockGenerateContent } = vi.hoisted(() => ({
   mockGenerateContent: vi.fn(),
 }));
 
+const { mockRequireRole, mockAssertRateLimit } = vi.hoisted(() => ({
+    mockRequireRole: vi.fn(),
+    mockAssertRateLimit: vi.fn(),
+}))
+
+vi.mock('@/app/api/auth', () => ({
+    requireRole: mockRequireRole,
+    assertRateLimit: mockAssertRateLimit,
+}))
+
+
 vi.mock('@google/genai', () => ({
   GoogleGenAI: vi.fn().mockImplementation(() => ({
     models: { generateContent: mockGenerateContent },
@@ -40,8 +51,14 @@ function makeReq(body: unknown): Request {
 }
 
 beforeEach(() => {
-  process.env.GEMINI_API_KEY = 'test-key';
-  mockGenerateContent.mockReset();
+  process.env.GEMINI_API_KEY = 'test-key'
+  mockGenerateContent.mockReset()
+  mockRequireRole.mockReset()
+  mockAssertRateLimit.mockReset()
+
+  // Default: authenticated nurse, rate limit not exceeded
+  mockRequireRole.mockResolvedValue({ uid: 'test-uid', role: 'nurse' })
+  mockAssertRateLimit.mockResolvedValue(undefined)
 });
 
 afterEach(() => vi.clearAllMocks());
@@ -136,5 +153,32 @@ describe('POST /api/notes/normalize', () => {
     mockGenerateContent.mockResolvedValue({ text: '' });
     const res = await POST(makeReq({ text: 'fever cough', language: 'tanglish', source: 'typed' }));
     expect(res.status).toBe(502);
+  });
+
+  it('returns 401 when no session', async () => {
+    mockRequireRole.mockRejectedValue(
+        new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401 })
+    )
+    const res = await POST(makeReq({ text: 'fever cough patient', language: 'tanglish', source: 'typed' }))
+    expect(res.status).toBe(401)
+    expect(mockGenerateContent).not.toHaveBeenCalled()
+  });
+
+  it('returns 403 when role not permitted', async () => {
+    mockRequireRole.mockRejectedValue(
+        new Response(JSON.stringify({ error: 'forbidden' }), { status: 403 })
+    )
+    const res = await POST(makeReq({ text: 'fever cough patient', language: 'tanglish', source: 'typed' }))
+    expect(res.status).toBe(403)
+    expect(mockGenerateContent).not.toHaveBeenCalled()
+  });
+
+  it('returns 429 when rate-limited', async () => {
+    mockAssertRateLimit.mockRejectedValue(
+        new Response(JSON.stringify({ error: 'rate_limit_exceeded' }), { status: 429 })
+    )
+    const res = await POST(makeReq({ text: 'fever cough patient', language: 'tanglish', source: 'typed' }))
+    expect(res.status).toBe(429)
+    expect(mockGenerateContent).not.toHaveBeenCalled()
   });
 });

@@ -1,6 +1,35 @@
 // vitest.setup.ts
+process.env.FIREBASE_PROJECT_ID ??= 'test-project'
+process.env.FIREBASE_CLIENT_EMAIL ??= 'test@example.com'
+process.env.FIREBASE_PRIVATE_KEY ??= 'test-key'
 import '@testing-library/jest-dom/vitest'
 import { vi } from 'vitest'
+
+vi.mock('server-only', () => ({}))
+
+vi.mock('firebase-admin/app', () => ({
+    cert: vi.fn(),
+    getApps: vi.fn(() => []),
+    initializeApp: vi.fn(() => ({})),
+}))
+
+vi.mock('firebase-admin/auth', () => ({
+    getAuth: vi.fn(() => ({
+        verifySessionCookie: vi.fn(),
+        verifyIdToken: vi.fn(),
+        createSessionCookie: vi.fn(),
+    })),
+}))
+
+vi.mock('firebase-admin/firestore', () => ({
+    getFirestore: vi.fn(() => ({
+        collection: vi.fn(),
+        runTransaction: vi.fn(),
+    })),
+    FieldValue: {
+        serverTimestamp: vi.fn(() => 'mock-timestamp'),
+    },
+}))
 
 // ---- Polyfills for Radix/Shadcn (if needed) ----
 class ResizeObserver {
