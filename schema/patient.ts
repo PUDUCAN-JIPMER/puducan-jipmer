@@ -53,8 +53,6 @@ export const PatientSchema = z
         followUps: z.array(FollowUpSchema).optional(),
         patientStatus: z.enum(['Alive', 'Not Alive', 'Not Available']).optional(),
         patientDeathDate: z.string().optional(),
-        // treatmentStatus: z.enum(['Ongoing', 'FollowUp', 'Stopped', 'Not Available']).optional(),
-        // ABHA ID is 14 digits only
         aabhaId: z
             .string()
             .optional()
@@ -75,42 +73,30 @@ export const PatientSchema = z
             ),
         diagnosedDate: z.string().optional(),
         diagnosedYearsAgo: z.string().optional(),
-        // new fields after second meet
         hospitalRegistrationDate: z.string().optional(),
         treatmentStartDate: z.string().nullable().optional(),
         treatmentEndDate: z.string().nullable().optional(),
         biopsyNumber: z.string().nullable().optional(),
         transferred: z.boolean().optional(),
         transferredFrom: z.string().optional(),
-        // Fields for internal use
         hasAadhaar: z.boolean(),
         suspectedCase: z.boolean().optional(),
-        // additional fields after second meet
-        hbcrID: z
-            .preprocess((val) => {
-                if (typeof val === 'string') {
-                    const s = val.trim().toUpperCase()
-                    return s === '' ? undefined : s
-                }
-                return val
-            },
-                z.string().regex(/^[A-Z0-9-]{5,20}$/, {
-                    message:
-                        'HBCR ID must be 5-20 characters and contain only letters, numbers, and hyphens',
-                }))
-            .optional(),
+        hbcrID: z.string().optional(),
         hospitalRegistrationId: z.string().optional(),
         stageOfTheCancer: z.string().optional(),
         reasonOfRemoval: z.string().optional(),
         treatmentDetails: z.array(z.string().optional()).optional(),
         otherTreatmentDetails: z.string().optional(),
         insurance: InsuranceSchema,
+        triageLevel: z
+            .enum(['critical', 'high', 'urgent', 'non-urgent'])
+            .optional()
+            .nullable(),
     })
     .refine((data) => data.dob, {
         message: 'Please enter either age or date of birth.',
         path: ['age', 'dob'],
     })
-    // ✅ treatmentStartDate >= hospitalRegistrationDate
     .refine(
         (data) => {
             if (!data.treatmentStartDate || !data.hospitalRegistrationDate) return true
@@ -121,7 +107,6 @@ export const PatientSchema = z
             path: ['treatmentStartDate'],
         }
     )
-    // ✅ treatmentEndDate >= treatmentStartDate
     .refine(
         (data) => {
             if (!data.treatmentEndDate || !data.treatmentStartDate) return true
@@ -132,7 +117,6 @@ export const PatientSchema = z
             path: ['treatmentEndDate'],
         }
     )
-    // ✅ treatmentEndDate cannot exist if treatmentStartDate is missing
     .refine(
         (data) => {
             if (data.treatmentEndDate && !data.treatmentStartDate) return false
@@ -145,19 +129,14 @@ export const PatientSchema = z
     )
     .refine(
         (data) => {
-            if (!data.patientDeathDate) return true // optional field
+            if (!data.patientDeathDate) return true
             const death = new Date(data.patientDeathDate)
             const today = new Date()
-
-            // must not be in future
             if (death > today) return false
-
-            // must not be before dob
             if (data.dob) {
                 const dob = new Date(data.dob)
                 if (death < dob) return false
             }
-
             return true
         },
         {
@@ -165,9 +144,9 @@ export const PatientSchema = z
             path: ['patientDeathDate'],
         }
     )
+
 export type PatientFormInputs = z.infer<typeof PatientSchema>
 
-// This type is for fetched data from the database, which always has an ID
 export type Patient = PatientFormInputs & {
     id: string
 }
