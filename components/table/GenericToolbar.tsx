@@ -195,6 +195,7 @@ export function GenericToolbar({
                             mode="add"
                             open={activeDialog === 'hospitals'}
                             onOpenChange={(open) => setActiveDialog(open ? 'hospitals' : null)}
+
                         />
                     )}
                     {['ashas', 'doctors', 'nurses'].includes(activeTab) && (

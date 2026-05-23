@@ -2,6 +2,8 @@
 import { memo } from 'react'
 import { GenericCell } from './GenericCell'
 import { RowActions } from './RowActions'
+import { Check } from 'lucide-react'
+import { Checkbox } from '../ui/checkbox'
 
 type Header = {
     name: string
@@ -14,6 +16,8 @@ type RowDataBase = {
 }
 
 type GenericMobileRowProps = {
+    isSelected?: boolean
+    onToggleSelect: () => void
     activeTab: string
     isPatientTab: boolean
     isRemovedPatientsTab?: boolean
@@ -28,6 +32,8 @@ type GenericMobileRowProps = {
 // ✅ Mobile card row (not inside <table>)
 export const GenericMobileRow = memo(function GenericMobileRow(props: GenericMobileRowProps) {
     const {
+        isSelected = false,
+        onToggleSelect,
         activeTab,
         isPatientTab,
         rowData,
@@ -45,6 +51,13 @@ export const GenericMobileRow = memo(function GenericMobileRow(props: GenericMob
         >
             {/* <div className="text-muted-foreground text-sm">#{index + 1}</div> */}
             <div className="flex items-start justify-between">
+                <div className='absolute top-3 right-3'>
+                    <Checkbox 
+                        checked={isSelected}
+                        onCheckedChange={onToggleSelect}
+                        aria-label={`Select row ${index + 1}`}
+                     />
+                </div>
                 <div className="text-muted-foreground text-sm">#{index + 1}</div>
 
                 <RowActions
