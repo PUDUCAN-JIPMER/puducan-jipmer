@@ -1,5 +1,5 @@
 'use client'
-
+import WelcomeBanner from '@/components/dashboard/WelcomeBanner'
 import { withAuth } from '@/components/hoc/withAuth'
 import PatientFormMobile from '@/components/asha/PatientFormMobile'
 import Loading from '@/components/ui/loading'
@@ -54,20 +54,32 @@ function AshaPageContent() {
     }
 
     return (
-        <main className="mt-4 p-4">
-            <h1 className="mb-4 text-center text-xl font-bold">Your Assigned Patients</h1>
+    <main className="mt-4 p-4">
 
-            {patients.length === 0 ? (
-                <p className="text-center text-sm">No patients assigned to you.</p>
-            ) : (
-                <div className="mx-auto flex flex-col items-center gap-4 overflow-auto">
-                    {patients.map((patient: Patient) => (
-                        <PatientFormMobile key={patient.id} patient={patient} />
-                    ))}
-                </div>
-            )}
-        </main>
-    )
+        <div className="mb-4 flex justify-end">
+            <WelcomeBanner />
+        </div>
+
+        <h1 className="mb-4 text-center text-xl font-bold">
+            Your Assigned Patients
+        </h1>
+
+        {patients.length === 0 ? (
+            <p className="text-center text-sm">
+                No patients assigned to you.
+            </p>
+        ) : (
+            <div className="mx-auto flex flex-col items-center gap-4 overflow-auto">
+                {patients.map((patient: Patient) => (
+                    <PatientFormMobile
+                        key={patient.id}
+                        patient={patient}
+                    />
+                ))}
+            </div>
+        )}
+    </main>
+)
 }
 
 export default withAuth(AshaPageContent, ROLE_CONFIG.asha)

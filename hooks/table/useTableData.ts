@@ -20,29 +20,22 @@ type UsePatientsProps = {
     ashaId?: string | null | undefined
     enabled?: boolean
     requiredData?:
-    | 'ashas'
-    | 'doctors'
-    | 'nurses'
-    | 'hospitals'
-    | 'patients'
-    | 'removedPatients'
-    | undefined
+        | 'ashas'
+        | 'doctors'
+        | 'nurses'
+        | 'hospitals'
+        | 'patients'
+        | 'removedPatients'
+        | undefined
 }
 
-export const useTableData = ({
-    orgId,
-    ashaId,
-    enabled = true,
-    requiredData,
-}: UsePatientsProps) => {
+export const useTableData = ({ orgId, ashaId, enabled = true, requiredData }: UsePatientsProps) => {
     // console.log('inside custom user hook')
     const isPatientsEnabled = requiredData === 'patients' ? true : enabled && (!!orgId || !!ashaId)
     const isHospitalsEnabled = enabled && requiredData === 'hospitals'
     const isUsersEnabled =
         enabled &&
-        (requiredData === 'ashas' ||
-            requiredData === 'doctors' ||
-            requiredData === 'nurses')
+        (requiredData === 'ashas' || requiredData === 'doctors' || requiredData === 'nurses')
 
     // Now you return the appropriate query result based on the props.
     if (requiredData === 'hospitals') {
@@ -61,11 +54,7 @@ export const useTableData = ({
         })
         return hospitalsQuery
     }
-    if (
-        requiredData === 'ashas' ||
-        requiredData === 'doctors' ||
-        requiredData === 'nurses'
-    ) {
+    if (requiredData === 'ashas' || requiredData === 'doctors' || requiredData === 'nurses') {
         const usersQuery = useQuery<UserDoc[], Error>({
             queryKey: ['users', requiredData],
             queryFn: async () => {
@@ -101,10 +90,7 @@ export const useTableData = ({
             queryFn: async () => {
                 let patientsQuery
                 if (orgId) {
-                    patientsQuery = query(
-                        collection(db, 'patients'),
-                        where('assignedHospital.id', '==', orgId)
-                    )
+                    patientsQuery = query(collection(db, 'patients'))
                 } else if (ashaId) {
                     patientsQuery = query(
                         collection(db, 'patients'),

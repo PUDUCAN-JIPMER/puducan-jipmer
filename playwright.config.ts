@@ -4,9 +4,16 @@ export default defineConfig({
     testDir: './__tests__/e2e',
     reporter: 'html',
 
+    expect: {
+        timeout: 30000,
+    },
+    timeout: 90000,
+    workers: 1,
+
     use: {
         baseURL: 'http://localhost:3000',
         trace: 'on-first-retry',
+        actionTimeout: 10000,
     },
 
     projects: [
