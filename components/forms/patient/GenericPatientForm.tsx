@@ -29,6 +29,15 @@ const EDIT_STEPS = [
     { id: 5, name: 'Follow-ups' },
 ]
 
+// Required fields for validation per step
+const REQUIRED_FIELDS: Record<number, string[]> = {
+    1: ['name', 'phoneNumber'],
+    2: ['dob', 'sex', 'patientStatus'],
+    3: ['assignedHospital'],
+    4: [],
+    5: [],
+}
+
 export default function GenericPatientForm({
     form,
     reset,
@@ -37,11 +46,32 @@ export default function GenericPatientForm({
     isEdit = false,
 }: PatientFormProps) {
     const [currentStep, setCurrentStep] = useState(1)
+    const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set())
     const steps = isEdit ? EDIT_STEPS : STEPS
     const totalSteps = steps.length
 
+    const { getValues } = form
+
+    const isStepValid = (stepId: number): boolean => {
+        const required = REQUIRED_FIELDS[stepId] || []
+        if (required.length === 0) return true
+
+        const values = getValues()
+        return required.every(field => {
+            const value = values[field as keyof PatientFormInputs]
+            if (Array.isArray(value)) {
+                return value.length > 0 && value.some(v => v && v.trim() !== '')
+            }
+            if (value && typeof value === 'object') {
+                return Object.keys(value).length > 0
+            }
+            return value !== undefined && value !== null && value.toString().trim() !== ''
+        })
+    }
+
     const handleNext = () => {
-        if (currentStep < totalSteps) {
+        if (currentStep < totalSteps && isStepValid(currentStep)) {
+            setCompletedSteps(prev => new Set([...prev, currentStep]))
             setCurrentStep(currentStep + 1)
             window.scrollTo({ top: 0, behavior: 'smooth' })
         }
@@ -55,33 +85,43 @@ export default function GenericPatientForm({
     }
 
     const goToStep = (step: number) => {
-        setCurrentStep(step)
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+        if (step < currentStep) {
+            setCurrentStep(step)
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+        } else if (step > currentStep) {
+            let allValid = true
+            for (let s = currentStep; s < step; s++) {
+                if (!isStepValid(s)) {
+                    allValid = false
+                    break
+                }
+            }
+            if (allValid) {
+                const newCompleted = new Set(completedSteps)
+                for (let s = 1; s < step; s++) {
+                    if (isStepValid(s)) newCompleted.add(s)
+                }
+                setCompletedSteps(newCompleted)
+                setCurrentStep(step)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+            }
+        }
     }
 
     const renderStepContent = () => {
         switch (currentStep) {
-            case 1:
-                return <ColumnOne form={form} />
-            case 2:
-                return <ColumnTwo form={form} />
-            case 3:
-                return <ColumnThree form={form} />
-            case 4:
-                return <ColumnFour form={form} />
-            case 5:
-                return <ColumnFive form={form} />
-            default:
-                return null
+            case 1: return <ColumnOne form={form} />
+            case 2: return <ColumnTwo form={form} />
+            case 3: return <ColumnThree form={form} />
+            case 4: return <ColumnFour form={form} />
+            case 5: return <ColumnFive form={form} />
+            default: return null
         }
     }
 
     return (
         <Form {...form}>
-            <form
-                onSubmit={handleSubmit(onSubmit)}
-                className="py-4 select-none"
-            >
+            <form onSubmit={handleSubmit(onSubmit)} className="py-4 select-none">
                 <div className="flex flex-col md:flex-row gap-6">
                     {/* Sidebar */}
                     <div className="md:w-64 lg:w-72 shrink-0">
@@ -90,37 +130,43 @@ export default function GenericPatientForm({
                                 Progress
                             </h3>
                             <div className="space-y-2">
-                                {steps.map((step) => (
-                                    <button
-                                        key={step.id}
-                                        type="button"
-                                        onClick={() => goToStep(step.id)}
-                                        className={cn(
-                                            "w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 text-left",
-                                            currentStep === step.id
-                                                ? "bg-primary/10 text-primary border-l-4 border-primary"
-                                                : "hover:bg-muted text-muted-foreground"
-                                        )}
-                                    >
-                                        <div className="flex-1">
-                                            <p className={cn(
-                                                "text-sm font-medium",
-                                                currentStep === step.id ? "text-primary" : "text-foreground"
-                                            )}>
-                                                {step.name}
-                                            </p>
-                                        </div>
-                                        {currentStep > step.id && (
-                                            <Check className="h-4 w-4 text-green-500" />
-                                        )}
-                                    </button>
-                                ))}
+                                {steps.map((step) => {
+                                    const isValid = isStepValid(step.id)
+                                    const isCompleted = completedSteps.has(step.id) || (step.id < currentStep && isValid)
+                                    const canNavigate = step.id < currentStep || isValid
+
+                                    return (
+                                        <button
+                                            key={step.id}
+                                            type="button"
+                                            onClick={() => canNavigate && goToStep(step.id)}
+                                            disabled={!canNavigate}
+                                            className={cn(
+                                                "w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 text-left",
+                                                currentStep === step.id
+                                                    ? "bg-primary/10 text-primary border-l-4 border-primary"
+                                                    : "hover:bg-muted text-muted-foreground",
+                                                !canNavigate && "opacity-50 cursor-not-allowed"
+                                            )}
+                                        >
+                                            <div className="flex-1">
+                                                <p className={cn(
+                                                    "text-sm font-medium",
+                                                    currentStep === step.id ? "text-primary" : "text-foreground"
+                                                )}>
+                                                    {step.name}
+                                                </p>
+                                            </div>
+                                            {isCompleted && <Check className="h-4 w-4 text-green-500" />}
+                                        </button>
+                                    )
+                                })}
                             </div>
                         </div>
                     </div>
 
                     {/* Main Content */}
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                         <div className="rounded-xl border bg-card p-6">
                             {/* Mobile Progress */}
                             <div className="md:hidden mb-6">
@@ -144,7 +190,7 @@ export default function GenericPatientForm({
                                 {steps[currentStep - 1]?.name}
                             </h3>
 
-                            <div className="space-y-6">
+                            <div className="w-full">
                                 {renderStepContent()}
                             </div>
 
@@ -173,7 +219,7 @@ export default function GenericPatientForm({
                                 ) : (
                                     <Button
                                         type="submit"
-                                        className="h-10 px-6 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800"
+                                        className="h-10 px-6 bg-green-600 hover:bg-green-700"
                                     >
                                         {isEdit ? 'Update Patient' : 'Save Patient'}
                                     </Button>
@@ -186,7 +232,7 @@ export default function GenericPatientForm({
                                 variant="outline"
                                 onClick={() => reset()}
                                 type="button"
-                                className="border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+                                className="border-red-500 text-red-600 hover:bg-red-50"
                             >
                                 Clear All
                             </Button>
