@@ -22,6 +22,14 @@ export default function AadhaarField({ form }: AadhaarFieldProps) {
             .replace(/\D/g, '') // remove non-digits
             .slice(0, 12) // max 12 digits
             .replace(/(\d{4})(?=\d)/g, '$1 ') // space after each 4 digits
+    const formatAbha = (val: string) =>
+        val
+            .replace(/\D/g, '')
+            .slice(0, 14)
+            .replace(/^(\d{2})(\d{0,4})(\d{0,4})(\d{0,4})$/,
+                (_: string, a: string, b: string, c: string, d: string) =>
+                    [a, b, c, d].filter(Boolean).join('-')
+            )
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const raw = e.target.value
@@ -82,8 +90,17 @@ export default function AadhaarField({ form }: AadhaarFieldProps) {
                         <FormControl>
                             <FloatingLabelInput
                                 {...field}
-                                label="Aabha Number"
+                                label="ABHA Number"
+                                value={formatAbha(field.value ?? '')}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                    const digitsOnly = e.target.value
+                                        .replace(/\D/g, '')
+                                        .slice(0, 14)
+                                    field.onChange(digitsOnly)
+                                }}
                                 autoComplete="off"
+                                inputMode="numeric"
+                                maxLength={19}
                             />
                         </FormControl>
                         <FormMessage />
