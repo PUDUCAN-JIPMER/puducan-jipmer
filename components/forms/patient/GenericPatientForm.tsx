@@ -9,9 +9,9 @@ import { Form } from '@/components/ui/form'
 import { ColumnOne, ColumnTwo, ColumnThree, ColumnFour, ColumnFive } from '.'
 
 interface PatientFormProps {
-    form: UseFormReturn<PatientFormInputs>
+    form: UseFormReturn<PatientFormInputs, any>
     reset: UseFormReset<PatientFormInputs>
-    handleSubmit: UseFormHandleSubmit<PatientFormInputs>
+    handleSubmit: UseFormHandleSubmit<PatientFormInputs, any>
     onSubmit: (data: PatientFormInputs) => Promise<void>
     isEdit?: boolean
 }
@@ -90,9 +90,9 @@ export default function GenericPatientForm({
             >
                 <div className="flex flex-col gap-6 md:flex-row">
                     {/* Sidebar */}
-                    <div className="flex-shrink-0 md:w-64 lg:w-72">
-                        <div className="bg-card sticky top-4 rounded-xl border p-4">
-                            <h3 className="text-foreground mb-4 border-b pb-2 text-sm font-semibold">
+                    <div className="md:w-64 lg:w-72 shrink-0">
+                        <div className="sticky top-4 rounded-xl border bg-card p-4">
+                            <h3 className="text-sm font-semibold text-foreground mb-4 pb-2 border-b">
                                 Progress
                             </h3>
                             <div className="space-y-2">
