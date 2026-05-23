@@ -8,6 +8,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
+import { SearchX } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useFilteredPatients } from '@/hooks/table/useFilteredPatients'
 import { usePagination } from '@/hooks/table/usePagination'
@@ -160,13 +162,27 @@ export function GenericTable({
                         ))
                     ) : (
                         <TableRow>
-                            <TableCell
-                                colSpan={8}
-                                className="text-muted-foreground py-10 text-center text-sm"
-                            >
-                                No matching patients found.
-                            </TableCell>
-                        </TableRow>
+    <TableCell
+        colSpan={8}
+        className="py-16"
+    >
+        <div className="flex flex-col items-center justify-center px-4 text-center">
+            <SearchX className="text-muted-foreground mb-4 h-12 w-12 sm:h-14 sm:w-14" />
+
+            <h2 className="text-lg font-semibold sm:text-xl">
+                {searchTerm
+                    ? 'No matching patients found'
+                    : 'No patients available'}
+            </h2>
+
+            <p className="text-muted-foreground mt-2 max-w-md text-sm sm:text-base">
+                {searchTerm
+                    ? 'Try adjusting your search or filters to find what you are looking for.'
+                    : 'Patients will appear here once records are added.'}
+            </p>
+        </div>
+    </TableCell>
+</TableRow>
                     )}
                 </TableBody>
             </Table>
