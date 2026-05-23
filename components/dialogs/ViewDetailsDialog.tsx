@@ -5,6 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Patient } from '@/schema/patient'
 import { UserDoc } from '@/schema/user'
 import { Hospital } from '@/schema/hospital'
+import formatFieldValue from './formatFieldValue'
 
 type RowDataType = Patient | UserDoc | Hospital
 type FieldToDisplay = { label: string; key: string }
@@ -21,31 +22,7 @@ export default function ViewDetailsDialog({
     fieldsToDisplay: FieldToDisplay[]
 }) {
     function renderValue(key: string, value: any): string {
-        if (value == null) return 'N/A'
-        if (value === '') return 'N/A'
-
-        if (Array.isArray(value)) {
-            if (value.length === 0) return 'N/A'
-            if (typeof value[0] === 'string') return value.join(', ')
-            if (typeof value[0] === 'object') {
-                return value.map((v) => `${v.date || ''} - ${v.remarks || ''}`).join('; ')
-            }
-        }
-
-        if (typeof value === 'object') {
-            if (key === 'gpsLocation') return `Lat: ${value.lat}, Lng: ${value.lng}`
-            if (key === 'assignedHospital') return `${value.name}`
-            if (key === 'insurance') return `${value.type}${value.id ? ` (${value.id})` : ''}`
-            return JSON.stringify(value)
-        }
-
-        if (typeof value === 'boolean') return value ? 'Yes' : 'No'
-
-        if (typeof value === 'string') {
-            return value.charAt(0).toUpperCase() + value.slice(1)
-        }
-
-        return String(value)
+        return formatFieldValue(key, value)
     }
 
     return (
