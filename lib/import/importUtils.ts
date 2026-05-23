@@ -136,8 +136,8 @@ const uploadToFirestore = async (rows: any[], activeTab: string, queryClient: an
             snap.forEach((doc) => {
                 const data = doc.data()
                 hospitalMap[data.name] = { id: doc.id, name: data.name }
+
             })
-            console.log('hospitalMap:', hospitalMap)
         }
 
         let successCount = 0

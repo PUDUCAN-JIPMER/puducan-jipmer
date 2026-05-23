@@ -19,12 +19,13 @@ type Collections = 'patients' | 'hospitals' | 'doctors' | 'nurses' | 'ashas' | '
 
 type WithIdAndName = { id: string | number; name?: string } & Record<string, any>
 
-type DeleteEntityDialogProps<T extends WithIdAndName | null> = {
+type BulkDeleteDialogProps = {
     open: boolean
-    entityData: T
+    ids: string[]
+    rowsData?: Record<string, any>[]
     collectionName: Collections
     onClose: () => void
-    onDeleted?: (deletedId: string) => void
+    onDeleted?: (deletedIds: string[]) => void
 }
 
 function labelFromCollection(coll: Collections) {
@@ -54,47 +55,56 @@ function mapToFirestoreCollection(coll: Collections) {
     return 'users'
 }
 
-export default function DeleteEntityDialog<T extends WithIdAndName | null>({
+export default function BulkDeleteDialog({
     open,
-    entityData,
+    ids,
+    rowsData = [],
     collectionName,
     onClose,
     onDeleted,
-}: DeleteEntityDialogProps<T>) {
+}: BulkDeleteDialogProps) {
     const queryClient = useQueryClient()
     const [reason, setReason] = useState('')
+
     const isPatient = collectionName === 'patients'
-    const name = (entityData?.name as string) ?? ''
-    const id = entityData?.id ? String(entityData.id) : ''
+    const label = labelFromCollection(collectionName)
+    const count = ids.length
+    const pluralLabel = count === 1 ? label : `${label}s`
 
     const mutation = useMutation({
         mutationFn: async () => {
-            if (!entityData || !id) throw new Error('Missing entity id')
+            if (!ids.length) throw new Error('No records selected for deletion')
 
             if (isPatient) {
                 // require a reason
                 if (!reason.trim())
-                    throw new Error('Please enter a reason before deleting the patient.')
+                    throw new Error('Please enter a reason before deleting these patients.')
+                // entries to removedPatients
+               await Promise.all(ids.map(async (id) => {
+                    const patientData = rowsData.find((row: any) => row.id === id) ?? { id}
 
-                // 1) archive to removedPatients (same id so you can cross-reference)
-                await setDoc(doc(db, 'removedPatients', id), {
-                    ...entityData,
-                    deletionReason: reason.trim(),
-                    deletedAt: serverTimestamp(),
-                    removedFrom: 'patients',
-                })
-
-                // 2) delete from patients
+                    await setDoc(doc(db, 'removedPatients', id), {
+                        ...patientData,
+                        deletionReason: reason,
+                        deletedAt: serverTimestamp(),
+                        removedFrom: 'patients'
+                    })
                 await deleteDoc(doc(db, 'patients', id))
+                })
+               )
+
+                
             } else {
                 // direct delete for hospitals/users/removedPatients
                 const coll = mapToFirestoreCollection(collectionName)
-                await deleteDoc(doc(db, coll, id))
+                console.log('coll:', coll)
+                console.log('id:', ids)  
+                await Promise.all(ids.map((id) => deleteDoc(doc(db, coll, id))))
             }
 
-            return id
+            return ids
         },
-        onSuccess: (deletedId) => {
+        onSuccess: (deletedIds) => {
             // invalidate the right list
             if (collectionName === 'patients') {
                 queryClient.invalidateQueries({ queryKey: ['patients'] })
@@ -108,8 +118,9 @@ export default function DeleteEntityDialog<T extends WithIdAndName | null>({
                 queryClient.invalidateQueries({ queryKey: ['users'] })
             }
 
-            toast.success(`${name || labelFromCollection(collectionName)} deleted successfully`)
-            onDeleted?.(deletedId)
+            toast.success(`${count} ${count === 1 ? label : label + 's'} deleted successfully`)
+            onDeleted?.(deletedIds)
+            setReason('')
             onClose()
         },
         onError: (err: any) => {
@@ -131,13 +142,13 @@ export default function DeleteEntityDialog<T extends WithIdAndName | null>({
         >
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Delete {labelFromCollection(collectionName)}</DialogTitle>
+                        <DialogTitle>Delete {count} {pluralLabel}</DialogTitle>
                 </DialogHeader>
 
                 <div className="space-y-2">
                     <p>
                         Are you sure you want to delete{' '}
-                        <strong className="text-red-600">{name || 'this record'}</strong>?
+                        <strong className="text-red-600">{count} {pluralLabel.toLowerCase()}</strong>?
                     </p>
                     <p className="text-sm text-orange-500">Note: This action cannot be undone.</p>
                 </div>
@@ -164,7 +175,7 @@ export default function DeleteEntityDialog<T extends WithIdAndName | null>({
                         onClick={handleConfirm}
                         disabled={mutation.isPending}
                     >
-                        {mutation.isPending ? 'Deleting…' : 'Delete'}
+                        {mutation.isPending ? 'Deleting…' : `Delete ${count} ${pluralLabel}`}
                     </Button>
                 </DialogFooter>
             </DialogContent>
