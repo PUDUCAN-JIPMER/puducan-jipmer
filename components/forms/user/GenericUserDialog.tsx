@@ -24,6 +24,9 @@ interface GenericUserDialogProps {
     userData?: UserDoc // only for edit
     trigger?: React.ReactNode
     onSuccess?: () => void
+    // for keyboard shortcuts
+    open?: boolean
+    onOpenChange?: (open:boolean) => void
 }
 
 export default function GenericUserDialog({
@@ -32,9 +35,16 @@ export default function GenericUserDialog({
     userData,
     trigger,
     onSuccess,
+    // for keyboard shortcuts
+    open,
+    onOpenChange,
 }: GenericUserDialogProps) {
-    const [open, setOpen] = useState(false)
+    const [internalOpen, setInternalOpen] = useState(false)
     const queryClient = useQueryClient()
+
+    const isOpen = open ?? internalOpen
+
+    const setIsOpen = onOpenChange ?? setInternalOpen
 
     const onSubmit = async (data: UserFormInputs) => {
         try {
@@ -47,7 +57,7 @@ export default function GenericUserDialog({
             }
 
             queryClient.invalidateQueries({ queryKey: ['users', userType] })
-            setOpen(false)
+            setIsOpen(false)
             onSuccess?.()
         } catch (err) {
             console.error(`Error saving ${userType}:`, err)
@@ -56,7 +66,8 @@ export default function GenericUserDialog({
     }
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        //added isOpen to handle both keyboard shortcut and click
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
                 {trigger ? (
                     trigger
@@ -82,7 +93,7 @@ export default function GenericUserDialog({
                     user={userType}
                     defaultValues={mode === 'edit' ? userData : undefined}
                     onSubmit={onSubmit}
-                    onSuccess={() => setOpen(false)}
+                    onSuccess={() => setIsOpen(false)}
                 />
             </DialogContent>
         </Dialog>

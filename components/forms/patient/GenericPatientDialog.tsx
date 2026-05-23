@@ -21,12 +21,16 @@ import GenericPatientForm from './GenericPatientForm'
 import clsx from 'clsx'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/contexts/AuthContext'
+// removed unused imports
 
 interface GenericPatientDialogProps {
     mode: 'add' | 'edit'
     trigger?: React.ReactNode
     patientData?: PatientFormInputs & { id?: string }
     onSuccess?: () => void
+    // for keyboard shortcuts
+    open?: boolean
+    onOpenChange?: (open: boolean) => void
 }
 
 export default function GenericPatientDialog({
@@ -34,14 +38,26 @@ export default function GenericPatientDialog({
     trigger,
     patientData,
     onSuccess,
+    // for keyboard shortcuts
+    open,
+    onOpenChange,
 }: GenericPatientDialogProps) {
-    const [open, setOpen] = useState(false)
+    const [internalOpen, setInternalOpen] = useState(false)
     const isEdit = mode === 'edit'
     const queryClient = useQueryClient()
-    const {orgId} = useAuth()
+
+    const isOpen = open ?? internalOpen
+
+    const setIsOpen = onOpenChange ?? setInternalOpen
+
+    const { orgId } = useAuth()
 
     const form = useForm<PatientFormInputs>({
-        resolver: zodResolver(PatientSchema),
+        // zodResolver typing can sometimes conflict with react-hook-form's Resolver
+        // cast to any to avoid TS incompatible-resolver issues
+        resolver: zodResolver(PatientSchema) as any,
+        mode: 'onChange',
+        reValidateMode: 'onChange',
         defaultValues: {
             name: '',
             caregiverName: '',
@@ -107,7 +123,7 @@ export default function GenericPatientDialog({
 
     // Load from localStorage (for add mode only)
     useEffect(() => {
-        if (open && !isEdit) {
+        if (isOpen && !isEdit) {
             const saved = localStorage.getItem('addPatientFormData')
             if (saved) {
                 try {
@@ -142,7 +158,7 @@ export default function GenericPatientDialog({
                 queryClient.invalidateQueries({ queryKey: ['patients'] })
             }
 
-            setOpen(false)
+            setIsOpen(false)
             reset()
             onSuccess?.()
         } catch (err) {
@@ -156,20 +172,21 @@ export default function GenericPatientDialog({
             <Pencil className="h-4 w-4" />
         </Button>
     ) : (
-        <Button variant="outline" className="cursor-pointer border-2 !border-green-400">
+        <Button variant="outline" className="cursor-pointer border-2 border-green-400!">
             <Plus className="h-4 w-4" /> <span className="hidden sm:block">Add Patient</span>
         </Button>
     )
 
     return (
         <FormProvider {...form}>
-            <Dialog open={open} onOpenChange={setOpen}>
+            {/* added isOpen to handle both keyboard shortcut and click */}
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
 
                 <DialogContent
                     onInteractOutside={(e) => e.preventDefault()}
                     className={clsx(
-                        'max-h-[90vh] w-full max-w-[95vw] overflow-y-auto sm:max-w-[640px] md:max-w-[768px] lg:max-w-[1024px] 2xl:max-w-[90vw]'
+                        'max-h-[90vh] w-full max-w-[95vw] overflow-y-auto sm:max-w-2xl md:max-w-3xl lg:max-w-5xl 2xl:max-w-[90vw]'
                     )}
                 >
                     <DialogHeader>
