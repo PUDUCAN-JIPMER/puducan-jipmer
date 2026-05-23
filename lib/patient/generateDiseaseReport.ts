@@ -34,6 +34,7 @@ export function generateDiseasePDF(patients: Patient[]) {
         if (!p.diseases || !p.dob || !p.sex) return
 
         const birthYear = new Date(p.dob).getFullYear()
+        if (Number.isNaN(birthYear)) return
         const currentYear = new Date().getFullYear()
         const age = currentYear - birthYear
         const ageIndex = getAgeGroupIndex(age)
@@ -64,6 +65,35 @@ export function generateDiseasePDF(patients: Patient[]) {
     })
 
     const totalGlobal = totalMaleGlobal + totalFemaleGlobal + totalOtherGlobal
+
+    if (totalGlobal === 0) {
+        doc.setFillColor(248, 250, 252)
+        doc.rect(0, 0, 297, 28, 'F')
+
+        doc.setFont('helvetica', 'bold')
+        doc.setFontSize(18)
+        doc.setTextColor(15, 23, 42)
+        doc.text('PuduCan — Comprehensive Oncology & Disease Distribution Registry', 14, 16)
+
+        doc.setFont('helvetica', 'bold')
+        doc.setFontSize(14)
+        doc.setTextColor(51, 65, 85)
+        doc.text('No patient data available for report generation.', 14, 45)
+
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(10)
+        doc.setTextColor(100, 116, 139)
+        doc.text(
+            'The report could not generate analytical insights because no valid patient records were provided.',
+            14,
+            55
+        )
+
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+
+        doc.save(`Disease_Report_Comprehensive_${timestamp}.pdf`)
+        return
+    }
 
     doc.setFillColor(248, 250, 252)
     doc.rect(0, 0, 297, 28, 'F')
@@ -215,14 +245,15 @@ export function generateDiseasePDF(patients: Patient[]) {
         doc.setTextColor(30, 41, 59)
         doc.text('Volumetric Demographic Distribution (Proportional)', 14, barChartY)
 
-        const graphLeftX = 38
+        const graphLeftX = 60
+        const labelX = 14
         const graphBaseWidth = 75
         const barHeight = 8
         const spacingY = 5
 
         const chartItems = [
-            { label: 'Male Records', count: totalMaleGlobal, color: [14, 165, 233] },
-            { label: 'Female Records', count: totalFemaleGlobal, color: [244, 63, 94] },
+            { label: 'Male', count: totalMaleGlobal, color: [14, 165, 233] },
+            { label: 'Female', count: totalFemaleGlobal, color: [244, 63, 94] },
             { label: 'Trans/Other', count: totalOtherGlobal, color: [139, 92, 246] },
         ]
 
@@ -231,13 +262,18 @@ export function generateDiseasePDF(patients: Patient[]) {
             doc.setFont('helvetica', 'normal')
             doc.setFontSize(8.5)
             doc.setTextColor(71, 85, 105)
-            doc.text(`${item.label} (${item.count})`, 14, barChartY + 5)
+            doc.text(item.label, labelX, barChartY + 5)
 
             const calculatedWidth = (item.count / totalGlobal) * graphBaseWidth
-            const finalWidth = Math.max(calculatedWidth, 2)
+            const finalWidth = Math.max(calculatedWidth, 6)
 
             doc.setFillColor(item.color[0], item.color[1], item.color[2])
             doc.rect(graphLeftX, barChartY, finalWidth, barHeight, 'F')
+
+            doc.setFont('helvetica', 'bold')
+            doc.setFontSize(8)
+            doc.setTextColor(15, 23, 42)
+            doc.text(String(item.count), graphLeftX + finalWidth + 4, barChartY + 5)
 
             barChartY += barHeight + spacingY
         })
@@ -333,6 +369,7 @@ export function generateDiseasePDF(patients: Patient[]) {
         191
     )
 
-    const currentDateTimestamp = new Date().getDate()
-    doc.save(`Disease_Report_Comprehensive_${currentDateTimestamp}.pdf`)
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+
+    doc.save(`Disease_Report_Comprehensive_${timestamp}.pdf`)
 }
