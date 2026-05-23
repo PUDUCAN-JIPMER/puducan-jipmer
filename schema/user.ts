@@ -9,7 +9,24 @@ export const UserSchema = z.object({
     name: z.string().min(1, 'Name is required.'),
     sex: z.enum(['male', 'female']).optional(),
     role: z.enum(['doctor', 'nurse', 'asha', 'admin']),
-    phoneNumber: z.string().optional(),
+    phoneNumber: z
+        .preprocess(
+            (val) => {
+                if (typeof val !== 'string') return val
+                const trimmed = val.trim()
+                if (trimmed === '+91' || trimmed === '91') return ''
+                if (trimmed.startsWith('+91')) return trimmed.slice(3)
+                if (trimmed.startsWith('91') && trimmed.length === 12) return trimmed.slice(2)
+                return trimmed
+            },
+            z
+                .string()
+                .refine(
+                    (val) => val === '' || /^[6-9]\d{9}$/.test(val),
+                    'Phone number must be a valid 10-digit Indian mobile number (starting with 6–9).'
+                )
+        )
+        .optional(),
     orgId: z.string(),
     orgName: z.string(),
 })
