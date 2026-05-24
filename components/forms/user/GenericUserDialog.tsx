@@ -49,19 +49,31 @@ export default function GenericUserDialog({
     const onSubmit = async (data: UserFormInputs) => {
         try {
             if (mode === 'add') {
-                await addDoc(collection(db, 'users'), data)
+                const res = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                })
+                const result = await res.json()
+                if (!result.success) {
+                    throw new Error(result.error || 'Failed to create user credentials.')
+                }
                 toast.success(`${userType?.slice(0, -1)} added successfully.`)
             } else if (mode === 'edit' && userData?.id) {
-                await updateDoc(doc(db, 'users', userData.id), data)
+                const updateData = { ...data }
+                delete updateData.password
+                await updateDoc(doc(db, 'users', userData.id), updateData)
                 toast.success(`${userType?.slice(0, -1)} updated successfully.`)
             }
 
             queryClient.invalidateQueries({ queryKey: ['users', userType] })
             setIsOpen(false)
             onSuccess?.()
-        } catch (err) {
+        } catch (err: any) {
             console.error(`Error saving ${userType}:`, err)
-            toast.error(`Failed to save ${userType?.slice(0, -1)}. Please try again.`)
+            toast.error(
+                `Failed to save ${userType?.slice(0, -1)}. ${err.message || 'Please try again.'}`
+            )
         }
     }
 
@@ -90,6 +102,7 @@ export default function GenericUserDialog({
                     </DialogTitle>
                 </DialogHeader>
                 <GenericUserForm
+                    mode={mode}
                     user={userType}
                     defaultValues={mode === 'edit' ? userData : undefined}
                     onSubmit={onSubmit}

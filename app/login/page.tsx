@@ -91,11 +91,15 @@ export default function LoginPage() {
                         toast.error('Too many failed login attempts. Please try again later.')
                         break
                     default:
-                        toast.error('Login failed. Please check your Internet Connection.')
+                        toast.error(`Login failed: ${error.message} (${error.code})`)
                         break
                 }
             } else {
-                toast.error('An unexpected error occurred. Please try again.')
+                toast.error(
+                    `An unexpected error occurred: ${
+                        error instanceof Error ? error.message : 'Please try again.'
+                    }`
+                )
             }
         } finally {
             setLoading(false)

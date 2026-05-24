@@ -1,5 +1,7 @@
 'use client'
 
+import { useState } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { PhoneInput } from '@/components/ui/phone-input'
@@ -24,6 +26,7 @@ import HospitalSearch from '@/components/search/HospitalSearch'
 import { UserFormInputs, UserSchema, UserDoc } from '@/schema/user'
 
 interface GenericUserFormProps {
+    mode: 'add' | 'edit'
     user: string
     defaultValues?: Partial<UserDoc>
     onSuccess?: () => void
@@ -31,12 +34,14 @@ interface GenericUserFormProps {
 }
 
 export default function GenericUserForm({
+    mode,
     user,
     defaultValues,
     onSuccess,
     onSubmit,
 }: GenericUserFormProps) {
     const roleValue = user?.endsWith('s') ? user.slice(0, -1) : user
+    const [showPassword, setShowPassword] = useState(false)
 
     const form = useForm<UserFormInputs>({
         resolver: zodResolver(UserSchema),
@@ -48,10 +53,20 @@ export default function GenericUserForm({
             phoneNumber: defaultValues?.phoneNumber ?? '',
             orgId: defaultValues?.orgId ?? '',
             orgName: defaultValues?.orgName ?? '',
+            password: defaultValues?.password ?? '',
         },
     })
 
     const handleSubmit = async (data: UserFormInputs) => {
+        if (mode === 'add') {
+            if (!data.password || data.password.length < 6) {
+                form.setError('password', {
+                    type: 'manual',
+                    message: 'Password must be at least 6 characters long.',
+                })
+                return
+            }
+        }
         await onSubmit(data)
         onSuccess?.()
         form.reset()
@@ -74,6 +89,38 @@ export default function GenericUserForm({
                         </FormItem>
                     )}
                 />
+
+                {/* Password - only displayed in add mode */}
+                {mode === 'add' && (
+                    <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Password</FormLabel>
+                                <div className="relative">
+                                    <FormControl className="!border-red-400">
+                                        <Input
+                                            type={showPassword ? 'text' : 'password'}
+                                            placeholder="••••••••"
+                                            {...field}
+                                            className="pr-10"
+                                        />
+                                    </FormControl>
+                                    <button
+                                        type="button"
+                                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                        onClick={() => setShowPassword((prev) => !prev)}
+                                        className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer"
+                                    >
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                )}
 
                 {/* Name */}
                 <FormField
