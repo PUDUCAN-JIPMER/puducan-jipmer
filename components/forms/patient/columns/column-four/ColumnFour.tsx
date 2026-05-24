@@ -1,10 +1,17 @@
-import { UseFormReturn } from 'react-hook-form'
+import { UseFormReturn, Controller } from 'react-hook-form'
 
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { FormControl, FormField, FormItem, FormMessage, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import TreatmentDropdown from './fields/TreatmentDropdrop'
 import { TreatmentPeriodField } from './fields/TreatmentPeriodField'
 import { FloatingLabelInput } from '@/components/ui/floating-label-input'
+import {
+    Select,
+    SelectTrigger,
+    SelectContent,
+    SelectItem,
+    SelectValue,
+} from '@/components/ui/select'
 import clsx from 'clsx'
 
 type RightColumnProps = {
@@ -78,6 +85,71 @@ export function ColumnFour({ form, isAsha = false }: RightColumnProps) {
                 />
 
                 {/* Biopsy Number */}
+                <div className="flex flex-col gap-2">
+                    <FormLabel className="text-muted-foreground text-sm">Stage of the Cancer</FormLabel>
+
+                    <FormField
+                        control={control}
+                        name="stageOfTheCancer.stage"
+                        defaultValue="Stage I"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormControl>
+                                    <Select value={field.value ?? ''} onValueChange={(v) => field.onChange(v === '' ? undefined : v)}>
+                                        <SelectTrigger className="w-full" required>
+                                            <SelectValue>
+                                                {field.value ? (
+                                                    <span className="font-medium">{field.value}</span>
+                                                ) : (
+                                                    'Select cancer stage'
+                                                )}
+                                            </SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Stage 0">Stage 0</SelectItem>
+                                            <SelectItem value="Stage I">Stage I</SelectItem>
+                                            <SelectItem value="Stage II">Stage II</SelectItem>
+                                            <SelectItem value="Stage III">Stage III</SelectItem>
+                                            <SelectItem value="Stage IV">Stage IV</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={control}
+                        name="stageOfTheCancer.subStage"
+                        defaultValue="None"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormControl>
+                                    <Select value={field.value ?? ''} onValueChange={(v) => field.onChange(v === '' || v === 'None' ? undefined : v)}>
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue>
+                                                {field.value ? (
+                                                    <span className="font-medium">{field.value}</span>
+                                                ) : (
+                                                    'Select sub-stage (optional)'
+                                                )}
+                                            </SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="None">None</SelectItem>
+                                            <SelectItem value="A">A</SelectItem>
+                                            <SelectItem value="B">B</SelectItem>
+                                            <SelectItem value="C">C</SelectItem>
+                                            <SelectItem value="D">D</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
                 <FormField
                     control={control}
                     name="biopsyNumber"
