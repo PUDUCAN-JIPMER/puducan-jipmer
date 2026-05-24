@@ -3,7 +3,7 @@ import { Patient } from '@/schema/patient'
 import { Hospital } from '@/schema/hospital'
 import { UserDoc } from '@/schema/user'
 import { useQuery } from '@tanstack/react-query'
-import { collection, getDocs, query, where } from 'firebase/firestore'
+import { collection, getDocs, query } from 'firebase/firestore'
 import { useMemo } from 'react'
 import { MAX_ANALYTICS_ITEMS } from '@/lib/analytics/analyticsUtils'
 
@@ -16,23 +16,28 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
     const isAdmin = role === 'admin'
 
     // ── Patients ──────────────────────────────────────────────────────
+    // NOTE: useTableData (Doctor Dashboard) always fetches ALL patients with no
+    // Firestore-level filter, even when orgId is present. The previous
+    // where('assignedHospital.id', '==', orgId) filter returned 0 results
+    // because the nested field path / index was not matching correctly.
+    // We mirror the dashboard's proven approach: fetch the full collection and
+    // let the derived stats memos do the in-memory per-hospital aggregation.
     const patientsQuery = useQuery<Patient[], Error>({
-        queryKey: ['stats-patients', { role, orgId }],
+        queryKey: ['stats-patients', { role }],
         queryFn: async () => {
-            let q
-            if (isAdmin) {
-                // Admin sees all patients across every hospital
-                q = query(collection(db, 'patients'))
-            } else if (orgId) {
-                // Doctor / Nurse see only their hospital's patients
-                q = query(collection(db, 'patients'), where('assignedHospital.id', '==', orgId))
-            } else {
-                return []
-            }
+            const collectionName = 'patients'
+            console.log('Analytics collection:', collectionName)
+            const q = query(collection(db, collectionName))
             const snap = await getDocs(q)
+            console.log('Fetched analytics docs:', snap.docs.length)
+            if (snap.docs.length > 0) {
+                const sample = snap.docs[0].data()
+                console.log('Sample doc assignedHospital:', sample.assignedHospital, '| orgId:', orgId)
+                console.log('Sample hospitalRegistrationDate:', sample.hospitalRegistrationDate)
+            }
             return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Patient[]
         },
-        enabled: !!(role && (isAdmin || orgId)),
+        enabled: !!role,
         staleTime: 60 * 1000,
     })
 

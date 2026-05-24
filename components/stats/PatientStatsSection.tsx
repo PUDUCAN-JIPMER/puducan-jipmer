@@ -120,7 +120,7 @@ export function PatientStatsSection({ stats, patients }: { stats: PatientStats; 
 
             {/* ── Row 1: Status pie + Gender pie ─────────────────── */}
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <ChartCard title="Patient Status">
+                <ChartCard title="Patient Status" empty={!stats.statusData.length}>
                     <ResponsiveContainer width="100%" height={220}>
                         <PieChart>
                             <Pie data={stats.statusData} cx="50%" cy="50%" outerRadius={80}
@@ -135,7 +135,7 @@ export function PatientStatsSection({ stats, patients }: { stats: PatientStats; 
                     </ResponsiveContainer>
                 </ChartCard>
 
-                <ChartCard title="Gender Distribution">
+                <ChartCard title="Gender Distribution" empty={!stats.genderData.length}>
                     <ResponsiveContainer width="100%" height={220}>
                         <PieChart>
                             <Pie data={stats.genderData} cx="50%" cy="50%" outerRadius={80}
@@ -190,7 +190,7 @@ export function PatientStatsSection({ stats, patients }: { stats: PatientStats; 
 
             {/* ── Row 3: Insurance donut + Ration card bar ───────── */}
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <ChartCard title="Insurance Coverage">
+                <ChartCard title="Insurance Coverage" empty={!stats.insuranceData.length}>
                     <ResponsiveContainer width="100%" height={210}>
                         <PieChart>
                             <Pie data={stats.insuranceData} cx="50%" cy="50%"
@@ -206,7 +206,7 @@ export function PatientStatsSection({ stats, patients }: { stats: PatientStats; 
                     </ResponsiveContainer>
                 </ChartCard>
 
-                <ChartCard title="Ration Card Type">
+                <ChartCard title="Ration Card Type" empty={stats.rationData.every((d) => d.value === 0)}>
                     <ResponsiveContainer width="100%" height={210}>
                         <BarChart data={stats.rationData}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
