@@ -24,7 +24,7 @@ import { useResponsiveRows } from '@/hooks/table/useResponsiveRows'
 import { TabDataMap, RowDataBase, ModalType } from '@/types/table/types'
 import { GenericMobileRow } from './GenericMobileRow'
 import TableSkeleton from '@/components/skeletons/TableSkeleton'
-import { ArrowUp, ArrowDown, ArrowUpDown ,Trash2, UserPlus, Download, } from 'lucide-react'
+import { ArrowUp, ArrowDown, ArrowUpDown, Trash2, UserPlus, Download, } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useSorting, SORTABLE_KEYS } from '@/hooks/table/useSorting'
 import { BulkAction, BulkActionBar } from './BulkActionBar'
@@ -32,7 +32,7 @@ import { useBulkSelectionStore } from '@/store/bulk-selection-store'
 import { Checkbox } from '../ui/checkbox'
 import BulkDeleteDialog from '../dialogs/BulkDeleteDialog'
 import { useBulkExport } from '@/hooks/table/useBulkExport'
-import {BulkAssignDialog} from '../dialogs/BulkAssignDialog'
+import { BulkAssignDialog } from '../dialogs/BulkAssignDialog'
 
 export function GenericTable({
     headers,
@@ -110,6 +110,15 @@ export function GenericTable({
         isHospitalTab,
     })
 
+    const tabLabels: Record<string, string> = {
+        patients: 'patients',
+        hospitals: 'hospitals',
+        doctors: 'doctors',
+        nurses: 'nurses',
+        ashas: 'ASHAs',
+        removedPatients: 'removed patients',
+    }
+
     //clear selection when filters change or page changes
     useEffect(() => {
         setCurrentPage(1)
@@ -119,7 +128,7 @@ export function GenericTable({
     useEffect(() => {
         setCurrentPage(1)
     }, [sorting, setCurrentPage])
-    
+
     useEffect(() => {
         clearSelection()
     }, [currentPage, searchFields, filteredPatients.length, clearSelection])
@@ -145,20 +154,20 @@ export function GenericTable({
     }
 
     const currentPageIds = useMemo(() => paginatedData.map((row) => row.id), [paginatedData])
-    const allCurrentSelected = currentPageIds.length> 0 && currentPageIds.every((id) => selectedIds.has(id))
+    const allCurrentSelected = currentPageIds.length > 0 && currentPageIds.every((id) => selectedIds.has(id))
     const someCurrentPageSelected = !allCurrentSelected && currentPageIds.some((id) => selectedIds.has(id))
 
     const bulkActions: BulkAction[] = useMemo(() => [
         {
             key: 'delete',
             label: 'Delete',
-            icon: <Trash2 className="h-3 w-3" />,   
+            icon: <Trash2 className="h-3 w-3" />,
             variant: 'destructive',
             onClick: () => {
-                    openModal('bulkDelete')
+                openModal('bulkDelete')
             }
-         },
-         {
+        },
+        {
             key: 'Assign',
             label: 'Assign',
             hidden: !isPatientTab, // only show for patients
@@ -167,20 +176,20 @@ export function GenericTable({
                 // handle assign action
                 openModal('bulkAssign')
             }
-         },
-         {
+        },
+        {
             key: 'export',
             label: 'Export',
             icon: <Download className="h-3 w-3" />,
             onClick: (ids) => {
-               exportSelected(
-                ids,
-                stableHeaders,
-                activeTab,
-                data as Record<string, unknown>[],
-               )
-            }   
-         }
+                exportSelected(
+                    ids,
+                    stableHeaders,
+                    activeTab,
+                    data as Record<string, unknown>[],
+                )
+            }
+        }
 
     ], [openModal, isPatientTab, exportSelected, data, stableHeaders, activeTab])
 
@@ -205,23 +214,23 @@ export function GenericTable({
             />
 
             <Table className="border-border flex-1 overflow-auto rounded-md border">
-    <caption className="sr-only">
-        {activeTab} management table
-    </caption>
+                <caption className="sr-only">
+                    {activeTab} management table
+                </caption>
                 <TableHeader className="bg-muted hidden sm:table-header-group">
                     <TableRow className="border-border border-b">
- {/* bulk actions */}
+                        {/* bulk actions */}
                         <TableHead className="border-border w-12 border-r  text-center">
                             <div className='flex items-center justify-center'>
                                 <Checkbox
-                                checked = {
-                                    allCurrentSelected ? true : someCurrentPageSelected ? 'indeterminate' : false
-                                }
-                                onCheckedChange={() => selectAll(currentPageIds)}
-                                aria-label='Select all rows on this page'
+                                    checked={
+                                        allCurrentSelected ? true : someCurrentPageSelected ? 'indeterminate' : false
+                                    }
+                                    onCheckedChange={() => selectAll(currentPageIds)}
+                                    aria-label='Select all rows on this page'
                                 />
                             </div>
-                            
+
                         </TableHead>
                         <TableHead className="border-border w-12 border-r text-center items-center justify-center">
                             S/NO
@@ -233,30 +242,30 @@ export function GenericTable({
                             const direction = sorting[0]?.desc ? 'desc' : 'asc'
 
                             return (
-                               <TableHead
-    scope="col"
-    aria-sort={
-        isSortable
-            ? isActive
-                ? direction === 'asc'
-                    ? 'ascending'
-                    : 'descending'
-                : 'none'
-            : undefined
-    }
-    className="border-border w-12 border-r text-center"
-    key={id}
->
+                                <TableHead
+                                    scope="col"
+                                    aria-sort={
+                                        isSortable
+                                            ? isActive
+                                                ? direction === 'asc'
+                                                    ? 'ascending'
+                                                    : 'descending'
+                                                : 'none'
+                                            : undefined
+                                    }
+                                    className="border-border w-12 border-r text-center"
+                                    key={id}
+                                >
                                     {isSortable ? (
                                         <TooltipProvider>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                   <button
-    type="button"
-    onClick={() => toggle(header.key)}
-    aria-label={`Sort by ${header.name}`}
-    className="hover:text-foreground focus-visible:ring-ring flex w-full items-center justify-center gap-1 rounded font-medium focus-visible:ring-2 focus-visible:outline-none"
->
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => toggle(header.key)}
+                                                        aria-label={`Sort by ${header.name}`}
+                                                        className="hover:text-foreground focus-visible:ring-ring flex w-full items-center justify-center gap-1 rounded font-medium focus-visible:ring-2 focus-visible:outline-none"
+                                                    >
                                                         {header.name}
                                                         {isActive && direction === 'asc' && (
                                                             <ArrowUp className="h-3 w-3" />
@@ -274,8 +283,8 @@ export function GenericTable({
                                                         !isActive
                                                             ? 'Sort ascending' // not sorted yet → first click = asc
                                                             : direction === 'asc'
-                                                              ? 'Sort descending' // currently asc → next click = desc
-                                                              : 'Sort ascending' // currently desc → next click = asc
+                                                                ? 'Sort descending' // currently asc → next click = desc
+                                                                : 'Sort ascending' // currently desc → next click = asc
                                                     }
                                                 </TooltipContent>
                                             </Tooltip>
@@ -286,12 +295,12 @@ export function GenericTable({
                                 </TableHead>
                             )
                         })}
-                       <TableHead
-    scope="col"
-    className="border-border w-12 border-r text-center"
->
-    Actions
-</TableHead>
+                        <TableHead
+                            scope="col"
+                            className="border-border w-12 border-r text-center"
+                        >
+                            Actions
+                        </TableHead>
                     </TableRow>
                 </TableHeader>
 
@@ -325,7 +334,7 @@ export function GenericTable({
                                 colSpan={headers.length + 2}
                                 className="text-muted-foreground py-10 text-center text-sm"
                             >
-                                No matching records found for the current search.
+                                {`No matching ${tabLabels[activeTab] ?? 'records'} found for the current search.`}
                             </TableCell>
                         </TableRow>
                     )}
@@ -379,29 +388,31 @@ export function GenericTable({
                 onClose={closeModal}
             />
 
-             {/* Bulk delete confirmation dialog */}
+            {/* Bulk delete confirmation dialog */}
 
             <BulkDeleteDialog
-            open={modal === 'bulkDelete'}
-            collectionName={activeTab}
-            ids={selectedIdsArray()}
-            rowsData={paginatedData as Record<string, any>[]}
-            onClose={() =>{
-                closeModal(),
-                clearSelection()} }
-            
+                open={modal === 'bulkDelete'}
+                collectionName={activeTab}
+                ids={selectedIdsArray()}
+                rowsData={paginatedData as Record<string, any>[]}
+                onClose={() => {
+                    closeModal(),
+                        clearSelection()
+                }}
+
             />
 
             <BulkAssignDialog
-            open={modal === 'bulkAssign'}
-            ids={selectedIdsArray()}
-            onClose={ () =>{
-                closeModal()
-                clearSelection()}
-                
-            }
+                open={modal === 'bulkAssign'}
+                ids={selectedIdsArray()}
+                onClose={() => {
+                    closeModal()
+                    clearSelection()
+                }
+
+                }
             />
-           
+
         </div>
     )
 }

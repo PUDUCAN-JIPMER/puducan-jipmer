@@ -10,9 +10,9 @@ import { cn } from '@/lib/utils'
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react'
 
 interface PatientFormProps {
-    form: UseFormReturn<PatientFormInputs>
+    form: UseFormReturn<PatientFormInputs, any>
     reset: UseFormReset<PatientFormInputs>
-    handleSubmit: UseFormHandleSubmit<PatientFormInputs>
+    handleSubmit: UseFormHandleSubmit<PatientFormInputs, any>
     onSubmit: (data: PatientFormInputs) => Promise<void>
     isEdit?: boolean
 }
@@ -84,7 +84,7 @@ export default function GenericPatientForm({
             >
                 <div className="flex flex-col md:flex-row gap-6">
                     {/* Sidebar */}
-                    <div className="md:w-64 lg:w-72 flex-shrink-0">
+                    <div className="md:w-64 lg:w-72 shrink-0">
                         <div className="sticky top-4 rounded-xl border bg-card p-4">
                             <h3 className="text-sm font-semibold text-foreground mb-4 pb-2 border-b">
                                 Progress
