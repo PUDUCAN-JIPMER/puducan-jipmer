@@ -136,11 +136,12 @@ export function PatientStatsSection({
             : '0%'
 
     // ── Patient Trend ─────────────────────────────
+    const trendLength = stats.registrationTrend.length
     const lastMonthPatients =
-        stats.registrationTrend.at(-2)?.count || 0
+        stats.registrationTrend[trendLength - 2]?.count || 0
 
     const previousToLastMonthPatients =
-        stats.registrationTrend.at(-3)?.count || 0
+        stats.registrationTrend[trendLength - 3]?.count || 0
 
     const patientTrendPercent =
         previousToLastMonthPatients > 0
@@ -158,7 +159,7 @@ export function PatientStatsSection({
             : '↓'
 
     const patientTrendMonth =
-        stats.registrationTrend.at(-2)?.month || ''
+        stats.registrationTrend[trendLength - 2]?.month || ''
 
     // ── Insurance Trend ───────────────────────────
     const latestInsurance =
@@ -182,7 +183,7 @@ export function PatientStatsSection({
             : '↓'
 
     const previousMonthLabel =
-        stats.registrationTrend.at(-2)?.month ||
+        stats.registrationTrend[trendLength - 2]?.month ||
         'Previous Month'
 
     return (
