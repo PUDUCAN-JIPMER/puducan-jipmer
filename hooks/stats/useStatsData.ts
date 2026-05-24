@@ -85,7 +85,7 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
         // Disease distribution
         const diseaseMap: Record<string, number> = {}
         patients.forEach((p) => {
-            ;(p.diseases ?? []).forEach((d) => {
+            ; (p.diseases ?? []).forEach((d) => {
                 if (d) diseaseMap[d] = (diseaseMap[d] ?? 0) + 1
             })
         })
@@ -94,10 +94,15 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
             .sort((a, b) => b.value - a.value)
             .slice(0, MAX_ANALYTICS_ITEMS)
 
-        // Cancer stage distribution
+        // Cancer stage distribution (use structured stage + optional sub-stage)
         const stageMap: Record<string, number> = {}
         patients.forEach((p) => {
-            const stage = p.stageOfTheCancer?.trim() || 'Unknown'
+            const s = p.stageOfTheCancer
+            const stage = s?.stage
+                ? s.subStage
+                    ? `${s.stage} + ${s.subStage}`
+                    : s.stage
+                : 'Unknown'
             stageMap[stage] = (stageMap[stage] ?? 0) + 1
         })
         const stageData = Object.entries(stageMap)
