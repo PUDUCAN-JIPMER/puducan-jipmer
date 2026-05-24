@@ -8,7 +8,6 @@ import { MapPin, Navigation, Plus } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useFormContext, useWatch } from 'react-hook-form'
 import { PatientFormInputs } from '@/schema/patient'
-import clsx from 'clsx'
 
 type LocationValue = {
     lat: number
@@ -98,7 +97,6 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
         return { coords: { lat, lng, accuracy: null } }
     }
 
-    /** Save new follow-up (optimistic, in form state) */
     const handleSaveNewFollowUp = () => {
         if (!newRemark.trim()) return
 
@@ -112,7 +110,6 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
         setIsAddingFollowUp(false)
     }
 
-    /** Save GPS from browser */
     const handleSaveLocation = async () => {
         setSavingLocation(true)
         clearPreviousLocation(true)
@@ -166,11 +163,11 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
     }
 
     return (
-        <div className={clsx('flex w-full flex-col sm:border-l-2 md:pl-4 gap-4 md:w-1/2 lg:w-1/3', isAsha && 'md:w-2/3 lg:w-full px-2 mx-auto border-none')} >
-            {/* --- Follow-Ups Section --- */}
+        <div className="w-full space-y-4">
+            {/* Follow-ups Section */}
             <div className="w-full space-y-3 pt-2">
                 <div className="flex items-center space-x-4">
-                    <Label className="text-base font-medium">Follow-ups </Label>
+                    <Label className="text-base font-medium">Follow-ups</Label>
                     <Button
                         type="button"
                         size="icon"
@@ -235,7 +232,7 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
                 )}
             </div>
 
-            {/* --- GPS Section --- */}
+            {/* GPS Section */}
             <div className="space-y-3 rounded-xl border bg-muted/20 p-3">
                 <div className="flex items-center justify-between gap-2">
                     <div>
