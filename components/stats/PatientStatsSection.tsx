@@ -25,6 +25,8 @@ import {
     LineChart,
     Line,
 } from 'recharts'
+import { RegistrationAnalytics } from '@/components/analytics/RegistrationAnalytics'
+import type { Patient } from '@/schema/patient'
 
 const COLORS = [
     '#4ade80',
@@ -51,7 +53,22 @@ const GENDER_COLORS: Record<string, string> = {
     Other: '#94a3b8',
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+interface TooltipPayload {
+    name?: string
+    value?: number | string
+    color?: string
+    fill?: string
+}
+
+const CustomTooltip = ({
+    active,
+    payload,
+    label,
+}: {
+    active?: boolean
+    payload?: TooltipPayload[]
+    label?: string | number
+}) => {
     if (!active || !payload?.length) return null
 
     return (
@@ -355,7 +372,7 @@ export function PatientStatsSection({
 
             {/* ── Row 1 ───────────────────────────── */}
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <ChartCard title="Patient Status">
+                <ChartCard title="Patient Status" empty={!stats.statusData.length}>
                     <ResponsiveContainer width="100%" height={220}>
                         <PieChart>
                             <Pie
@@ -387,7 +404,7 @@ export function PatientStatsSection({
                     </ResponsiveContainer>
                 </ChartCard>
 
-                <ChartCard title="Gender Distribution">
+                <ChartCard title="Gender Distribution" empty={!stats.genderData.length}>
                     <ResponsiveContainer width="100%" height={220}>
                         <PieChart>
                             <Pie
@@ -525,7 +542,7 @@ export function PatientStatsSection({
 
             {/* ── Row 3 ───────────────────────────── */}
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <ChartCard title="Insurance Coverage">
+                <ChartCard title="Insurance Coverage" empty={!stats.insuranceData.length}>
                     <ResponsiveContainer width="100%" height={210}>
                         <PieChart>
                             <Pie
@@ -562,7 +579,7 @@ export function PatientStatsSection({
                     </ResponsiveContainer>
                 </ChartCard>
 
-                <ChartCard title="Ration Card Type">
+                <ChartCard title="Ration Card Type" empty={stats.rationData.every((d) => d.value === 0)}>
                     <ResponsiveContainer width="100%" height={210}>
                         <BarChart data={stats.rationData}>
                             <CartesianGrid

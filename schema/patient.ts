@@ -86,9 +86,26 @@ export const PatientSchema = z
         hasAadhaar: z.boolean(),
         suspectedCase: z.boolean().optional(),
         // additional fields after second meet
-        hbcrID: z.string().optional(),
+        hbcrID: z
+            .preprocess((val) => {
+                if (typeof val === 'string') {
+                    const s = val.trim().toUpperCase()
+                    return s === '' ? undefined : s
+                }
+                return val
+            },
+                z.string().regex(/^[A-Z0-9-]{5,20}$/, {
+                    message:
+                        'HBCR ID must be 5-20 characters and contain only letters, numbers, and hyphens',
+                }))
+            .optional(),
         hospitalRegistrationId: z.string().optional(),
-        stageOfTheCancer: z.string().optional(),
+        stageOfTheCancer: z
+            .object({
+                stage: z.enum(['Stage 0', 'Stage I', 'Stage II', 'Stage III', 'Stage IV']).optional(),
+                subStage: z.enum(['A', 'B', 'C', 'D']).optional(),
+            })
+            .optional(),
         reasonOfRemoval: z.string().optional(),
         treatmentDetails: z.array(z.string().optional()).optional(),
         otherTreatmentDetails: z.string().optional(),
@@ -98,6 +115,23 @@ export const PatientSchema = z
         message: 'Please enter either age or date of birth.',
         path: ['age', 'dob'],
     })
+    // Require cancer stage selection only when cancer-related indicators are present
+    .refine(
+        (data) => {
+            const indicators = Boolean(
+                data.hbcrID || data.biopsyNumber ||
+                (data.diseases && data.diseases.some((d) => /cancer/i.test(String(d))))
+            )
+
+            if (!indicators) return true
+
+            return Boolean(data.stageOfTheCancer && data.stageOfTheCancer.stage)
+        },
+        {
+            message: 'Please select a cancer stage.',
+            path: ['stageOfTheCancer', 'stage'],
+        }
+    )
     // ✅ treatmentStartDate >= hospitalRegistrationDate
     .refine(
         (data) => {
