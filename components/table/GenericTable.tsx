@@ -336,21 +336,31 @@ export function GenericTable({
         colSpan={8}
         className="py-16"
     >
-        <div className="flex flex-col items-center justify-center px-4 text-center">
-            <SearchX className="text-muted-foreground mb-4 h-12 w-12 sm:h-14 sm:w-14" />
+        <div className="flex flex-col items-center justify-center px-4 py-6 text-center">
+    <SearchX className="text-muted-foreground mb-4 h-10 w-10" />
 
+    {searchTerm ? (
+        <>
             <h2 className="text-lg font-semibold sm:text-xl">
-                {searchTerm
-                    ? 'No matching patients found'
-                    : 'No patients available'}
+                No matching patients found
             </h2>
 
-            <p className="text-muted-foreground mt-2 max-w-md text-sm sm:text-base">
-                {searchTerm
-                    ? 'Try adjusting your search or filters to find what you are looking for.'
-                    : 'Patients will appear here once records are added.'}
+            <p className="text-muted-foreground mt-2 text-sm sm:text-base">
+                Try adjusting your search or filters.
             </p>
-        </div>
+        </>
+    ) : (
+        <>
+            <h2 className="text-lg font-semibold sm:text-xl">
+                No patients available
+            </h2>
+
+            <p className="text-muted-foreground mt-2 text-sm sm:text-base">
+                Patients will appear here once records are added.
+            </p>
+        </>
+    )}
+</div>
     </TableCell>
 </TableRow>
                     )}
