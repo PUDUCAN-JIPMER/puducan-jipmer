@@ -1,9 +1,11 @@
 'use client'
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Patient } from '@/schema/patient'
 import { UserDoc } from '@/schema/user'
 import { Hospital } from '@/schema/hospital'
+import formatFieldValue from './formatFieldValue'
 import { db } from '@/firebase'
 import { doc, getDoc } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
@@ -47,26 +49,13 @@ export default function ViewDetailsDialog({
     }, [rowData])
 
     function renderValue(key: string, value: any): string {
+        // assignedAsha should show a friendly name fetched from users collection
         if (key === 'assignedAsha') {
             if (!value || value === 'none' || value === '') return 'N/A'
             return ashaName ?? 'Loading...'
         }
-        if (value == null) return 'N/A'
-        if (value === '') return 'N/A'
-        if (Array.isArray(value)) {
-            if (value.length === 0) return 'N/A'
-            if (typeof value[0] === 'string') return value.join(', ')
-            if (typeof value[0] === 'object') {
-                return value.map((v) => `${v.date || ''} - ${v.remarks || ''}`).join('; ')
-            }
-        }
-        if (typeof value === 'object') {
-            if (key === 'gpsLocation') return `Lat: ${value.lat}, Lng: ${value.lng}`
-            if (key === 'assignedHospital') return `${value.name}`
-            if (key === 'insurance') return `${value.type}${value.id ? ` (${value.id})` : ''}`
-            return JSON.stringify(value)
-        }
-        if (typeof value === 'boolean') return value ? 'Yes' : 'No'
+
+        // Preserve number -> date conversion for fields stored as Excel dates (legacy handling)
         if (typeof value === 'number') {
             if (key.toLowerCase().includes('date') || key.toLowerCase().includes('year')) {
                 const date = new Date((value - 25569) * 86400 * 1000)
@@ -74,10 +63,9 @@ export default function ViewDetailsDialog({
             }
             return String(value)
         }
-        if (typeof value === 'string') {
-            return value.charAt(0).toUpperCase() + value.slice(1)
-        }
-        return String(value)
+
+        // Delegate remaining formatting to the centralized helper
+        return formatFieldValue(key, value)
     }
 
     return (
