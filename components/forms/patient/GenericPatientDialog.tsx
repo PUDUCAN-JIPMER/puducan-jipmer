@@ -54,8 +54,8 @@ export default function GenericPatientDialog({
 
     const form = useForm<PatientFormInputs>({
         // zodResolver typing can sometimes conflict with react-hook-form's Resolver
-        // cast to any to avoid TS incompatible-resolver issues
-        resolver: zodResolver(PatientSchema) as any,
+        // cast to unknown as never to avoid TS incompatible-resolver issues and no-explicit-any rule
+        resolver: zodResolver(PatientSchema) as unknown as never,
         mode: 'onChange',
         reValidateMode: 'onChange',
         defaultValues: {
@@ -89,7 +89,7 @@ export default function GenericPatientDialog({
         },
     })
 
-    const { handleSubmit, reset, watch, setValue } = form
+    const { handleSubmit, reset, watch } = form
     const aadhaarId = watch('aadhaarId')
     const hasAadhaar = watch('hasAadhaar')
 
@@ -135,24 +135,51 @@ export default function GenericPatientDialog({
         }
     }, [open, reset, isEdit])
 
+    // Helper to deeply strip undefined values before writing to Firestore
+    const sanitizeForFirestore = (obj: unknown): unknown => {
+        if (obj === null || obj === undefined) return null
+        if (Array.isArray(obj)) {
+            return obj.map(sanitizeForFirestore)
+        }
+        if (typeof obj === 'object') {
+            const result: Record<string, unknown> = {}
+            for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+                if (value !== undefined) {
+                    result[key] = sanitizeForFirestore(value)
+                }
+            }
+            return result
+        }
+        return obj
+    }
+
     const onSubmit = async (data: PatientFormInputs) => {
+        
+        const sanitizedData = sanitizeForFirestore(data) as Record<string, unknown>
+    
+        
         try {
             if (isEdit && patientData?.id) {
                 // Update existing patient
-                await updateDoc(doc(db, 'patients', patientData.id), data)
+                
+                await updateDoc(doc(db, 'patients', patientData.id), sanitizedData)
+                
                 toast.success('Patient updated successfully.')
             } else {
                 // Add new patient
-                await addDoc(collection(db, 'patients'), {
-                    ...data,
+                
+                const docRef = await addDoc(collection(db, 'patients'), {
+                    ...sanitizedData,
                     createdAt: serverTimestamp(), // ✅ Firestore timestamp
                 })
+                
                 toast.success('Patient added successfully.')
                 localStorage.removeItem('addPatientFormData')
             }
 
             // queryClient.invalidateQueries({ queryKey: ['patients'] })
             if (orgId) {
+                
                 queryClient.invalidateQueries({ queryKey: ['patients', orgId] })
             } else {
                 queryClient.invalidateQueries({ queryKey: ['patients'] })
@@ -162,7 +189,6 @@ export default function GenericPatientDialog({
             reset()
             onSuccess?.()
         } catch (err) {
-            console.error(`Error ${isEdit ? 'updating' : 'adding'} patient:`, err)
             toast.error(`Failed to ${isEdit ? 'update' : 'add'} patient. Please try again.`)
         }
     }
