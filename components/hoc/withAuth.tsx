@@ -8,7 +8,7 @@ import { toast } from 'sonner'
 import Loading from '@/components/ui/loading'
 
 interface WithAuthProps {
-    allowedRoles: string[]
+    allowedRoles: readonly string[]
     redirectMap: Record<string, string>
 }
 

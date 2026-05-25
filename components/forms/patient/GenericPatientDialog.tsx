@@ -83,7 +83,7 @@ export default function GenericPatientDialog({
             hasAadhaar: true,
             suspectedCase: false,
             biopsyNumber: '',
-            stageOfTheCancer: '',
+            stageOfTheCancer: undefined,
             treatmentDetails: [],
             otherTreatmentDetails: '',
         },
