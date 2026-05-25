@@ -12,7 +12,6 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
-// /app/home/page.tsx
 export default function HomePage() {
     return (
         <div className="mx-auto max-w-5xl px-4 py-6 space-y-12 text-foreground bg-background">
