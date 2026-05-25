@@ -73,12 +73,12 @@ export function computePatientRisk(patient: Partial<Patient>): RiskAssessment {
         reasons.push(`Suspected cancer case (priority diagnostic follow-up) (+2)`)
     }
 
-    const stage = patient.stageOfTheCancer?.toUpperCase()
-    if (stage) {
-        if (stage.includes('IV') || stage.includes('4')) {
+    const stageVal = patient.stageOfTheCancer?.stage
+    if (stageVal) {
+        if (stageVal === 'Stage IV') {
             score += 3
             reasons.push(`Advanced disease stage (Stage IV) (+3)`)
-        } else if (stage.includes('III') || stage.includes('3')) {
+        } else if (stageVal === 'Stage III') {
             score += 2
             reasons.push(`Advanced disease stage (Stage III) (+2)`)
         }

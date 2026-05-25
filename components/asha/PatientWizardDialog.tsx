@@ -6,6 +6,7 @@ import { updatePatient } from '@/lib/api/patient.api'
 import { Patient } from '@/schema'
 import { PatientFormInputs, PatientSchema } from '@/schema/patient'
 import { zodResolver } from '@hookform/resolvers/zod'
+import type { Resolver } from 'react-hook-form'
 import { useQueryClient } from '@tanstack/react-query'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
@@ -37,7 +38,8 @@ export function PatientWizardDialog({
     const risk = computePatientRisk(patient)
 
     const form = useForm<PatientFormInputs>({
-        resolver: zodResolver(PatientSchema),
+        // Cast resolver to avoid duplicate react-hook-form type issues during build
+        resolver: zodResolver(PatientSchema) as unknown as Resolver<PatientFormInputs>,
         defaultValues: {
             ...patient,
             followUps: patient.followUps ?? [],

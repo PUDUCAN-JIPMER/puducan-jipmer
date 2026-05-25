@@ -3,8 +3,9 @@ import { Patient } from '@/schema/patient'
 import { Hospital } from '@/schema/hospital'
 import { UserDoc } from '@/schema/user'
 import { useQuery } from '@tanstack/react-query'
-import { collection, getDocs, query, where } from 'firebase/firestore'
+import { collection, getDocs, query } from 'firebase/firestore'
 import { useMemo } from 'react'
+import { MAX_ANALYTICS_ITEMS } from '@/lib/analytics/analyticsUtils'
 
 interface UseStatsDataProps {
     role: string | null
@@ -13,26 +14,30 @@ interface UseStatsDataProps {
 
 export function useStatsData({ role, orgId }: UseStatsDataProps) {
     const isAdmin = role === 'admin'
-    const isPatientRole = role === 'doctor' || role === 'nurse'
 
     // ── Patients ──────────────────────────────────────────────────────
+    // NOTE: useTableData (Doctor Dashboard) always fetches ALL patients with no
+    // Firestore-level filter, even when orgId is present. The previous
+    // where('assignedHospital.id', '==', orgId) filter returned 0 results
+    // because the nested field path / index was not matching correctly.
+    // We mirror the dashboard's proven approach: fetch the full collection and
+    // let the derived stats memos do the in-memory per-hospital aggregation.
     const patientsQuery = useQuery<Patient[], Error>({
-        queryKey: ['stats-patients', { role, orgId }],
+        queryKey: ['stats-patients', { role }],
         queryFn: async () => {
-            let q
-            if (isAdmin) {
-                // Admin sees all patients across every hospital
-                q = query(collection(db, 'patients'))
-            } else if (orgId) {
-                // Doctor / Nurse see only their hospital's patients
-                q = query(collection(db, 'patients'), where('assignedHospital.id', '==', orgId))
-            } else {
-                return []
-            }
+            const collectionName = 'patients'
+            console.log('Analytics collection:', collectionName)
+            const q = query(collection(db, collectionName))
             const snap = await getDocs(q)
+            console.log('Fetched analytics docs:', snap.docs.length)
+            if (snap.docs.length > 0) {
+                const sample = snap.docs[0].data()
+                console.log('Sample doc assignedHospital:', sample.assignedHospital, '| orgId:', orgId)
+                console.log('Sample hospitalRegistrationDate:', sample.hospitalRegistrationDate)
+            }
             return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Patient[]
         },
-        enabled: !!(role && (isAdmin || orgId)),
+        enabled: !!role,
         staleTime: 60 * 1000,
     })
 
@@ -58,9 +63,9 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
         staleTime: 60 * 1000,
     })
 
-    const patients = patientsQuery.data ?? []
-    const hospitals = hospitalsQuery.data ?? []
-    const users = usersQuery.data ?? []
+    const patients = useMemo(() => patientsQuery.data ?? [], [patientsQuery.data])
+    const hospitals = useMemo(() => hospitalsQuery.data ?? [], [hospitalsQuery.data])
+    const users = useMemo(() => usersQuery.data ?? [], [usersQuery.data])
 
     // ── Derived patient stats (shared by all roles) ───────────────────
     const patientStats = useMemo(() => {
@@ -80,19 +85,24 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
         // Disease distribution
         const diseaseMap: Record<string, number> = {}
         patients.forEach((p) => {
-            ;(p.diseases ?? []).forEach((d) => {
+            ; (p.diseases ?? []).forEach((d) => {
                 if (d) diseaseMap[d] = (diseaseMap[d] ?? 0) + 1
             })
         })
         const diseaseData = Object.entries(diseaseMap)
             .map(([name, value]) => ({ name, value }))
             .sort((a, b) => b.value - a.value)
-            .slice(0, 10) // top 10 diseases
+            .slice(0, MAX_ANALYTICS_ITEMS)
 
-        // Cancer stage distribution
+        // Cancer stage distribution (use structured stage + optional sub-stage)
         const stageMap: Record<string, number> = {}
         patients.forEach((p) => {
-            const stage = p.stageOfTheCancer?.trim() || 'Unknown'
+            const s = p.stageOfTheCancer
+            const stage = s?.stage
+                ? s.subStage
+                    ? `${s.stage} + ${s.subStage}`
+                    : s.stage
+                : 'Unknown'
             stageMap[stage] = (stageMap[stage] ?? 0) + 1
         })
         const stageData = Object.entries(stageMap)
@@ -121,26 +131,6 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
         })
         const rationData = Object.entries(rationMap).map(([name, value]) => ({ name, value }))
 
-        // Monthly registrations – last 12 months
-        const monthMap: Record<string, number> = {}
-        const now = new Date()
-        for (let i = 11; i >= 0; i--) {
-            const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-            const key = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
-            monthMap[key] = 0
-        }
-        patients.forEach((p) => {
-            if (p.hospitalRegistrationDate) {
-                const d = new Date(p.hospitalRegistrationDate)
-                const key = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
-                if (key in monthMap) monthMap[key]++
-            }
-        })
-        const registrationTrend = Object.entries(monthMap).map(([month, count]) => ({
-            month,
-            count,
-        }))
-
         return {
             total,
             alive,
@@ -155,7 +145,6 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
             stageData,
             insuranceData,
             rationData,
-            registrationTrend,
             statusData: [
                 { name: 'Alive', value: alive },
                 { name: 'Not Alive', value: deceased },
@@ -220,6 +209,7 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
 
     return {
         patientStats,
+        patients,
         adminStats,
         isLoading:
             patientsQuery.isLoading ||

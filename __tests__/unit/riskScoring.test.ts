@@ -56,14 +56,14 @@ describe('computePatientRisk', () => {
         expect(resultSuspected.reasons[0]).toContain('Suspected cancer case')
 
         const patientStage4: Partial<Patient> = {
-            stageOfTheCancer: 'Stage IV',
+            stageOfTheCancer: { stage: 'Stage IV' },
         }
         const resultStage4 = computePatientRisk(patientStage4)
         expect(resultStage4.score).toBe(3)
         expect(resultStage4.reasons[0]).toContain('Stage IV')
 
         const patientStage3: Partial<Patient> = {
-            stageOfTheCancer: 'Stage III',
+            stageOfTheCancer: { stage: 'Stage III' },
         }
         const resultStage3 = computePatientRisk(patientStage3)
         expect(resultStage3.score).toBe(2)
@@ -121,7 +121,7 @@ describe('computePatientRisk', () => {
         // High Risk (score >= 6)
         const patientHigh: Partial<Patient> = {
             suspectedCase: true, // +2
-            stageOfTheCancer: 'Stage IV', // +3
+            stageOfTheCancer: { stage: 'Stage IV' }, // +3
             dob: '1940-01-01', // +2
         }
         const resultHigh = computePatientRisk(patientHigh)

@@ -145,7 +145,6 @@ export function GenericToolbar({
                             <DropdownMenuItem
                                 onSelect={(e) => {
                                     e.preventDefault() // ✅ stop default closing behavior if needed
-                                    console.log('inside import button')
                                     document.getElementById('file-upload')?.click()
                                 }}
                             >
@@ -158,7 +157,6 @@ export function GenericToolbar({
                             accept=".csv, .xlsx, .xls"
                             className="hidden"
                             onChange={(e) => {
-                                console.log('inside file upload')
                                 importData(e, queryClient)
                             }}
                         />
