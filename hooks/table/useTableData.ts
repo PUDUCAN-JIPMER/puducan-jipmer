@@ -90,8 +90,12 @@ export const useTableData = ({ orgId, ashaId, enabled = true, requiredData }: Us
             queryFn: async () => {
                 let patientsQuery
                 if (orgId) {
-                    patientsQuery = query(collection(db, 'patients'))
-                } else if (ashaId) {
+                    patientsQuery = query(
+                    collection(db, 'patients'),
+                    where('assignedHospital.id', '==', orgId)
+                    )
+        }
+                 else if (ashaId) {
                     patientsQuery = query(
                         collection(db, 'patients'),
                         where('assignedAsha', '==', ashaId)

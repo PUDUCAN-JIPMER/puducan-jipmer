@@ -20,7 +20,7 @@ function StatsPageContent() {
     const { role, orgId } = useAuth()
     const router = useRouter()
 
-    const { patientStats, adminStats, isLoading, isError } = useStatsData({
+    const { patientStats, patients, adminStats, isLoading, isError } = useStatsData({
         role,
         orgId,
     })
@@ -84,7 +84,7 @@ function StatsPageContent() {
                         ({role === 'admin' ? 'All hospitals' : 'Your hospital'})
                     </span>
                 </h2>
-                <PatientStatsSection stats={patientStats} role={role ?? ''} />
+                <PatientStatsSection stats={patientStats} patients={patients} />
             </section>
 
             {/* Admin-only section */}
@@ -97,4 +97,4 @@ function StatsPageContent() {
     )
 }
 
-export default withAuth(StatsPageContent, STATS_ROLE_CONFIG as any)
+export default withAuth(StatsPageContent, STATS_ROLE_CONFIG)
