@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
+
 import {
     HOSPITAL_TABLE_HEADERS,
     DOCTOR_TABLE_HEADERS,
@@ -86,34 +86,32 @@ function AdminPageContent() {
                 </Select>
             </div>
 
-            {/* Tablet+ : horizontal buttons */}
+  {/* All screens: dropdown + welcome banner */}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex flex-wrap gap-2">
-                {(
-                    [
-                        'hospitals',
-                        'doctors',
-                        'nurses',
-                        'ashas',
-                        'patients',
-                        'removedPatients',
-                    ] as const
-                ).map((tab) => (
-                    <Button
-                        key={tab}
-                        onClick={() => handleTabChange(tab)}
-                        variant={'default'}
-                        className={`uppercase text-foreground ${activeTab === tab ? '' : 'bg-border'
-                            }`}
-                    >
-                        {tabLabels[tab]}
-                    </Button>
-                ))}
+                <Select value={activeTab} onValueChange={(val) => handleTabChange(val as typeof activeTab)}>
+                    <SelectTrigger className="w-48">
+                        <SelectValue placeholder="Select a section" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {(
+                            [
+                                'hospitals',
+                                'doctors',
+                                'nurses',
+                                'ashas',
+                                'patients',
+                                'removedPatients',
+                            ] as const
+                        ).map((tab) => (
+                            <SelectItem key={tab} value={tab}>
+                                {tabLabels[tab]}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+
+                <WelcomeBanner />
             </div>
-
-            <WelcomeBanner />
-
-        </div> 
             
 
             {/* Table */ }
