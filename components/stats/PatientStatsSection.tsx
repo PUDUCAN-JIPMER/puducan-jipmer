@@ -13,6 +13,8 @@ import {
     LineChart, Line, LabelList,
 } from 'recharts'
 import type { PieLabelRenderProps } from 'recharts/types/polar/Pie'
+import { RegistrationAnalytics } from '@/components/analytics/RegistrationAnalytics'
+import type { Patient } from '@/schema/patient'
 
 // ── Color Configuration ──────────────────────────────────────────────────────
 
@@ -50,6 +52,11 @@ const CHART_COLORS = {
     grid: '#e8edf0',
     axis: '#7a8c96',
 } as const
+
+// Add missing color constants
+const STATUS_COLORS = CHART_COLORS.status
+const GENDER_COLORS = CHART_COLORS.gender
+const COLORS = CHART_COLORS.categorical
 
 // ── Utility ──────────────────────────────────────────────────────────────────
 
@@ -140,6 +147,11 @@ export const normalizeMedicalTerm = (raw: string): string => {
 
 // ── FIX 3: Deduplication ──────────────────────────────────────────────────────
 
+interface DataPoint {
+    name: string
+    value: number
+}
+
 /**
  * Merges data points that resolve to the same normalized label.
  * For example, "ca breast" and "CA Breast" and "Carcinoma Breast" all map
@@ -158,11 +170,6 @@ export function dedupeData(data: DataPoint[]): DataPoint[] {
 }
 
 // ── TypeScript Interfaces ─────────────────────────────────────────────────────
-
-interface DataPoint {
-    name: string
-    value: number
-}
 
 interface TrendPoint {
     month: string
@@ -601,10 +608,11 @@ ChartCard.displayName = 'ChartCard'
 
 interface PatientStatsSectionProps {
     stats: PatientStats
-    role: string
+    patients: Patient[]
+    role?: string
 }
 
-export function PatientStatsSection({ stats }: PatientStatsSectionProps) {
+export function PatientStatsSection({ stats, patients, role }: PatientStatsSectionProps) {
     const pct = useCallback(
         (n: number) => (stats.total ? `${((n / stats.total) * 100).toFixed(0)}%` : '0%'),
         [stats.total],
@@ -652,6 +660,9 @@ export function PatientStatsSection({ stats }: PatientStatsSectionProps) {
                     <DonutChart data={stats.genderData} colorFn={genderColorFn} height={230} />
                 </ChartCard>
             </div>
+
+            {/* ── Registration Analytics ────────────────────────────────── */}
+            <RegistrationAnalytics patients={patients} />
 
             {/* ── Row 2: Disease + Stage ────────────────────────────────── */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

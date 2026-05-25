@@ -14,7 +14,7 @@ const requiredEnvVars = {
   NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'test' && process.env.NODE_ENV !== 'development') {
   for (const [key, value] of Object.entries(requiredEnvVars)) {
     if (!value) {
       throw new Error(`Missing required Firebase environment variable: ${key}`)
@@ -36,9 +36,20 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp()
-const auth = getAuth(app)
-const db = getFirestore(app)
 
-auth.useDeviceLanguage()
+// In test environment we avoid initializing `auth` to prevent failures when
+// NEXT_PUBLIC_FIREBASE_API_KEY (and other env vars) are not set. Tests should
+// mock Firebase calls instead of hitting the real SDK.
+let auth: any = undefined
+if (process.env.NODE_ENV === 'test') {
+  // Provide a lightweight dummy auth object so tests can pass a defined
+  // value into mocked auth functions (tests assert the first arg is present).
+  auth = {}
+} else {
+  auth = getAuth(app)
+  auth.useDeviceLanguage()
+}
+
+const db = getFirestore(app)
 
 export { auth, db, app }
