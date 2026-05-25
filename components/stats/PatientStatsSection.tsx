@@ -4,8 +4,7 @@ import { memo, useCallback, useState, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatCard } from './StatCard'
 import {
-    Users, Heart, Skull, HelpCircle,
-    UserCheck, UserX, Activity,
+    Users, Heart, Skull, HelpCircle, Activity, UserCheck, UserX,
 } from 'lucide-react'
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -17,6 +16,7 @@ import { RegistrationAnalytics } from '@/components/analytics/RegistrationAnalyt
 import type { Patient } from '@/schema/patient'
 
 // ── Color Configuration ──────────────────────────────────────────────────────
+// Muted, professional healthcare palette replacing neon colors.
 
 const CHART_COLORS = {
     categorical: [
@@ -33,19 +33,12 @@ const CHART_COLORS = {
         Female: '#a07898',
         Other: '#8fa3a8',
     } as Record<string, string>,
+    // Clinically meaningful light→dark progression per stage
     stage: {
         'Stage I': '#6aab7e',
         'Stage II': '#4a9aaa',
         'Stage III': '#c08840',
         'Stage IV': '#b06060',
-        // legacy / alternate spellings — kept for backward compat
-        'Stage Ii': '#4a9aaa',
-        'Stage Iii': '#c08840',
-        'Stage Iv': '#b06060',
-        'Stage 1': '#6aab7e',
-        'Stage 2': '#4a9aaa',
-        'Stage 3': '#c08840',
-        'Stage 4': '#b06060',
     } as Record<string, string>,
     stageFallback: '#8fa3ad',
     trendLine: '#4a90a4',
@@ -53,31 +46,27 @@ const CHART_COLORS = {
     axis: '#7a8c96',
 } as const
 
-// Add missing color constants
-const STATUS_COLORS = CHART_COLORS.status
-const GENDER_COLORS = CHART_COLORS.gender
-const COLORS = CHART_COLORS.categorical
+// Keep legacy exports so any other file that imports COLORS / STATUS_COLORS /
+// GENDER_COLORS doesn't break. Do NOT remove these.
+export const COLORS = CHART_COLORS.categorical
+export const STATUS_COLORS = CHART_COLORS.status
+export const GENDER_COLORS = CHART_COLORS.gender
 
-// ── Utility ──────────────────────────────────────────────────────────────────
+// ── Utility helpers ──────────────────────────────────────────────────────────
 
-/** Convert any string to Title Case */
 const toTitleCase = (str: string): string =>
     str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.slice(1).toLowerCase())
 
-/** Pick a stage color; fall back to gray for unknown stages */
-const getStageColor = (name: string): string =>
-    CHART_COLORS.stage[name] ?? CHART_COLORS.stageFallback
-
-/** Pick a categorical palette color by index */
 const getCategoricalColor = (index: number): string =>
     CHART_COLORS.categorical[index % CHART_COLORS.categorical.length]
 
-// ── FIX 4: Medical Terminology Normalization ──────────────────────────────────
+const getStageColor = (name: string): string =>
+    CHART_COLORS.stage[name] ?? CHART_COLORS.stageFallback
 
-/**
- * Maps raw/abbreviated medical strings to their canonical display form.
- * Covers common short-forms used in Indian healthcare records.
- */
+// ── Medical Terminology Normalization ────────────────────────────────────────
+// Maps raw / abbreviated medical strings → canonical display form.
+// Covers common short-forms used in Indian healthcare records.
+
 const MEDICAL_TERM_MAP: Record<string, string> = {
     // Disease abbreviations
     'ca': 'Carcinoma',
@@ -111,7 +100,7 @@ const MEDICAL_TERM_MAP: Record<string, string> = {
     'cca': 'Cholangiocarcinoma',
     'net': 'Neuroendocrine Tumor',
 
-    // Stage normalizations — map all variants to a single canonical form
+    // Stage normalizations — all variants → single canonical form
     'stage i': 'Stage I',
     'stage 1': 'Stage I',
     'stage ii': 'Stage II',
@@ -121,7 +110,7 @@ const MEDICAL_TERM_MAP: Record<string, string> = {
     'stage iv': 'Stage IV',
     'stage 4': 'Stage IV',
 
-    // Insurance / ration shorthands
+    // Insurance / ration card shorthands
     'apl': 'APL Card',
     'bpl': 'BPL Card',
     'aay': 'Antyodaya Card',
@@ -135,9 +124,9 @@ const MEDICAL_TERM_MAP: Record<string, string> = {
 
 /**
  * Normalizes a raw medical label:
- * 1. Trim whitespace
- * 2. Check exact lower-case match in the term map
- * 3. Fall back to toTitleCase
+ *  1. Trim whitespace
+ *  2. Exact lower-case lookup in MEDICAL_TERM_MAP
+ *  3. Fall back to toTitleCase
  */
 export const normalizeMedicalTerm = (raw: string): string => {
     const trimmed = raw.trim()
@@ -145,18 +134,13 @@ export const normalizeMedicalTerm = (raw: string): string => {
     return MEDICAL_TERM_MAP[lower] ?? toTitleCase(trimmed)
 }
 
-// ── FIX 3: Deduplication ──────────────────────────────────────────────────────
+// ── Deduplication ────────────────────────────────────────────────────────────
 
-interface DataPoint {
-    name: string
-    value: number
-}
+interface DataPoint { name: string; value: number }
 
 /**
- * Merges data points that resolve to the same normalized label.
- * For example, "ca breast" and "CA Breast" and "Carcinoma Breast" all map
- * to "Carcinoma Breast" and their values are summed.
- * Sorted descending by value so the longest bar is always on top.
+ * Merges DataPoints that resolve to the same normalized label, summing values.
+ * Sorted descending so the longest bar is always at the top.
  */
 export function dedupeData(data: DataPoint[]): DataPoint[] {
     const map = new Map<string, number>()
@@ -171,10 +155,7 @@ export function dedupeData(data: DataPoint[]): DataPoint[] {
 
 // ── TypeScript Interfaces ─────────────────────────────────────────────────────
 
-interface TrendPoint {
-    month: string
-    count: number
-}
+interface TrendPoint { month: string; count: number }
 
 export interface PatientStats {
     total: number
@@ -195,51 +176,37 @@ export interface PatientStats {
     genderData: DataPoint[]
 }
 
-// ── Shared Chart Primitives ───────────────────────────────────────────────────
+// ── Shared primitives ─────────────────────────────────────────────────────────
 
 const RADIAN = Math.PI / 180
+const GRID_DASH = '3 3' as const
 
-// FIX 2: Responsive axis tick font size helper
 const getAxisFontSize = (itemCount: number): number => {
     if (itemCount <= 5) return 12
     if (itemCount <= 10) return 11
     return 10
 }
 
-// FIX 1: Custom Y-Axis tick with truncation + native SVG title tooltip
+// ── Custom Axis Ticks (truncation + native SVG title tooltip) ─────────────────
+
 interface CustomYAxisTickProps {
-    x?: number
-    y?: number
+    x?: number; y?: number
     payload?: { value: string }
-    maxWidth?: number
-    fontSize?: number
+    maxWidth?: number; fontSize?: number
 }
 
 const CustomYAxisTick = memo(({
-    x = 0, y = 0,
-    payload,
-    maxWidth = 116,
-    fontSize = 11,
+    x = 0, y = 0, payload, maxWidth = 116, fontSize = 11,
 }: CustomYAxisTickProps) => {
     if (!payload) return null
     const label = normalizeMedicalTerm(payload.value)
-
-    // Approximate char limit based on pixel budget (avg ~6.5px per char at 11px)
     const charLimit = Math.floor(maxWidth / (fontSize * 0.62))
     const truncated = label.length > charLimit ? label.slice(0, charLimit - 1) + '…' : label
-
     return (
         <g transform={`translate(${x},${y})`}>
-            {/* Native SVG tooltip — shows full label on hover without JS */}
             <title>{label}</title>
-            <text
-                x={0}
-                y={0}
-                dy={4}
-                textAnchor="end"
-                fill={CHART_COLORS.axis}
-                fontSize={fontSize}
-            >
+            <text x={0} y={0} dy={4} textAnchor="end"
+                fill={CHART_COLORS.axis} fontSize={fontSize}>
                 {truncated}
             </text>
         </g>
@@ -247,44 +214,33 @@ const CustomYAxisTick = memo(({
 })
 CustomYAxisTick.displayName = 'CustomYAxisTick'
 
-// FIX 1: Custom X-Axis tick with truncation for vertical bar charts
 interface CustomXAxisTickProps {
-    x?: number
-    y?: number
+    x?: number; y?: number
     payload?: { value: string }
-    maxWidth?: number
-    fontSize?: number
+    maxWidth?: number; fontSize?: number
 }
 
 const CustomXAxisTick = memo(({
-    x = 0, y = 0,
-    payload,
-    maxWidth = 60,
-    fontSize = 11,
+    x = 0, y = 0, payload, maxWidth = 60, fontSize = 11,
 }: CustomXAxisTickProps) => {
     if (!payload) return null
     const label = normalizeMedicalTerm(payload.value)
     const charLimit = Math.floor(maxWidth / (fontSize * 0.6))
     const truncated = label.length > charLimit ? label.slice(0, charLimit - 1) + '…' : label
-
     return (
         <g transform={`translate(${x},${y})`}>
             <title>{label}</title>
-            <text
-                x={0}
-                y={0}
-                dy={12}
-                textAnchor="end"
-                fill={CHART_COLORS.axis}
-                fontSize={fontSize}
-                transform="rotate(-30)"
-            >
+            <text x={0} y={0} dy={12} textAnchor="end"
+                fill={CHART_COLORS.axis} fontSize={fontSize}
+                transform="rotate(-30)">
                 {truncated}
             </text>
         </g>
     )
 })
 CustomXAxisTick.displayName = 'CustomXAxisTick'
+
+// ── Pie percent label ─────────────────────────────────────────────────────────
 
 function PiePercentLabel({
     cx = 0, cy = 0, midAngle = 0,
@@ -296,11 +252,14 @@ function PiePercentLabel({
     const x = (cx as number) + r * Math.cos(-midAngle * RADIAN)
     const y = (cy as number) + r * Math.sin(-midAngle * RADIAN)
     return (
-        <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={600}>
+        <text x={x} y={y} fill="white" textAnchor="middle"
+            dominantBaseline="central" fontSize={11} fontWeight={600}>
             {value}
         </text>
     )
 }
+
+// ── Tooltip ───────────────────────────────────────────────────────────────────
 
 interface ChartTooltipProps {
     active?: boolean
@@ -312,7 +271,9 @@ const ChartTooltip = memo(({ active, payload, label }: ChartTooltipProps) => {
     if (!active || !payload?.length) return null
     return (
         <div className="rounded-lg border border-border bg-background px-3 py-2 shadow-md text-xs">
-            {label != null && <p className="font-semibold text-foreground mb-1">{String(label)}</p>}
+            {label != null && (
+                <p className="font-semibold text-foreground mb-1">{String(label)}</p>
+            )}
             {payload.map((entry, i) => (
                 <p key={i} style={{ color: entry.color ?? entry.fill ?? CHART_COLORS.axis }}>
                     {toTitleCase(entry.name)}: <span className="font-bold">{entry.value}</span>
@@ -322,8 +283,6 @@ const ChartTooltip = memo(({ active, payload, label }: ChartTooltipProps) => {
     )
 })
 ChartTooltip.displayName = 'ChartTooltip'
-
-const GRID_DASH = '3 3' as const
 
 // ── Color helpers ─────────────────────────────────────────────────────────────
 
@@ -346,17 +305,11 @@ const darkenColor = (color: string, percent: number): string => {
 interface HorizontalBarChartProps {
     data: DataPoint[]
     colorFn?: (name: string, index: number) => string
-    /** Override computed height */
     height?: number
     yAxisWidth?: number
 }
 
-/**
- * FIX 1 + 2: Horizontal bar chart with:
- *   - CustomYAxisTick for truncation + SVG tooltip
- *   - Dynamic height: 36px per bar (min 200, max 520)
- *   - Responsive font size based on item count
- */
+/** Horizontal bar chart — dynamic height, truncated Y-axis ticks, value labels */
 const HorizontalBarChart = memo(({
     data,
     colorFn = (_, i) => getCategoricalColor(i),
@@ -364,65 +317,38 @@ const HorizontalBarChart = memo(({
     yAxisWidth = 124,
 }: HorizontalBarChartProps) => {
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
-
-    // FIX 2: Dynamic height
     const computedHeight = height ?? Math.min(Math.max(data.length * 36 + 24, 200), 520)
-
-    // FIX 2: Responsive font size
     const fontSize = getAxisFontSize(data.length)
 
     return (
         <ResponsiveContainer width="100%" height={computedHeight}>
-            <BarChart
-                data={data}
-                layout="vertical"
+            <BarChart data={data} layout="vertical"
                 margin={{ top: 4, right: 44, bottom: 4, left: 4 }}
-                barCategoryGap={8}
-            >
-                <CartesianGrid strokeDasharray={GRID_DASH} horizontal={false} stroke={CHART_COLORS.grid} />
-                <XAxis
-                    type="number"
-                    allowDecimals={false}
+                barCategoryGap={8}>
+                <CartesianGrid strokeDasharray={GRID_DASH} horizontal={false}
+                    stroke={CHART_COLORS.grid} />
+                <XAxis type="number" allowDecimals={false}
                     tick={{ fontSize, fill: CHART_COLORS.axis }}
-                    axisLine={false}
-                    tickLine={false}
-                />
-                {/* FIX 1: Custom tick with truncation */}
-                <YAxis
-                    type="category"
-                    dataKey="name"
-                    width={yAxisWidth}
+                    axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="name" width={yAxisWidth}
                     tick={<CustomYAxisTick maxWidth={yAxisWidth - 8} fontSize={fontSize} />}
-                    axisLine={false}
-                    tickLine={false}
-                />
+                    axisLine={false} tickLine={false} />
                 <Tooltip content={<ChartTooltip />} cursor={{ fill: 'transparent' }} />
-                <Bar
-                    dataKey="value"
-                    name="Patients"
-                    radius={[0, 4, 4, 0]}
-                    maxBarSize={22}
-                    isAnimationActive={false}
-                >
+                <Bar dataKey="value" name="Patients"
+                    radius={[0, 4, 4, 0]} maxBarSize={22} isAnimationActive={false}>
                     {data.map((entry, i) => {
                         const base = colorFn(entry.name, i)
                         const fill = hoveredIndex === i ? darkenColor(base, 0.2) : base
                         return (
-                            <Cell
-                                key={entry.name}
-                                fill={fill}
+                            <Cell key={entry.name} fill={fill}
                                 style={{ cursor: 'pointer', transition: 'fill 0.2s ease' }}
                                 onMouseEnter={() => setHoveredIndex(i)}
-                                onMouseLeave={() => setHoveredIndex(null)}
-                            />
+                                onMouseLeave={() => setHoveredIndex(null)} />
                         )
                     })}
-                    <LabelList
-                        dataKey="value"
-                        position="right"
+                    <LabelList dataKey="value" position="right"
                         style={{ fontSize: 11, fill: CHART_COLORS.axis, fontWeight: 600 }}
-                        offset={5}
-                    />
+                        offset={5} />
                 </Bar>
             </BarChart>
         </ResponsiveContainer>
@@ -436,12 +362,7 @@ interface VerticalBarProps {
     height?: number
 }
 
-/**
- * FIX 1 + 2: Vertical bar chart with:
- *   - CustomXAxisTick for truncation + SVG tooltip
- *   - Dynamic bottom margin based on longest label
- *   - Responsive font size
- */
+/** Vertical bar chart — truncated X-axis ticks, dynamic bottom margin, value labels */
 const VerticalBarChart = memo(({
     data,
     colorFn = (_, i) => getCategoricalColor(i),
@@ -449,57 +370,38 @@ const VerticalBarChart = memo(({
 }: VerticalBarProps) => {
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
     const fontSize = getAxisFontSize(data.length)
-
-    // FIX 2: Adjust bottom margin for label length
     const maxLabelLen = data.reduce((m, d) => Math.max(m, normalizeMedicalTerm(d.name).length), 0)
     const bottomMargin = Math.min(Math.max(maxLabelLen * 3.5, 36), 72)
 
     return (
         <ResponsiveContainer width="100%" height={height}>
-            <BarChart data={data} margin={{ top: 24, right: 12, bottom: bottomMargin, left: 4 }}>
-                <CartesianGrid strokeDasharray={GRID_DASH} vertical={false} stroke={CHART_COLORS.grid} />
-                {/* FIX 1: Custom tick */}
-                <XAxis
-                    dataKey="name"
+            <BarChart data={data}
+                margin={{ top: 24, right: 12, bottom: bottomMargin, left: 4 }}>
+                <CartesianGrid strokeDasharray={GRID_DASH} vertical={false}
+                    stroke={CHART_COLORS.grid} />
+                <XAxis dataKey="name"
                     tick={<CustomXAxisTick fontSize={fontSize} />}
-                    interval={0}
-                    axisLine={false}
-                    tickLine={false}
-                    height={bottomMargin + 8}
-                />
-                <YAxis
-                    allowDecimals={false}
+                    interval={0} axisLine={false} tickLine={false}
+                    height={bottomMargin + 8} />
+                <YAxis allowDecimals={false}
                     tick={{ fontSize, fill: CHART_COLORS.axis }}
-                    axisLine={false}
-                    tickLine={false}
-                />
+                    axisLine={false} tickLine={false} />
                 <Tooltip content={<ChartTooltip />} cursor={{ fill: 'transparent' }} />
-                <Bar
-                    dataKey="value"
-                    name="Patients"
-                    radius={[4, 4, 0, 0]}
-                    maxBarSize={40}
-                    isAnimationActive={false}
-                >
+                <Bar dataKey="value" name="Patients"
+                    radius={[4, 4, 0, 0]} maxBarSize={40} isAnimationActive={false}>
                     {data.map((entry, i) => {
                         const base = colorFn(entry.name, i)
                         const fill = hoveredIndex === i ? darkenColor(base, 0.2) : base
                         return (
-                            <Cell
-                                key={entry.name}
-                                fill={fill}
+                            <Cell key={entry.name} fill={fill}
                                 style={{ cursor: 'pointer', transition: 'fill 0.2s ease' }}
                                 onMouseEnter={() => setHoveredIndex(i)}
-                                onMouseLeave={() => setHoveredIndex(null)}
-                            />
+                                onMouseLeave={() => setHoveredIndex(null)} />
                         )
                     })}
-                    <LabelList
-                        dataKey="value"
-                        position="top"
+                    <LabelList dataKey="value" position="top"
                         style={{ fontSize: 11, fill: CHART_COLORS.axis, fontWeight: 600 }}
-                        offset={5}
-                    />
+                        offset={5} />
                 </Bar>
             </BarChart>
         </ResponsiveContainer>
@@ -516,25 +418,15 @@ interface DonutChartProps {
 }
 
 const DonutChart = memo(({
-    data,
-    colorFn,
-    innerRadius = 0,
-    outerRadius = 80,
-    height = 220,
+    data, colorFn,
+    innerRadius = 0, outerRadius = 80, height = 220,
 }: DonutChartProps) => (
     <ResponsiveContainer width="100%" height={height}>
         <PieChart>
-            <Pie
-                data={data}
-                cx="50%"
-                cy="45%"
-                innerRadius={innerRadius}
-                outerRadius={outerRadius}
-                dataKey="value"
-                labelLine={false}
-                label={PiePercentLabel}
-                nameKey="name"
-            >
+            <Pie data={data} cx="50%" cy="45%"
+                innerRadius={innerRadius} outerRadius={outerRadius}
+                dataKey="value" labelLine={false}
+                label={PiePercentLabel} nameKey="name">
                 {data.map((entry, i) => (
                     <Cell key={entry.name} fill={colorFn(entry.name, i)} />
                 ))}
@@ -543,36 +435,32 @@ const DonutChart = memo(({
             <Legend
                 formatter={(value) => normalizeMedicalTerm(String(value))}
                 wrapperStyle={{ fontSize: 12, color: CHART_COLORS.axis }}
-                iconType="circle"
-                iconSize={8}
-            />
+                iconType="circle" iconSize={8} />
         </PieChart>
     </ResponsiveContainer>
 ))
 DonutChart.displayName = 'DonutChart'
 
-interface TrendLineChartProps {
-    data: TrendPoint[]
-    height?: number
-}
+interface TrendLineChartProps { data: TrendPoint[]; height?: number }
 
 const TrendLineChart = memo(({ data, height = 200 }: TrendLineChartProps) => (
     <ResponsiveContainer width="100%" height={height}>
         <LineChart data={data} margin={{ top: 16, right: 16, bottom: 4, left: 4 }}>
-            <CartesianGrid strokeDasharray={GRID_DASH} vertical={false} stroke={CHART_COLORS.grid} />
-            <XAxis dataKey="month" tick={{ fontSize: 11, fill: CHART_COLORS.axis }} axisLine={false} tickLine={false} />
-            <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: CHART_COLORS.axis }} axisLine={false} tickLine={false} />
+            <CartesianGrid strokeDasharray={GRID_DASH} vertical={false}
+                stroke={CHART_COLORS.grid} />
+            <XAxis dataKey="month"
+                tick={{ fontSize: 11, fill: CHART_COLORS.axis }}
+                axisLine={false} tickLine={false} />
+            <YAxis allowDecimals={false}
+                tick={{ fontSize: 11, fill: CHART_COLORS.axis }}
+                axisLine={false} tickLine={false} />
             <Tooltip content={<ChartTooltip />} />
-            <Line
-                type="monotone"
-                dataKey="count"
-                name="Registrations"
-                stroke={CHART_COLORS.trendLine}
-                strokeWidth={2.5}
+            <Line type="monotone" dataKey="count" name="Registrations"
+                stroke={CHART_COLORS.trendLine} strokeWidth={2.5}
                 dot={{ fill: CHART_COLORS.trendLine, r: 3, strokeWidth: 0 }}
-                activeDot={{ r: 5, strokeWidth: 0 }}
-            >
-                <LabelList dataKey="count" position="top" style={{ fontSize: 10, fill: CHART_COLORS.axis, fontWeight: 600 }} />
+                activeDot={{ r: 5, strokeWidth: 0 }}>
+                <LabelList dataKey="count" position="top"
+                    style={{ fontSize: 10, fill: CHART_COLORS.axis, fontWeight: 600 }} />
             </Line>
         </LineChart>
     </ResponsiveContainer>
@@ -609,29 +497,32 @@ ChartCard.displayName = 'ChartCard'
 interface PatientStatsSectionProps {
     stats: PatientStats
     patients: Patient[]
+    // NOTE: `role` prop accepted but not used here — reserved for future
+    // role-based visibility (e.g. hide financials from non-admin).
     role?: string
 }
 
-export function PatientStatsSection({ stats, patients, role }: PatientStatsSectionProps) {
+export function PatientStatsSection({ stats, patients }: PatientStatsSectionProps) {
     const pct = useCallback(
         (n: number) => (stats.total ? `${((n / stats.total) * 100).toFixed(0)}%` : '0%'),
         [stats.total],
     )
 
-    // FIX 3: Deduplicate + normalize all categorical data arrays
+    // Deduplicate + normalize all categorical data — memoized for performance
     const diseaseData = useMemo(() => dedupeData(stats.diseaseData), [stats.diseaseData])
     const stageData = useMemo(() => dedupeData(stats.stageData), [stats.stageData])
     const insuranceData = useMemo(() => dedupeData(stats.insuranceData), [stats.insuranceData])
     const rationData = useMemo(() => dedupeData(stats.rationData), [stats.rationData])
 
-    // Color resolvers
+    // Stable color resolvers
     const statusColorFn = useCallback(
         (name: string) => CHART_COLORS.status[name] ?? CHART_COLORS.stageFallback, [],
     )
     const genderColorFn = useCallback(
         (name: string) => CHART_COLORS.gender[name] ?? CHART_COLORS.stageFallback, [],
     )
-    // FIX 4: Stage color uses normalized name so all variants resolve to the same color
+    // Stage color uses normalized name so ALL spelling variants (Stage II / stage 2 / Stage Ii)
+    // resolve to the same canonical color.
     const stageColorFn = useCallback(
         (name: string) => getStageColor(normalizeMedicalTerm(name)), [],
     )
@@ -653,21 +544,21 @@ export function PatientStatsSection({ stats, patients, role }: PatientStatsSecti
 
             {/* ── Row 1: Status + Gender ────────────────────────────────── */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <ChartCard title="Patient Status">
+                <ChartCard title="Patient Status" empty={!stats.statusData.length}>
                     <DonutChart data={stats.statusData} colorFn={statusColorFn} height={230} />
                 </ChartCard>
-                <ChartCard title="Gender Distribution">
+
+                <ChartCard title="Gender Distribution" empty={!stats.genderData.length}>
                     <DonutChart data={stats.genderData} colorFn={genderColorFn} height={230} />
                 </ChartCard>
             </div>
 
-            {/* ── Registration Analytics ────────────────────────────────── */}
+            {/* ── Registration Analytics (unchanged — owned by RegistrationAnalytics) ── */}
             <RegistrationAnalytics patients={patients} />
 
             {/* ── Row 2: Disease + Stage ────────────────────────────────── */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <ChartCard title="Disease Distribution" empty={!diseaseData.length}>
-                    {/* FIX 2: No fixed height — computed dynamically inside HorizontalBarChart */}
                     <HorizontalBarChart
                         data={diseaseData}
                         colorFn={(_, i) => getCategoricalColor(i)}
@@ -686,7 +577,7 @@ export function PatientStatsSection({ stats, patients, role }: PatientStatsSecti
 
             {/* ── Row 3: Insurance + Ration ─────────────────────────────── */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <ChartCard title="Insurance Coverage">
+                <ChartCard title="Insurance Coverage" empty={!insuranceData.length}>
                     <DonutChart
                         data={insuranceData}
                         colorFn={(_, i) => getCategoricalColor(i + 3)}
@@ -695,7 +586,8 @@ export function PatientStatsSection({ stats, patients, role }: PatientStatsSecti
                         height={220}
                     />
                 </ChartCard>
-                <ChartCard title="Ration Card Type">
+
+                <ChartCard title="Ration Card Type" empty={!rationData.length}>
                     <VerticalBarChart
                         data={rationData}
                         colorFn={(_, i) => getCategoricalColor(i + 1)}
