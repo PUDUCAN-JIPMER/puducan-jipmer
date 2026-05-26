@@ -5,6 +5,10 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Patient } from '@/schema/patient'
 import { UserDoc } from '@/schema/user'
 import { Hospital } from '@/schema/hospital'
+import formatFieldValue from './formatFieldValue'
+import { db } from '@/firebase'
+import { doc, getDoc } from 'firebase/firestore'
+import { useEffect, useState } from 'react'
 
 type RowDataType = Patient | UserDoc | Hospital
 type FieldToDisplay = { label: string; key: string }
@@ -20,32 +24,48 @@ export default function ViewDetailsDialog({
     rowData: RowDataType
     fieldsToDisplay: FieldToDisplay[]
 }) {
-    function renderValue(key: string, value: any): string {
-        if (value == null) return 'N/A'
-        if (value === '') return 'N/A'
+    const [ashaName, setAshaName] = useState<string | null>(null)
 
-        if (Array.isArray(value)) {
-            if (value.length === 0) return 'N/A'
-            if (typeof value[0] === 'string') return value.join(', ')
-            if (typeof value[0] === 'object') {
-                return value.map((v) => `${v.date || ''} - ${v.remarks || ''}`).join('; ')
+    useEffect(() => {
+        const ashaId = (rowData as Patient).assignedAsha
+        if (!ashaId || ashaId === 'none' || ashaId === '') {
+            setAshaName(null)
+            return
+        }
+        const fetchAshaName = async () => {
+            try {
+                const ashaDoc = await getDoc(doc(db, 'users', ashaId))
+                if (ashaDoc.exists()) {
+                    const data = ashaDoc.data()
+                    setAshaName(data.name || data.email || ashaId)
+                } else {
+                    setAshaName(ashaId)
+                }
+            } catch {
+                setAshaName(ashaId)
             }
         }
+        fetchAshaName()
+    }, [rowData])
 
-        if (typeof value === 'object') {
-            if (key === 'gpsLocation') return `Lat: ${value.lat}, Lng: ${value.lng}`
-            if (key === 'assignedHospital') return `${value.name}`
-            if (key === 'insurance') return `${value.type}${value.id ? ` (${value.id})` : ''}`
-            return JSON.stringify(value)
+    function renderValue(key: string, value: any): string {
+        // assignedAsha should show a friendly name fetched from users collection
+        if (key === 'assignedAsha') {
+            if (!value || value === 'none' || value === '') return 'N/A'
+            return ashaName ?? 'Loading...'
         }
 
-        if (typeof value === 'boolean') return value ? 'Yes' : 'No'
-
-        if (typeof value === 'string') {
-            return value.charAt(0).toUpperCase() + value.slice(1)
+        // Preserve number -> date conversion for fields stored as Excel dates (legacy handling)
+        if (typeof value === 'number') {
+            if (key.toLowerCase().includes('date') || key.toLowerCase().includes('year')) {
+                const date = new Date((value - 25569) * 86400 * 1000)
+                return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+            }
+            return String(value)
         }
 
-        return String(value)
+        // Delegate remaining formatting to the centralized helper
+        return formatFieldValue(key, value)
     }
 
     return (

@@ -3,6 +3,7 @@ import { TableCell, TableRow } from '@/components/ui/table'
 import { memo } from 'react'
 import { GenericCell } from './GenericCell'
 import { RowActions } from './RowActions'
+import { Checkbox } from '../ui/checkbox'
 
 type Header = {
   name: string
@@ -15,6 +16,8 @@ type RowDataBase = {
 }
 
 type GenericRowProps = {
+  isSelected?: boolean
+  onToggleSelect: () => void
   activeTab: string
   isPatientTab: boolean
   isRemovedPatientsTab?: boolean
@@ -29,6 +32,8 @@ type GenericRowProps = {
 // ✅ Only the desktop <tr>
 export const GenericRow = memo(function GenericRow(props: GenericRowProps) {
   const {
+    isSelected = false,
+    onToggleSelect,
     activeTab,
     isPatientTab,
     rowData,
@@ -43,16 +48,28 @@ export const GenericRow = memo(function GenericRow(props: GenericRowProps) {
     <TableRow
       key={rowData.id}
       onClick={() => onView(rowData)}
-      className="border-border hidden border-b font-light sm:table-row cursor-pointer hover:bg-muted/40 transition-colors"
->
+      data-selected={isSelected}
+      className={`border-border hidden border-b font-light sm:table-row cursor-pointer hover:bg-muted/40 transition-colors ${
+  isSelected ? 'bg-primary/5 dark:bg-primary/10' : ''
+}`}
+    >
+      <TableCell className="border-border border-r text-center">
+        <div className='flex items-center justify-center'>
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={onToggleSelect}
+            aria-label={`Select row ${index + 1}`}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      </TableCell>
       <TableCell className="border-border border-r text-center">{index + 1}</TableCell>
 
       {headers.map((header, index) => (
         <TableCell
           key={index}
-          className={`border-border border-r text-center ${
-            header.key === 'name' ? 'font-semibold' : ''
-          }`}
+          className={`border-border border-r text-center ${header.key === 'name' ? 'font-semibold' : ''
+            }`}
         >
           <GenericCell
             value={rowData[header.key]}
@@ -62,8 +79,8 @@ export const GenericRow = memo(function GenericRow(props: GenericRowProps) {
         </TableCell>
       ))}
 
-      <TableCell className="space-x-2 text-center" 
-                 onClick={(e) => e.stopPropagation()}
+      <TableCell className="space-x-2 text-center"
+        onClick={(e) => e.stopPropagation()}
       >
         <RowActions
           rowData={rowData}

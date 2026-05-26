@@ -31,7 +31,6 @@ export default function HomeNavbar() {
                 }`}
             >
                 <span className="relative z-10 p-2 sm:hover:bg-transparent">{label}</span>
-
                 <span className="absolute bottom-0 left-0 hidden h-0.5 w-0 bg-white transition-all duration-300 group-hover:w-full sm:block"></span>
             </Link>
         )
@@ -48,10 +47,8 @@ export default function HomeNavbar() {
                         height={70}
                         className="h-10 w-10 object-contain sm:h-12 sm:w-12 lg:h-[70px] lg:w-[70px]"
                     />
-
                     <div className="hidden leading-tight min-[900px]:block">
                         <h1 className="text-xl font-semibold xl:text-2xl">PuduCan</h1>
-
                         <p className="text-xs text-gray-100 xl:text-sm">
                             Improving Cancer Patient Healthcare Management
                         </p>
@@ -70,7 +67,6 @@ export default function HomeNavbar() {
                             <span className="relative z-10">Data Entry</span>
 
                             <ChevronDown className="ml-1 h-4 w-4" />
-
                             <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-white transition-all duration-300 group-hover:w-full"></span>
                         </DropdownMenuTrigger>
 
@@ -149,3 +145,5 @@ export default function HomeNavbar() {
         </nav>
     )
 }
+
+
