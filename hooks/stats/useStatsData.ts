@@ -145,6 +145,36 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
             stageData,
             insuranceData,
             rationData,
+            // Registration trend: last 12 months (chronological)
+            registrationTrend: (() => {
+                const now = new Date()
+                // build list of last 12 months keys in YYYY-MM format
+                const months: string[] = Array.from({ length: 12 }).map((_, i) => {
+                    const d = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1)
+                    const y = d.getFullYear()
+                    const m = String(d.getMonth() + 1).padStart(2, '0')
+                    return `${y}-${m}`
+                })
+
+                const counts: Record<string, number> = {}
+                for (const key of months) counts[key] = 0
+
+                for (const p of patients) {
+                    const raw = p.hospitalRegistrationDate ?? p.createdAt ?? null
+                    if (!raw) continue
+                    const d = new Date(String(raw))
+                    if (Number.isNaN(d.getTime())) continue
+                    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+                    if (key in counts) counts[key]++
+                }
+
+                return months.map((k) => {
+                    const [y, m] = k.split('-')
+                    const date = new Date(Number(y), Number(m) - 1, 1)
+                    const label = date.toLocaleString('default', { month: 'short', year: 'numeric' })
+                    return { month: label, count: counts[k] ?? 0 }
+                })
+            })(),
             statusData: [
                 { name: 'Alive', value: alive },
                 { name: 'Not Alive', value: deceased },
