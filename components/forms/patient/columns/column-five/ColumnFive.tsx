@@ -186,9 +186,8 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
 
                     <Button
                         type="button"
-                      redesign-asha-followup-ui
                         size="icon"
-                        className="w-auto px-2 p    main
+                        className="w-auto px-2 p"
                         onClick={() => setIsAddingFollowUp(!isAddingFollowUp)}
                         className="h-9 rounded-full px-4 text-sm font-medium shadow-sm"
                     >
