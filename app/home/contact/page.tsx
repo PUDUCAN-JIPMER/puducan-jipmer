@@ -1,162 +1,73 @@
-'use client';
-
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-
-const contactFormSchema = z.object({
-  fullName: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email address'),
-  subject: z.string().min(5, 'Subject must be at least 5 characters'),
-  message: z.string().min(10, 'Message must be at least 10 characters'),
-});
-
-type ContactFormData = z.infer<typeof contactFormSchema>;
+import { TypographyH2, TypographyMuted } from '@/components/ui/typography'
+import { Mail, Phone, MapPin, ExternalLink } from "lucide-react"
 
 export default function ContactPage() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<ContactFormData>({
-    resolver: zodResolver(contactFormSchema),
-  });
-
-  const onSubmit = async (data: ContactFormData) => {
-    setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log('Form submitted:', data);
-    alert('Thank you for your message! We will get back to you soon.');
-    reset();
-    setIsSubmitting(false);
-  };
-
   return (
-    <main className="flex-grow">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        <div className="text-center mb-8 md:mb-12">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3">
-            Contact Us
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto text-sm md:text-base">
-            For any queries or technical issues related to the PuduCan Portal, please reach out to us
-          </p>
+    <div className="mx-auto mt-12 max-w-4xl px-4 pb-16">
+      
+      <div className="text-center mb-16 space-y-4">
+        <TypographyH2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-[#007AFF] dark:text-[#5BB4FF]">
+          Contact Support
+        </TypographyH2>
+        <TypographyMuted className="text-base md:text-lg max-w-xl mx-auto">
+          Need assistance with the portal or have questions about the study? We're here to help.
+        </TypographyMuted>
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+        {/* Email Card */}
+        <div className="bg-card p-8 rounded-[24px] border border-border shadow-sm flex flex-col items-center text-center">
+          <div className="bg-blue-100 dark:bg-blue-900/30 p-4 rounded-full mb-6">
+            <Mail className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+          </div>
+          <h3 className="font-bold text-xl mb-2">Technical Support</h3>
+          <p className="text-sm text-muted-foreground mb-6">For login issues, data entry errors, or portal training.</p>
+          <a 
+            href="mailto:support@puducan.example.com" 
+            className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors w-full"
+          >
+            Send an Email
+          </a>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 md:gap-8">
-          {/* Left Column - Contact Information */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 md:p-6 h-fit">
-            <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
-              Contact Information
-            </h2>
-            <div className="space-y-4 md:space-y-5">
-              <div>
-                <h3 className="font-semibold text-gray-700 dark:text-gray-300 text-sm md:text-base">Institution:</h3>
-                <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm md:text-base">
-                  Jawaharlal Institute of Postgraduate Medical Education and Research (JIPMER)
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-700 dark:text-gray-300 text-sm md:text-base">Address:</h3>
-                <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm md:text-base">
-                  JIPMER Campus Rd, Gorimedu, Dhanvantari Nagar,<br />
-                  Puducherry - 605006
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-700 dark:text-gray-300 text-sm md:text-base">Email:</h3>
-                <p className="text-blue-600 dark:text-blue-400 mt-1 text-sm md:text-base break-all">
-                  PuduCan-support@jipmer.edu.in
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-700 dark:text-gray-300 text-sm md:text-base">Phone:</h3>
-                <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm md:text-base">+91 2222 2222</p>
-              </div>
-            </div>
+        {/* Phone Card */}
+        <div className="bg-card p-8 rounded-[24px] border border-border shadow-sm flex flex-col items-center text-center">
+          <div className="bg-orange-100 dark:bg-orange-900/30 p-4 rounded-full mb-6">
+            <Phone className="h-8 w-8 text-orange-600 dark:text-orange-400" />
           </div>
-
-          {/* Right Column - Contact Form */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 md:p-6">
-            <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
-              Send us a message
-            </h2>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                  Full Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  {...register('fullName')}
-                  type="text"
-                  placeholder="Enter your full name"
-                  className={`w-full px-3 py-2 text-sm md:text-base border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-                    errors.fullName ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-gray-600'
-                  }`}
-                />
-                {errors.fullName && <p className="text-red-500 text-xs md:text-sm mt-1">{errors.fullName.message}</p>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                  Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  {...register('email')}
-                  type="email"
-                  placeholder="your@email.com"
-                  className={`w-full px-3 py-2 text-sm md:text-base border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-                    errors.email ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-gray-600'
-                  }`}
-                />
-                {errors.email && <p className="text-red-500 text-xs md:text-sm mt-1">{errors.email.message}</p>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                  Subject <span className="text-red-500">*</span>
-                </label>
-                <input
-                  {...register('subject')}
-                  type="text"
-                  placeholder="What is this regarding?"
-                  className={`w-full px-3 py-2 text-sm md:text-base border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-                    errors.subject ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-gray-600'
-                  }`}
-                />
-                {errors.subject && <p className="text-red-500 text-xs md:text-sm mt-1">{errors.subject.message}</p>}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                  Message <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  {...register('message')}
-                  rows={5}
-                  placeholder="Please provide details..."
-                  className={`w-full px-3 py-2 text-sm md:text-base border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-vertical dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-                    errors.message ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-gray-600'
-                  }`}
-                />
-                {errors.message && <p className="text-red-500 text-xs md:text-sm mt-1">{errors.message.message}</p>}
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
-              >
-                {isSubmitting ? 'Sending...' : 'Send Message'}
-              </button>
-            </form>
-          </div>
+          <h3 className="font-bold text-xl mb-2">Study Coordinator</h3>
+          <p className="text-sm text-muted-foreground mb-6">For clinical inquiries, protocol questions, and ASHA routing.</p>
+          <a 
+            href="tel:+910000000000" 
+            className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors w-full"
+          >
+            Call Coordinator
+          </a>
         </div>
       </div>
-    </main>
-  );
+
+      {/* Address Wide Card (Mirrors the bottom section of the homepage) */}
+      <div className="bg-card p-6 md:p-8 rounded-[24px] border border-border shadow-sm flex flex-col md:flex-row items-start md:items-center gap-6">
+        <div className="bg-secondary p-4 rounded-xl shrink-0">
+          <MapPin className="h-6 w-6 text-foreground" />
+        </div>
+        <div className="flex-1">
+          <h3 className="font-bold text-lg mb-1">JIPMER Campus</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Jawaharlal Institute of Postgraduate Medical Education and Research<br/>
+            Dhanvantari Nagar, Puducherry, 605006, India
+          </p>
+        </div>
+        <a 
+          href="https://goo.gl/maps/example" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline shrink-0"
+        >
+          View on Map <ExternalLink className="ml-1 h-4 w-4" />
+        </a>
+      </div>
+
+    </div>
+  )
 }
