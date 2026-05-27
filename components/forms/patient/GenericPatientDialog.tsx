@@ -95,10 +95,10 @@ export default function GenericPatientDialog({
 
     // Initialize form with patient data for edit mode
     useEffect(() => {
-        if (isEdit && patientData && open) {
+        if (isEdit && patientData && isOpen) {
             reset(patientData)
         }
-    }, [isEdit, patientData, open, reset])
+    }, [isEdit, patientData, isOpen, reset])
 
     // Aadhaar duplicate check (skip for edit mode if Aadhaar hasn't changed)
     useEffect(() => {
@@ -138,8 +138,13 @@ export default function GenericPatientDialog({
     const onSubmit = async (data: PatientFormInputs) => {
         try {
             if (isEdit && patientData?.id) {
+                // Remove undefined values before updating Firestore
+                const cleanedData = Object.fromEntries(
+                    Object.entries(data).filter(([_, value]) => value !== undefined)
+                )
+
                 // Update existing patient
-                await updateDoc(doc(db, 'patients', patientData.id), data)
+                await updateDoc(doc(db, 'patients', patientData.id), cleanedData)
                 toast.success('Patient updated successfully.')
             } else {
                 // Add new patient
@@ -151,12 +156,9 @@ export default function GenericPatientDialog({
                 localStorage.removeItem('addPatientFormData')
             }
 
-            // queryClient.invalidateQueries({ queryKey: ['patients'] })
-            if (orgId) {
-                queryClient.invalidateQueries({ queryKey: ['patients', orgId] })
-            } else {
-                queryClient.invalidateQueries({ queryKey: ['patients'] })
-            }
+            queryClient.invalidateQueries({
+                queryKey: ['patients'],
+            })
 
             setIsOpen(false)
             reset()
