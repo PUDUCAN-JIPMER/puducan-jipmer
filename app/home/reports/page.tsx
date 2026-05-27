@@ -51,6 +51,7 @@ export default function ReportsPage() {
 
         let activePatients = 0
         let deadCount = 0
+        let unknownPatients = 0
         const cancerTypeMap: Record<string, number> = {}
 
         patients.forEach((p: any) => {
@@ -60,7 +61,7 @@ export default function ReportsPage() {
             } else if (status === 'not alive' || status === 'deceased' || status === 'dead') {
                 deadCount++
             } else {
-                activePatients++
+                unknownPatients++
             }
 
             const diseaseList = Array.isArray(p.diseases) ? p.diseases : []
@@ -79,6 +80,7 @@ export default function ReportsPage() {
         const statusData = [
             { name: 'Alive', value: activePatients },
             { name: 'Not Alive', value: deadCount },
+            { name: 'Unknown', value: unknownPatients },
         ]
 
         const cancerData = Object.entries(cancerTypeMap).map(([name, count]) => ({
