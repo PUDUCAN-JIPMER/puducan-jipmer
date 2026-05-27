@@ -15,35 +15,46 @@ import type { PieLabelRenderProps } from 'recharts/types/polar/Pie'
 import { RegistrationAnalytics } from '@/components/analytics/RegistrationAnalytics'
 import type { Patient } from '@/schema/patient'
 
-// ── Color Configuration ──────────────────────────────────────────────────────
-// Muted, professional healthcare palette replacing neon colors.
+// ── Updated Color Configuration ──────────────────────────────────────────────────────
+// Professional healthcare palette with better differentiation
 
 const CHART_COLORS = {
     categorical: [
-        '#4a90a4', '#6a9fb5', '#7aab8a', '#8fa3b1', '#a0b4a0',
-        '#b0c4cc', '#9ab0b8', '#7d9fa8', '#8aaa96', '#a8bfc4',
+        '#2E86AB',  // Stronger teal-blue (primary)
+        '#D64933',  // Muted terracotta (high contrast)
+        '#3C9E6D',  // Sage green (health-positive)
+        '#9C5288',  // Dusty plum (distinct)
+        '#F18F01',  // Warm amber (cautionary)
+        '#577590',  // Steel blue (secondary)
+        '#E06D53',  // Coral (warm accent)
+        '#4B8B7C',  // Seaweed green
+        '#C45C66',  // Rosewood
+        '#5E6B8C',  // Periwinkle grey
     ],
     status: {
-        Alive: '#5a9e7a',
-        'Not Alive': '#b07070',
-        'Not Available': '#9aa3ad',
+        Alive: '#3C9E6D',      // Vibrant sage (life/health)
+        'Not Alive': '#C45C66', // Muted rose (dignified)
+        'Not Available': '#8C919D', // Neutral grey
     } as Record<string, string>,
     gender: {
-        Male: '#5a84b0',
-        Female: '#a07898',
-        Other: '#8fa3a8',
+        Male: '#2E86AB',       // Medical blue (trust)
+        Female: '#9C5288',     // Plum (professional)
+        Other: '#577590',      // Steel blue (inclusive)
     } as Record<string, string>,
-    // Clinically meaningful light→dark progression per stage
+    // Clinically meaningful progression with better distinction
     stage: {
-        'Stage I': '#6aab7e',
-        'Stage II': '#4a9aaa',
-        'Stage III': '#c08840',
-        'Stage IV': '#b06060',
+        'Stage I': '#3C9E6D',   // Green (early/less severe)
+        'Stage II': '#4B8B7C',  // Teal (intermediate)
+        'Stage III': '#F18F01', // Amber (warning/progression)
+        'Stage IV': '#D64933',  // Terracotta (advanced/concerning)
     } as Record<string, string>,
-    stageFallback: '#8fa3ad',
-    trendLine: '#4a90a4',
-    grid: '#e8edf0',
-    axis: '#7a8c96',
+    stageFallback: '#8C919D',
+    trendLine: '#2E86AB',      // Consistent with primary
+    grid: '#E8EDF0',
+    axis: '#6B7280',           // Slightly darker for readability
+    success: '#3C9E6D',
+    warning: '#F18F01',
+    danger: '#D64933',
 } as const
 
 // Keep legacy exports so any other file that imports COLORS / STATUS_COLORS /
@@ -337,7 +348,7 @@ const HorizontalBarChart = memo(({
                 <Bar dataKey="value" name="Patients"
                     radius={[0, 4, 4, 0]} maxBarSize={22} isAnimationActive={false}>
                     {data.map((entry, i) => {
-                        const base = colorFn(entry.name, i)
+                        const base = colorFn(normalizeMedicalTerm(entry.name), i)
                         const fill = hoveredIndex === i ? darkenColor(base, 0.2) : base
                         return (
                             <Cell key={entry.name} fill={fill}
@@ -390,7 +401,7 @@ const VerticalBarChart = memo(({
                 <Bar dataKey="value" name="Patients"
                     radius={[4, 4, 0, 0]} maxBarSize={40} isAnimationActive={false}>
                     {data.map((entry, i) => {
-                        const base = colorFn(entry.name, i)
+                        const base = colorFn(normalizeMedicalTerm(entry.name), i)
                         const fill = hoveredIndex === i ? darkenColor(base, 0.2) : base
                         return (
                             <Cell key={entry.name} fill={fill}
@@ -428,7 +439,7 @@ const DonutChart = memo(({
                 dataKey="value" labelLine={false}
                 label={PiePercentLabel} nameKey="name">
                 {data.map((entry, i) => (
-                    <Cell key={entry.name} fill={colorFn(entry.name, i)} />
+                    <Cell key={entry.name} fill={colorFn(normalizeMedicalTerm(entry.name), i)} />
                 ))}
             </Pie>
             <Tooltip content={<ChartTooltip />} />
@@ -524,7 +535,13 @@ export function PatientStatsSection({ stats, patients }: PatientStatsSectionProp
     // Stage color uses normalized name so ALL spelling variants (Stage II / stage 2 / Stage Ii)
     // resolve to the same canonical color.
     const stageColorFn = useCallback(
-        (name: string) => getStageColor(normalizeMedicalTerm(name)), [],
+        (name: string, index: number) => {
+            const normalized = normalizeMedicalTerm(name)
+            const mapped = CHART_COLORS.stage[normalized]
+            if (mapped) return mapped
+            // Fallback: use categorical palette for easy differentiation
+            return getCategoricalColor(index)
+        }, [],
     )
 
     return (
