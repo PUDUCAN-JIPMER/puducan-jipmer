@@ -34,6 +34,7 @@ export default function PatientFormMobile({ patient }: { patient: Patient }) {
                     diseases={patient.diseases}
                     patientStatus={patient.patientStatus}
                     suspectedCase={patient.suspectedCase}
+                    patient={patient}
                 />
             </div>
 

@@ -95,10 +95,10 @@ export default function GenericPatientDialog({
 
     // Initialize form with patient data for edit mode
     useEffect(() => {
-        if (isEdit && patientData && open) {
+        if (isEdit && patientData && isOpen) {
             reset(patientData)
         }
-    }, [isEdit, patientData, open, reset])
+    }, [isEdit, patientData, isOpen, reset])
 
     // Aadhaar duplicate check (skip for edit mode if Aadhaar hasn't changed)
     useEffect(() => {
@@ -160,6 +160,11 @@ export default function GenericPatientDialog({
         
         try {
             if (isEdit && patientData?.id) {
+                // Remove undefined values before updating Firestore
+                const cleanedData = Object.fromEntries(
+                    Object.entries(data).filter(([_, value]) => value !== undefined)
+                )
+
                 // Update existing patient
                 
                 await updateDoc(doc(db, 'patients', patientData.id), sanitizedData)
