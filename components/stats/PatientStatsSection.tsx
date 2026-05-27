@@ -112,6 +112,7 @@ const MEDICAL_TERM_MAP: Record<string, string> = {
     'net': 'Neuroendocrine Tumor',
 
     // Stage normalizations — all variants → single canonical form
+    'stage 0': 'Stage 0',
     'stage i': 'Stage I',
     'stage 1': 'Stage I',
     'stage ii': 'Stage II',
@@ -521,7 +522,16 @@ export function PatientStatsSection({ stats, patients }: PatientStatsSectionProp
 
     // Deduplicate + normalize all categorical data — memoized for performance
     const diseaseData = useMemo(() => dedupeData(stats.diseaseData), [stats.diseaseData])
-    const stageData = useMemo(() => dedupeData(stats.stageData), [stats.stageData])
+    const stageData = useMemo(() => {
+        const deduped = dedupeData(stats.stageData).map(d => ({ ...d, name: normalizeMedicalTerm(d.name) }))
+        const order = ['Stage 0', 'Stage I', 'Stage II', 'Stage III', 'Stage IV']
+        return deduped.sort((a, b) => {
+            const ia = order.indexOf(a.name) === -1 ? Number.MAX_SAFE_INTEGER : order.indexOf(a.name)
+            const ib = order.indexOf(b.name) === -1 ? Number.MAX_SAFE_INTEGER : order.indexOf(b.name)
+            if (ia !== ib) return ia - ib
+            return b.value - a.value
+        })
+    }, [stats.stageData])
     const insuranceData = useMemo(() => dedupeData(stats.insuranceData), [stats.insuranceData])
     const rationData = useMemo(() => dedupeData(stats.rationData), [stats.rationData])
 
@@ -543,6 +553,34 @@ export function PatientStatsSection({ stats, patients }: PatientStatsSectionProp
             return getCategoricalColor(index)
         }, [],
     )
+
+    // Cancer stage — explicit progressive red palette (light → dark)
+    // Use explicit mapping so tones remain consistently red.
+    const progressiveRed: Record<string, string> = {
+        'Stage 0': '#F2D0D0',
+        'Stage I': '#E6A8A8',
+        'Stage II': '#D47B7B',
+        'Stage III': '#BD4B4B',
+        'Stage IV': '#A12F2F'
+    }
+    const cancerStageColorFn = useCallback((name: string, _index: number) => {
+        const raw = String(name || '').toLowerCase()
+        const m = raw.match(/stage\s*(iv|iii|ii|i|0|[1-4])/) // capture roman, zero or number
+        let key: string | undefined
+        if (m) {
+            const token = m[1]
+            if (token === '0') key = 'Stage 0'
+            else if (token === 'i' || token === '1') key = 'Stage I'
+            else if (token === 'ii' || token === '2') key = 'Stage II'
+            else if (token === 'iii' || token === '3') key = 'Stage III'
+            else if (token === 'iv' || token === '4') key = 'Stage IV'
+        }
+        if (!key) {
+            const normalized = normalizeMedicalTerm(name)
+            if (normalized && progressiveRed[normalized]) key = normalized
+        }
+        return key ? progressiveRed[key] : CHART_COLORS.stageFallback
+    }, [])
 
     return (
         <div className="space-y-5">
@@ -586,7 +624,7 @@ export function PatientStatsSection({ stats, patients }: PatientStatsSectionProp
                 <ChartCard title="Cancer Stage" empty={!stageData.length}>
                     <VerticalBarChart
                         data={stageData}
-                        colorFn={stageColorFn}
+                        colorFn={cancerStageColorFn}
                         height={270}
                     />
                 </ChartCard>
