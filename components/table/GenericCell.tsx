@@ -3,7 +3,12 @@
 import { DiseasesCell, PhoneCell, StatusCell } from '.'
 import { dobToAgeUtil } from '@/lib/patient/dobToAge'
 import { formatDobToDDMMYYYY } from '@/lib/patient/dateFormatter'
+<<<<<<< Updated upstream
 import { TriageCell, TriageLevel } from './TriageCell'
+=======
+import { RiskBadge } from '@/components/common/RiskBadge'
+import { TriageCell, TriageLevel } from './TriageCell' // Import Triage components
+>>>>>>> Stashed changes
 
 type GenericCellProps = {
     value: unknown
@@ -29,10 +34,23 @@ export function GenericCell({ value, keyName, isPatientTab }: GenericCellProps) 
         case 'sex':
             return <span className="capitalize">{value as string}</span>
 
+<<<<<<< Updated upstream
         case 'triageLevel':
             return <TriageCell level={value as TriageLevel} />
 
         default:
             return <span>{String(value ?? '')}</span>
     }
+=======
+    case 'triageLevel':
+      // Rendering the TriageCell based on the value passed
+      return <TriageCell level={value as TriageLevel} />
+
+    case 'sex':
+      return <span className="capitalize">{value as string}</span>
+
+    default:
+      return <span>{String(value ?? '')}</span>
+  }
+>>>>>>> Stashed changes
 }

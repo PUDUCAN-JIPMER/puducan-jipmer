@@ -1,11 +1,22 @@
+/**
+ * Table header configurations for various data entities.
+ * These are used by the DataTable component to map row data to specific UI columns.
+ */
+
 export const PATIENT_TABLE_HEADERS = [
     { name: 'Patient Name', key: 'name' },
     { name: 'Phone', key: 'phoneNumber' },
     { name: 'Sex', key: 'sex' },
     { name: 'Age', key: 'dob' },
     { name: 'Status', key: 'patientStatus' },
+<<<<<<< Updated upstream
     { name: 'Diseases', key: 'diseases' },
     { name: 'Priority', key: 'triageLevel' },
+=======
+    { name: 'Risk Level', key: 'riskLevel' },
+    { name: 'Triage Level', key: 'triageLevel' }, // Added Triage Level column
+    { name: 'Diseases', key: 'diseases' }
+>>>>>>> Stashed changes
 ]
 
 export const DOCTOR_TABLE_HEADERS = [
