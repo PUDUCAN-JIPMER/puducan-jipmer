@@ -111,11 +111,11 @@ export function PatientSummaryDialog({ open, onOpenChange, patient, patientName 
                 </DialogHeader>
                 <div className="space-y-4 py-2">
                     {/* Patient Header with Status */}
-                    <div className={`rounded-lg ${statusConfig.bg} border p-4`}>
+                    <div className={`rounded-lg ligth:${statusConfig.bg} border p-4 dark:bg-black-400`}>
                         <div className="flex items-start justify-between">
                             <div>
                                 <p className="text-sm font-medium text-muted-foreground">Patient</p>
-                                <p className="text-lg font-semibold">{patientName}</p>
+                                <p className="text-lg font-semibold light:text-black dark:text-white">{patientName}</p>
                             </div>
                             <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${statusConfig.color} border-current`}>
                                 <StatusIcon className="h-3.5 w-3.5" />
