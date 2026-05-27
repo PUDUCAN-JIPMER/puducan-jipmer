@@ -75,6 +75,7 @@ export const GenericRow = memo(function GenericRow(props: GenericRowProps) {
             value={rowData[header.key]}
             keyName={header.key}
             isPatientTab={isPatientTab}
+            rowData={rowData}
           />
         </TableCell>
       ))}
