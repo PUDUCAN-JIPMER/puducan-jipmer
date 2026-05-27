@@ -582,6 +582,14 @@ export function PatientStatsSection({ stats, patients }: PatientStatsSectionProp
         return key ? progressiveRed[key] : CHART_COLORS.stageFallback
     }, [])
 
+    // Ration card specific colors
+    const rationColorFn = useCallback((name: string) => {
+        const normalized = normalizeMedicalTerm(name).toLowerCase()
+        if (/yellow/.test(normalized)) return CHART_COLORS.warning
+        if (/red/.test(normalized)) return CHART_COLORS.danger
+        return CHART_COLORS.stageFallback
+    }, [])
+
     return (
         <div className="space-y-5">
 
@@ -645,7 +653,7 @@ export function PatientStatsSection({ stats, patients }: PatientStatsSectionProp
                 <ChartCard title="Ration Card Type" empty={!rationData.length}>
                     <VerticalBarChart
                         data={rationData}
-                        colorFn={(_, i) => getCategoricalColor(i + 1)}
+                        colorFn={rationColorFn}
                         height={220}
                     />
                 </ChartCard>
