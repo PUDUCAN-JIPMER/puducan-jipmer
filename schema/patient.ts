@@ -54,7 +54,7 @@ export const PatientSchema = z
         patientStatus: z.enum(['Alive', 'Not Alive', 'Not Available']).optional(),
         patientDeathDate: z.string().optional(),
         // treatmentStatus: z.enum(['Ongoing', 'FollowUp', 'Stopped', 'Not Available']).optional(),
-        aabhaId: z.string().optional(),
+        abhaId: z.string().optional(),
         diagnosedDate: z.string().optional(),
         diagnosedYearsAgo: z.string().optional(),
         // new fields after second meet
@@ -75,6 +75,14 @@ export const PatientSchema = z
         treatmentDetails: z.array(z.string().optional()).optional(),
         otherTreatmentDetails: z.string().optional(),
         insurance: InsuranceSchema,
+        verification: z
+            .object({
+                verified: z.boolean(),
+                source: z.string(),
+                maskedId: z.string().optional(),
+                verifiedAt: z.string().optional(),
+            })
+            .optional(),
     })
     .refine((data) => data.dob, {
         message: 'Please enter either age or date of birth.',

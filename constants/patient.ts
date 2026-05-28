@@ -15,7 +15,7 @@ export const patientFields = [
     //   { label: "Follow Ups", key: "followUps" }, // array<object>
     { label: 'Patient Status', key: 'patientStatus' },
     { label: 'Treatment Status', key: 'treatmentStatus' },
-    { label: 'Aabha ID', key: 'aabhaId' },
+    { label: 'ABHA ID', key: 'abhaId' },
     { label: 'Diagnosed Date', key: 'diagnosedDate' },
     { label: 'Diagnosed Years Ago', key: 'diagnosedYearsAgo' },
     { label: 'Hospital Registration Date', key: 'hospitalRegistrationDate' },

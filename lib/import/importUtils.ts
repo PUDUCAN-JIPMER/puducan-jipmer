@@ -94,7 +94,7 @@ const preprocessPatientRow = async (
 
     // Copy over optional fields directly
     Object.assign(cleaned, {
-        aabhaId: row.aabhaId ?? '',
+        abhaId: row.abhaId ?? '',
         aadhaarId: row.aadhaarId ?? '',
         bloodGroup: row.bloodGroup ?? '',
         religion: row.religion ?? '',

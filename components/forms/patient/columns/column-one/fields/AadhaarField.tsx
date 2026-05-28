@@ -76,14 +76,18 @@ export default function AadhaarField({ form }: AadhaarFieldProps) {
             />
             <FormField
                 control={control}
-                name="aabhaId"
+                name="abhaId"
                 render={({ field }) => (
                     <FormItem>
                         <FormControl>
                             <FloatingLabelInput
                                 {...field}
-                                label="Aabha Number"
+                                label="ABHA Number (optional)"
                                 autoComplete="off"
+                                inputMode="numeric"
+                                maxLength={17}
+                                disabled={!hasAadhaar}
+                                placeholder="XX-XXXX-XXXX-XXXX"
                             />
                         </FormControl>
                         <FormMessage />

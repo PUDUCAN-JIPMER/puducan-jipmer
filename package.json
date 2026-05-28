@@ -18,6 +18,7 @@
         "seed:patients": "node scripts/seedPatients.mjs",
         "seed:hospitals": "node scripts/seedHospitals.mjs",
         "seed:all": "npm run seed:hospitals && npm run seed:users && npm run seed:patients",
+        "seed:fresh": "node scripts/seed.mjs",
         "test:e2e": "playwright test",
         "test:e2e:ui": "playwright test --ui",
         "test:e2e:debug": "playwright test --debug",

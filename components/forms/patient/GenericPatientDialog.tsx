@@ -10,18 +10,20 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog'
-import { Plus, Pencil } from 'lucide-react'
+import { Pencil, Plus } from 'lucide-react'
 import { db } from '@/firebase'
 import { addDoc, collection, doc, serverTimestamp, updateDoc } from 'firebase/firestore'
 import { toast } from 'sonner'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { checkAadhaarDuplicateUtil } from '@/lib/patient/checkPatientRecord'
 import { PatientSchema, PatientFormInputs } from '@/schema/patient'
 import GenericPatientForm from './GenericPatientForm'
-import clsx from 'clsx'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/contexts/AuthContext'
-import { int } from 'zod'
+import { VerifyPatientButton } from '@/components/verification/VerifyPatientButton'
+import { VerificationModal } from '@/components/verification/VerificationModal'
+import { mapVerifiedDataToPatientFields } from '@/lib/verification/mapper'
+import type { VerifiedPatientData, VerificationSource } from '@/lib/verification/types'
 
 interface GenericPatientDialogProps {
     mode: 'add' | 'edit'
@@ -47,10 +49,30 @@ export default function GenericPatientDialog({
     const queryClient = useQueryClient()
 
     const isOpen = open ?? internalOpen
-
     const setIsOpen = onOpenChange ?? setInternalOpen
 
-    const {orgId} = useAuth()
+    const { orgId } = useAuth()
+
+    // ── Verification modal (add mode only) ───────────────────────────────────
+    // In add mode the modal opens automatically and starts at the 'method' step
+    // so the healthcare worker chooses DigiLocker or manual entry inside the modal.
+    const [verificationModalOpen, setVerificationModalOpen] = useState(false)
+    const [showForm, setShowForm] = useState(isEdit)
+
+    // Open the verification modal as soon as the add-mode dialog opens.
+    // For edit mode the form is always shown directly.
+    useEffect(() => {
+        if (isOpen && !isEdit) {
+            setVerificationModalOpen(true)
+        }
+        if (!isOpen) {
+            setVerificationModalOpen(false)
+            setShowForm(isEdit)
+            setIsVerified(false)
+            setVerificationSource('mock')
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen, isEdit])
 
     const form = useForm<PatientFormInputs>({
         resolver: zodResolver(PatientSchema),
@@ -64,7 +86,7 @@ export default function GenericPatientDialog({
             dob: '',
             address: '',
             aadhaarId: '',
-            aabhaId: '',
+            abhaId: '',
             rationCardColor: 'none',
             religion: 'none',
             bloodGroup: '',
@@ -88,6 +110,64 @@ export default function GenericPatientDialog({
     const { handleSubmit, reset, watch, setValue } = form
     const aadhaarId = watch('aadhaarId')
     const hasAadhaar = watch('hasAadhaar')
+
+    const [isVerified, setIsVerified] = useState(false)
+    const [verificationSource, setVerificationSource] = useState<VerificationSource>('mock')
+
+    /** Shared autofill logic used by both verification paths. */
+    const applyVerifiedData = useCallback(
+        (data: VerifiedPatientData) => {
+            const mapped = mapVerifiedDataToPatientFields(data)
+            setValue('name', mapped.name, { shouldValidate: true, shouldDirty: true })
+            setValue('dob', mapped.dob, { shouldValidate: true, shouldDirty: true })
+            setValue('sex', mapped.sex, { shouldValidate: true, shouldDirty: true })
+            if (mapped.address) {
+                setValue('address', mapped.address, { shouldValidate: true, shouldDirty: true })
+            }
+            if (mapped.phoneNumber && mapped.phoneNumber.length > 0) {
+                setValue('phoneNumber', mapped.phoneNumber, { shouldValidate: true, shouldDirty: true })
+            }
+            if (mapped.aadhaarId) {
+                setValue('aadhaarId', mapped.aadhaarId, { shouldValidate: true, shouldDirty: true })
+            }
+            if (mapped.abhaId) {
+                setValue('abhaId', mapped.abhaId, { shouldValidate: true, shouldDirty: true })
+            }
+            setValue('verification', {
+                verified: true,
+                source: data.verificationSource,
+                maskedId: data.maskedId,
+                verifiedAt: data.verifiedAt,
+            })
+            setIsVerified(true)
+            setVerificationSource(data.verificationSource)
+        },
+        [setValue],
+    )
+
+    /** In-form re-verification (VerifyPatientButton inside the form). */
+    const handleVerified = useCallback(
+        (data: VerifiedPatientData) => applyVerifiedData(data),
+        [applyVerifiedData],
+    )
+
+    /** Verification modal DigiLocker path: autofill + show form. */
+    const handleVerifiedFromModal = useCallback(
+        (data: VerifiedPatientData) => {
+            applyVerifiedData(data)
+            setVerificationModalOpen(false)
+            setShowForm(true)
+            setIsOpen(true)   // keep external open prop in sync
+        },
+        [applyVerifiedData, setIsOpen],
+    )
+
+    /** Verification modal manual path: skip verification, show empty form. */
+    const handleSelectManual = useCallback(() => {
+        setVerificationModalOpen(false)
+        setShowForm(true)
+        setIsOpen(true)       // keep external open prop in sync
+    }, [setIsOpen])
 
     // Initialize form with patient data for edit mode
     useEffect(() => {
@@ -173,33 +253,88 @@ export default function GenericPatientDialog({
         </Button>
     )
 
+    // ── Shared form content (used by both modes) ────────────────────────────
+    const formDialogContent = (
+        <DialogContent
+            onInteractOutside={(e) => e.preventDefault()}
+            className="max-h-[90vh] w-full max-w-[95vw] overflow-y-auto sm:max-w-[640px] md:max-w-[768px] lg:max-w-[1024px] 2xl:max-w-[90vw]"
+        >
+            <DialogHeader>
+                <DialogTitle>
+                    {isEdit ? 'Update Patient Details' : 'Add New Patient Details'}
+                </DialogTitle>
+            </DialogHeader>
+
+            <div className="flex items-center justify-between border-b pb-3">
+                <p className="text-xs text-muted-foreground">
+                    Use DigiLocker to auto-fill patient demographics.
+                </p>
+                <VerifyPatientButton
+                    onVerified={handleVerified}
+                    isVerified={isVerified}
+                    verificationSource={verificationSource}
+                />
+            </div>
+
+            <GenericPatientForm
+                form={form}
+                reset={reset}
+                handleSubmit={handleSubmit}
+                onSubmit={onSubmit}
+                isEdit={isEdit}
+            />
+        </DialogContent>
+    )
+
     return (
         <FormProvider {...form}>
-            {/* added isOpen to handle both keyboard shortcut and click */}
-            <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
+            {/* ── EDIT MODE — standard Dialog + trigger ─────────────────── */}
+            {isEdit && (
+                <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                    <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
+                    {formDialogContent}
+                </Dialog>
+            )}
 
-                <DialogContent
-                    onInteractOutside={(e) => e.preventDefault()}
-                    className={clsx(
-                        'max-h-[90vh] w-full max-w-[95vw] overflow-y-auto sm:max-w-[640px] md:max-w-[768px] lg:max-w-[1024px] 2xl:max-w-[90vw]'
-                    )}
-                >
-                    <DialogHeader>
-                        <DialogTitle>
-                            {isEdit ? 'Update Patient Details' : 'Add New Patient Details'}
-                        </DialogTitle>
-                    </DialogHeader>
+            {/* ── ADD MODE ──────────────────────────────────────────────── */}
+            {!isEdit && (
+                <>
+                    {/* Trigger button — opens verification modal ONLY, never the Dialog.
+                        display:contents keeps the button's original DOM box intact. */}
+                    <div
+                        style={{ display: 'contents' }}
+                        onClick={() => setVerificationModalOpen(true)}
+                    >
+                        {trigger || defaultTrigger}
+                    </div>
 
-                    <GenericPatientForm
-                        form={form}
-                        reset={reset}
-                        handleSubmit={handleSubmit}
-                        onSubmit={onSubmit}
-                        isEdit={isEdit}
+                    {/* Patient form dialog — controlled, only opens when showForm=true.
+                        This prevents the ghost "Add New Patient Details" header from
+                        appearing behind the verification modal. */}
+                    <Dialog
+                        open={showForm}
+                        onOpenChange={(next) => {
+                            if (!next) {
+                                setShowForm(false)
+                                setIsOpen(false)
+                                reset()
+                                localStorage.removeItem('addPatientFormData')
+                            }
+                        }}
+                    >
+                        {formDialogContent}
+                    </Dialog>
+
+                    {/* Verification modal — method selector → OTP → preview.
+                        Renders via portal so it floats above everything. */}
+                    <VerificationModal
+                        open={verificationModalOpen}
+                        onOpenChange={(next) => { if (!next) setVerificationModalOpen(false) }}
+                        onVerified={handleVerifiedFromModal}
+                        onSelectManual={handleSelectManual}
                     />
-                </DialogContent>
-            </Dialog>
+                </>
+            )}
         </FormProvider>
     )
 }
