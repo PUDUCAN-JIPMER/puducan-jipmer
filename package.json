@@ -51,7 +51,7 @@
         "firebase-admin": "^13.7.0",
         "husky": "^9.1.7",
         "jspdf": "^4.2.1",
-        "jspdf-autotable": "^5.0.2",
+        "jspdf-autotable": "^5.0.8",
         "lucide": "^1.14.0",
         "lucide-react": "^1.8.0",
         "next": "16.2.6",
