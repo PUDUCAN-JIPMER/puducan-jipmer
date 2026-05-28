@@ -49,6 +49,7 @@
         "file-saver": "^2.0.5",
         "firebase": "^11.10.0",
         "firebase-admin": "^13.7.0",
+        "framer-motion": "^12.40.0",
         "husky": "^9.1.7",
         "jspdf": "^4.2.1",
         "jspdf-autotable": "^5.0.2",
