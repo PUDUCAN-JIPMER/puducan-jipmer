@@ -16,13 +16,14 @@ export function StatCard({ title, value, subtitle, icon: Icon, iconClassName }: 
     const reduce = useReducedMotion()
     return (
         <motion.div
+            className="h-full"
             variants={reduce ? undefined : modernItemVariant}
             whileHover={reduce ? undefined : { scale: 1.02, y: -3, boxShadow: '0 8px 26px rgba(15,23,42,0.08)' }}
             transition={{ duration: 0.18 }}
             style={{ display: 'block' }}
         >
-            <Card>
-                <CardContent className="flex items-center gap-3 px-4 py-3">
+            <Card className="h-full">
+                <CardContent className="h-full flex items-center gap-3 px-4 py-3">
                     <div className={cn('shrink-0 rounded-lg p-2 bg-muted', iconClassName)}>
                         <Icon className="h-4 w-4" />
                     </div>

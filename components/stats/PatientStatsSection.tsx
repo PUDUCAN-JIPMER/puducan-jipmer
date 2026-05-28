@@ -612,7 +612,7 @@ export function PatientStatsSection({ stats, patients }: PatientStatsSectionProp
 
             {/* ── KPI Cards ────────────────────────────────────────────── */}
             <motion.div
-                className="grid grid-cols-2 gap-3 sm:grid-cols-4"
+                className="grid grid-cols-2 gap-3 sm:grid-cols-4 items-stretch"
                 variants={reduce ? undefined : staggerContainer}
                 initial={reduce ? undefined : 'hidden'}
                 whileInView={reduce ? undefined : 'visible'}
