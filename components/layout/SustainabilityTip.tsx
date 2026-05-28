@@ -59,25 +59,21 @@ export default function SustainabilityTip() {
         tip.length > 40 ? tip.slice(0, 40) + '...' : tip
 
     return (
-        <div className="w-full bg-background px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm">
-            <div className="flex flex-wrap items-center justify-center text-center gap-1">
-                <span className="shrink-0">
-                    🌱 <strong>Daily Sustainability Tip:</strong>
-                </span>
-
-                <span className="break-words">
-                    {expanded ? tip : shortTip}
-                </span>
-
-                {tip.length > 50 && (
-                    <button
-                        onClick={() => setExpanded(!expanded)}
-                        className="underline text-xs sm:text-sm whitespace-nowrap"
-                    >
-                        {expanded ? 'Read Less' : 'Read More'}
-                    </button>
-                )}
-            </div>
-        </div>
-    )
+    <div className="flex items-center gap-1 text-xs text-muted-foreground max-w-xs">
+        <span className="shrink-0">
+            🌱 <strong className="text-foreground">Daily Sustainability Tip:</strong>
+        </span>
+        <span className="truncate">
+            {expanded ? tip : shortTip}
+        </span>
+        {tip.length > 40 && (
+            <button
+                onClick={() => setExpanded(!expanded)}
+                className="underline text-xs whitespace-nowrap shrink-0"
+            >
+                {expanded ? 'Less' : 'More'}
+            </button>
+        )}
+    </div>
+)
 }

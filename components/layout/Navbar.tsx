@@ -7,8 +7,8 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { ModeToggle } from '../ui/toggle'
 import SignOutButton from './SignOutButton'
+import SustainabilityTip from './SustainabilityTip'
 
-// Roles that can see the Stats link
 const STATS_ROLES = ['admin', 'doctor', 'nurse']
 
 export default function Navbar() {
@@ -24,10 +24,16 @@ export default function Navbar() {
     return (
         <div>
             <nav className="bg-background flex items-center justify-between border-b px-4 py-3 shadow md:px-8">
-                {/* Logo */}
-                <Link href="/" className="text-2xl font-bold text-green-600">
-                    PuduCan
-                </Link>
+                {/* Logo + Sustainability Tip */}
+                <div className="flex items-center gap-3">
+                    <Link href="/" className="text-2xl font-bold text-green-600">
+                        PuduCan
+                    </Link>
+                    <span className="text-muted-foreground hidden sm:block">|</span>
+                    <div className="hidden sm:block">
+                        <SustainabilityTip />
+                    </div>
+                </div>
 
                 {/* Hamburger (mobile) */}
                 <div className="md:hidden">
@@ -41,7 +47,6 @@ export default function Navbar() {
 
                 {/* Desktop Menu */}
                 <div className="hidden md:flex items-center gap-4">
-                    {/* added info for shortcuts */}
                     <div className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors">
                         Press <kbd className="rounded border bg-muted px-1.5 py-0.5 text-xs">?</kbd> for shortcuts
                     </div>
@@ -89,6 +94,3 @@ export default function Navbar() {
         </div>
     )
 }
-
-
-
