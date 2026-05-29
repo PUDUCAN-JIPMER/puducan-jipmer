@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
+
 import {
     HOSPITAL_TABLE_HEADERS,
     DOCTOR_TABLE_HEADERS,
@@ -61,10 +61,12 @@ function AdminPageContent() {
 
     return (
         <div className="mx-auto px-4 py-4 lg:max-w-[1240px] xl:max-w-[1400px]">
-            {/* Mobile: dropdown */}
-            <div className="mb-1 sm:hidden">
+         
+
+  {/* All screens: dropdown + welcome banner */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <Select value={activeTab} onValueChange={(val) => handleTabChange(val as typeof activeTab)}>
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-48 focus:ring-0 focus-visible:ring-0 focus-visible:outline-none">
                         <SelectValue placeholder="Select a section" />
                     </SelectTrigger>
                     <SelectContent>
@@ -84,36 +86,9 @@ function AdminPageContent() {
                         ))}
                     </SelectContent>
                 </Select>
+
+                <WelcomeBanner />
             </div>
-
-            {/* Tablet+ : horizontal buttons */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex flex-wrap gap-2">
-                {(
-                    [
-                        'hospitals',
-                        'doctors',
-                        'nurses',
-                        'ashas',
-                        'patients',
-                        'removedPatients',
-                    ] as const
-                ).map((tab) => (
-                    <Button
-                        key={tab}
-                        onClick={() => handleTabChange(tab)}
-                        variant={'default'}
-                        className={`uppercase text-foreground ${activeTab === tab ? '' : 'bg-border'
-                            }`}
-                    >
-                        {tabLabels[tab]}
-                    </Button>
-                ))}
-            </div>
-
-            <WelcomeBanner />
-
-        </div> 
             
 
             {/* Table */ }
