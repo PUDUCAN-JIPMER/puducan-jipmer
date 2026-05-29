@@ -1,6 +1,8 @@
 'use client'
 
 import { ChevronRight } from 'lucide-react'
+import { RiskBadge } from '@/components/common/RiskBadge'
+import { Patient } from '@/schema/patient'
 
 const statusStyles: Record<string, string> = {
     Alive: 'bg-primary/10 text-primary border border-primary/20',
@@ -16,6 +18,7 @@ export function PatientHeader({
     diseases,
     patientStatus,
     suspectedCase,
+    patient,
 }: {
     name?: string
     address?: string
@@ -24,6 +27,7 @@ export function PatientHeader({
     diseases?: string[]
     patientStatus?: string
     suspectedCase?: boolean
+    patient?: Partial<Patient>
 }) {
     const initials = (name ?? 'U')
         .split(' ')
@@ -58,6 +62,7 @@ export function PatientHeader({
                         <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${statusClass}`}>
                             {statusLabel}
                         </span>
+                        {patient && <RiskBadge patient={patient} />}
                     </div>
 
                     {/* Address */}
