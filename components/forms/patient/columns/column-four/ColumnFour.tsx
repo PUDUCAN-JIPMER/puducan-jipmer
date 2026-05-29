@@ -29,10 +29,6 @@ export function ColumnFour({ form, isAsha = false }: RightColumnProps) {
             <div className={clsx('flex w-full flex-col sm:border-l-2 md:pl-4 gap-4 md:w-1/2 lg:w-1/3', isAsha && 'md:w-2/3 lg:w-full border-none px-2 mx-auto')} >
                 <TreatmentPeriodField form={form} />
                 
-<<<<<<< Updated upstream
-                {/* Hospital Registration Number */}
-=======
->>>>>>> Stashed changes
                 <FormField
                     control={control}
                     name="hospitalRegistrationNumber"
@@ -50,12 +46,7 @@ export function ColumnFour({ form, isAsha = false }: RightColumnProps) {
                         </FormItem>
                     )}
                 />
-<<<<<<< Updated upstream
-
-                {/* HBCR ID */}
-=======
                 
->>>>>>> Stashed changes
                 <FormField
                     control={control}
                     name="hbcrID"
@@ -73,7 +64,6 @@ export function ColumnFour({ form, isAsha = false }: RightColumnProps) {
                     )}
                 />
 
-<<<<<<< Updated upstream
                 {/* Stage of the Cancer */}
                 <FormField
                     control={control}
@@ -93,8 +83,6 @@ export function ColumnFour({ form, isAsha = false }: RightColumnProps) {
                 />
 
                 {/* Biopsy Number */}
-=======
->>>>>>> Stashed changes
                 <div className="flex flex-col gap-2">
                     <FormLabel className="text-muted-foreground text-sm">Stage of the Cancer</FormLabel>
                     {/* ... (Stage and Sub-stage fields remain the same) ... */}
@@ -117,11 +105,7 @@ export function ColumnFour({ form, isAsha = false }: RightColumnProps) {
                     )}
                 />
 
-<<<<<<< Updated upstream
-                {/* NEW FIELD: Triage Level Dropdown */}
-=======
                 {/* NEW: Triage Level Field */}
->>>>>>> Stashed changes
                 <FormField
                     control={control}
                     name="triageLevel"
@@ -132,11 +116,7 @@ export function ColumnFour({ form, isAsha = false }: RightColumnProps) {
                                 <select 
                                     {...field} 
                                     value={field.value || ""} 
-<<<<<<< Updated upstream
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-=======
                                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
->>>>>>> Stashed changes
                                 >
                                     <option value="" disabled>-- Choose Urgency Level --</option>
                                     <option value="critical">🔴 Critical</option>
