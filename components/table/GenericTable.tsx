@@ -59,7 +59,8 @@ export function GenericTable({
     const { exportSelected } = useBulkExport()
 
     const queryProps = {
-        orgId,
+        // Admins should see all patients (no org filter).
+        orgId: role === 'admin' ? null : orgId,
         ashaId: role === 'asha' ? user?.id : null,
         enabled: !isLoadingAuth,
         requiredData: activeTab,

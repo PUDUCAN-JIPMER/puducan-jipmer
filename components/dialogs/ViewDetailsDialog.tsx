@@ -5,6 +5,8 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Patient } from '@/schema/patient'
 import { UserDoc } from '@/schema/user'
 import { Hospital } from '@/schema/hospital'
+import { RiskBadge } from '@/components/common/RiskBadge'
+import { computePatientRisk } from '@/lib/patient/riskScoring'
 import formatFieldValue from './formatFieldValue'
 import { db } from '@/firebase'
 import { doc, getDoc } from 'firebase/firestore'
@@ -24,6 +26,9 @@ export default function ViewDetailsDialog({
     rowData: RowDataType
     fieldsToDisplay: FieldToDisplay[]
 }) {
+    const isPatient = 'followUps' in rowData
+    const risk = isPatient ? computePatientRisk(rowData as Patient) : null
+
     const [ashaName, setAshaName] = useState<string | null>(null)
 
     useEffect(() => {
@@ -86,6 +91,34 @@ export default function ViewDetailsDialog({
                             />
                         ))}
                     </div>
+                    {isPatient && risk && (
+                        <div className="mt-4 border-t border-border pt-4">
+                            <p className="text-muted-foreground mb-2 text-xs font-semibold uppercase tracking-wide">
+                                Risk Assessment
+                            </p>
+                            <div className="rounded-xl border border-border p-3 space-y-2 bg-muted/20">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-semibold">Priority Level:</span>
+                                    <RiskBadge patient={rowData as Patient} />
+                                </div>
+                                {risk.reasons.length > 0 ? (
+                                    <div className="space-y-1.5 pt-1.5 border-t border-border">
+                                        <p className="text-xs font-semibold text-muted-foreground">Scoring Breakdown:</p>
+                                        <ul className="space-y-1 text-xs text-muted-foreground list-disc list-inside">
+                                            {risk.reasons.map((r, idx) => (
+                                                <li key={idx} className="leading-relaxed">{r}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ) : (
+                                    <p className="text-xs text-muted-foreground italic">No elevated risk factors detected.</p>
+                                )}
+                                <p className="text-[10px] text-muted-foreground/70 leading-normal italic pt-1 border-t border-border/50">
+                                    * Local prioritize-aid only, not a clinical diagnosis.
+                                </p>
+                            </div>
+                        </div>
+                    )}
                     {'followUps' in rowData && (rowData.followUps?.length ?? 0) > 0 && (
                         <div className="mt-4">
                             <p className="text-muted-foreground mb-2 text-xs font-semibold uppercase tracking-wide">
