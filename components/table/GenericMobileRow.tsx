@@ -103,6 +103,7 @@ export const GenericMobileRow = memo(function GenericMobileRow(props: GenericMob
                                 value={rowData[header.key]}
                                 keyName={header.key}
                                 isPatientTab={isPatientTab}
+                                rowData={rowData}
                             />
                         </div>
                     ))}

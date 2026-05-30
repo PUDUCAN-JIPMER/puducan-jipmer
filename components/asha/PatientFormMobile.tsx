@@ -25,6 +25,7 @@ export default function PatientFormMobile({ patient }: { patient: Patient }) {
                     patientStatus={patient.patientStatus}
                     suspectedCase={patient.suspectedCase}
                     _hasPendingWrites={patient._hasPendingWrites}
+                    patient={patient}
                 />
             </div>
 

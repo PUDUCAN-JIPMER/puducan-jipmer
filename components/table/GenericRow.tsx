@@ -84,6 +84,7 @@ export const GenericRow = memo(function GenericRow(props: GenericRowProps) {
               value={rowData[header.key]}
               keyName={header.key}
               isPatientTab={isPatientTab}
+              rowData={rowData}
             />
             {isPatientTab && header.key === 'name' && Boolean(rowData._hasPendingWrites) && (
               <TooltipProvider>

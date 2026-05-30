@@ -19,8 +19,6 @@ import GenericPatientDialog from '../forms/patient/GenericPatientDialog'
 import GenericUserDialog from '../forms/user/GenericUserDialog'
 import { SearchInput } from '../search/SearchInput'
 import { useAuth } from '@/contexts/AuthContext'
-
-// for keyboard shortcuts
 import { useRef, useState } from 'react'
 import { useKeyboardShortcurts } from '@/hooks/keyboardshortcut/keyboardShortcuts'
 import { KeyBoardShortcuts } from '../common/KeyBoardShortcuts'
@@ -44,6 +42,23 @@ export function GenericToolbar({
     const queryClient = useQueryClient()
     const { role } = useAuth()
 
+    const [mobileFilterOpen, setMobileFilterOpen] = useState(false)
+    const [mobileAddOpen, setMobileAddOpen] = useState(false)
+    const searchInputRef = useRef<HTMLInputElement>(null)
+    const [shortcutDialogOpen, setShortcutDialogOpen] = useState(false)
+    const [activeDialog, setActiveDialog] = useState<'patients' | 'hospitals' | 'users' | null>(null)
+    // deployment fix
+    useKeyboardShortcurts({
+        onSearchFocus: () => { searchInputRef.current?.focus() },
+        onOpenShortcuts: () => { setShortcutDialogOpen(true) },
+        onCloseDialog: () => { setShortcutDialogOpen(false) },
+        onNewPatient: () => {
+            if (activeTab === 'patients') setActiveDialog('patients')
+            if (activeTab === 'hospitals') setActiveDialog('hospitals')
+            if (['ashas', 'doctors', 'nurses'].includes(activeTab)) setActiveDialog('users')
+        },
+    })
+
     const dashboardTitleContent = pathname.includes('/admin') ? (
         <h1 className="hidden text-2xl font-bold sm:block">Admin Dashboard</h1>
     ) : pathname.includes('/nurse') ? (
@@ -52,133 +67,202 @@ export function GenericToolbar({
         <h1 className="hidden text-2xl font-bold sm:block">Doctor Dashboard</h1>
     )
 
-    const handleExportCSV = () => {
-        const data = getExportData()
-        exportToCSV(data, activeTab)
-    }
+    const handleExportCSV = () => exportToCSV(getExportData(), activeTab)
+    const handleExportExcel = () => exportToExcel(getExportData(), activeTab)
 
-    const handleExportExcel = () => {
-        const data = getExportData()
-        exportToExcel(data, activeTab)
-    }
-
-    // for keyboard shortcuts
-    const searchInputRef = useRef<HTMLInputElement>(null)
-
-    const [shortcutDialogOpen, setShortcutDialogOpen] = useState(false)
-
-    // for reusable states
-    const [activeDialog, setActiveDialog] = useState<
-        'patients' | 'hospitals' | 'users' | null
-    >(null)
-
-    useKeyboardShortcurts({
-        onSearchFocus: () => {
-            searchInputRef.current?.focus()
-        },
-
-        onOpenShortcuts: () => {
-            setShortcutDialogOpen(true)
-        },
-
-        onCloseDialog: () => {
-            setShortcutDialogOpen(false)
-        },
-
-        onNewPatient: () => {
-            if (activeTab === "patients") {
-                setActiveDialog('patients')
-            }
-
-            if (activeTab === "hospitals") {
-                setActiveDialog('hospitals')
-            }
-
-            if (['ashas', 'doctors', 'nurses'].includes(activeTab)) {
-                setActiveDialog('users')
-            }
-        },
-
-        
-    })
     return (
         <div className="mb-4 flex items-center justify-between">
             {dashboardTitleContent}
-            <div className="flex w-full items-center justify-center gap-2 sm:w-auto">
-                {isLoading ? (
-                    <Skeleton className="h-10 w-[250px] rounded-md" />
-                ) : (
-                    activeTab && (
-                        <SearchInput
-                            value={searchTerm}
-                            onChange={setSearchTerm}
-                            placeholder={`Search ${activeTab} via ${searchFields.join(', ')}`}
+
+            <div className="flex flex-col gap-2 w-full sm:flex-row sm:items-center sm:justify-end">
+
+                {/* MOBILE TOOLBAR */}
+                <div className="flex flex-row items-center gap-2 w-full sm:hidden">
+
+                    {activeTab && (
+                        <div className="flex-1">
+                            <SearchInput
+                                value={searchTerm}
+                                onChange={setSearchTerm}
+                                placeholder={`Search ${activeTab}...`}
+                            />
+                        </div>
+                    )}
+
+                    {activeTab === 'patients' && (
+                        <>
+                            <div className="hidden">
+                                <PatientFilter />
+                            </div>
+                            <div className="hidden">
+                                <GenericPatientDialog
+                                    mode="add"
+                                    open={mobileAddOpen}
+                                    onOpenChange={setMobileAddOpen}
+                                />
+                            </div>
+                        </>
+                    )}
+
+                    {isLoading ? (
+                        <Skeleton className="h-10 w-10 rounded-md flex-shrink-0" />
+                    ) : (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="icon" className="flex-shrink-0">
+                                    <MoreVertical className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+
+                                {activeTab === 'patients' && (
+                                    <DropdownMenuItem onSelect={() => setMobileFilterOpen(true)}>
+                                        Filter Patients
+                                    </DropdownMenuItem>
+                                )}
+
+                                {activeTab === 'patients' && (
+                                    <DropdownMenuItem onSelect={() => setMobileAddOpen(true)}>
+                                        Add Patient
+                                    </DropdownMenuItem>
+                                )}
+
+                                {activeTab === 'hospitals' && (
+                                    <DropdownMenuItem onSelect={() => setActiveDialog('hospitals')}>
+                                        Add Hospital
+                                    </DropdownMenuItem>
+                                )}
+
+                                {['ashas', 'doctors', 'nurses'].includes(activeTab) && (
+                                    <DropdownMenuItem onSelect={() => setActiveDialog('users')}>
+                                        Add {activeTab.slice(0, -1)}
+                                    </DropdownMenuItem>
+                                )}
+
+                                {activeTab === 'patients' && role === 'admin' && (
+                                    <DropdownMenuItem
+                                        onSelect={(e) => {
+                                            e.preventDefault()
+                                            document.getElementById('file-upload')?.click()
+                                        }}
+                                    >
+                                        Import Patients
+                                    </DropdownMenuItem>
+                                )}
+
+                                <DropdownMenuItem onClick={handleExportCSV}>
+                                    Export as CSV
+                                </DropdownMenuItem>
+
+                                <DropdownMenuItem onClick={handleExportExcel}>
+                                    Export as Excel
+                                </DropdownMenuItem>
+
+                                {activeTab === 'patients' && (
+                                    <DropdownMenuItem onClick={() => generateDiseasePDF(getExportData())}>
+                                        Generate Report
+                                    </DropdownMenuItem>
+                                )}
+
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+                </div>
+
+                {/* DESKTOP TOOLBAR */}
+                <div className="hidden sm:flex sm:flex-row sm:items-center sm:justify-end sm:gap-2 w-full">
+
+                    {activeTab && (
+                        <div className="sm:min-w-[320px]">
+                            <SearchInput
+                                value={searchTerm}
+                                onChange={setSearchTerm}
+                                placeholder={`Search ${activeTab} via ${searchFields.join(', ')}`}
+                            />
+                        </div>
+                    )}
+
+                    {activeTab === 'patients' && <PatientFilter />}
+                    {activeTab === 'patients' && (
+                        <GenericPatientDialog
+                            mode="add"
+                            open={activeDialog === 'patients'}
+                            onOpenChange={(open) => setActiveDialog(open ? 'patients' : null)}
                         />
-                    )
-                )}
-                {isLoading ? (
-                    <Skeleton className="h-10 w-32 rounded-md" />
-                ) : (
-                    <>
-                        {activeTab === 'patients' && <PatientFilter />}
-                        {activeTab === 'patients' && <GenericPatientDialog mode="add" />}
-                        {activeTab === 'hospitals' && <GenericHospitalDialog mode="add" />}
-                        {['ashas', 'doctors', 'nurses'].includes(activeTab) && (
-                            <GenericUserDialog mode="add" userType={activeTab} />
-                        )}
-                    </>
-                )}
+                    )}
+                    {activeTab === 'hospitals' && (
+                        <GenericHospitalDialog
+                            mode="add"
+                            open={activeDialog === 'hospitals'}
+                            onOpenChange={(open) => setActiveDialog(open ? 'hospitals' : null)}
 
-                {/* Three-dot Dropdown */}
-                {isLoading ? (
-    <Skeleton className="h-10 w-10 rounded-md" />
-) : (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        {/* Import */}
-                        {activeTab === 'patients' && role === 'admin' && (
-                            <DropdownMenuItem
-                                onSelect={(e) => {
-                                    e.preventDefault() // ✅ stop default closing behavior if needed
-                                    console.log('inside import button')
-                                    document.getElementById('file-upload')?.click()
-                                }}
-                            >
-                                Import Patients
-                            </DropdownMenuItem>
-                        )}
-                        <input
-                            id="file-upload"
-                            type="file"
-                            accept=".csv, .xlsx, .xls"
-                            className="hidden"
-                            onChange={(e) => {
-                                console.log('inside file upload')
-                                importData(e, queryClient)
-                            }}
                         />
+                    )}
+                    {['ashas', 'doctors', 'nurses'].includes(activeTab) && (
+                        <GenericUserDialog
+                            mode="add"
+                            userType={activeTab}
+                            open={activeDialog === 'users'}
+                            onOpenChange={(open) => setActiveDialog(open ? 'users' : null)}
+                        />
+                    )}
 
-                        {/* Export */}
-                        <DropdownMenuItem onClick={handleExportCSV}>Export as CSV</DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleExportExcel}>
-                            Export as Excel
-                        </DropdownMenuItem>
+                    {isLoading ? (
+                        <Skeleton className="h-10 w-10 rounded-md" />
+                    ) : (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="icon">
+                                    <MoreVertical className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
 
-                        {/* Report (only for patients) */}
-                        {activeTab === 'patients' && (
-                            <DropdownMenuItem onClick={() => generateDiseasePDF(getExportData())}>
-                                Generate Report
-                            </DropdownMenuItem>
-                        )}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            )}
+                                {activeTab === 'patients' && role === 'admin' && (
+                                    <DropdownMenuItem
+                                        onSelect={(e) => {
+                                            e.preventDefault()
+                                            document.getElementById('file-upload')?.click()
+                                        }}
+                                    >
+                                        Import Patients
+                                    </DropdownMenuItem>
+                                )}
+
+                                <DropdownMenuItem onClick={handleExportCSV}>
+                                    Export as CSV
+                                </DropdownMenuItem>
+
+                                <DropdownMenuItem onClick={handleExportExcel}>
+                                    Export as Excel
+                                </DropdownMenuItem>
+
+                                {activeTab === 'patients' && (
+                                    <DropdownMenuItem onClick={() => generateDiseasePDF(getExportData())}>
+                                        Generate Report
+                                    </DropdownMenuItem>
+                                )}
+
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+                </div>
+
+                {/* Hidden file input */}
+                <input
+                    id="file-upload"
+                    type="file"
+                    accept=".csv, .xlsx, .xls"
+                    className="hidden"
+                    onChange={(e) => importData(e, queryClient)}
+                />
+
             </div>
+
+            <KeyBoardShortcuts
+                open={shortcutDialogOpen}
+                onOpenChange={setShortcutDialogOpen}
+            />
         </div>
     )
 }

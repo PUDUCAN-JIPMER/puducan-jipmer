@@ -7,6 +7,8 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { RiskBadge } from '@/components/common/RiskBadge'
+import { Patient } from '@/schema/patient'
 
 const statusStyles: Record<string, string> = {
     Alive: 'bg-primary/10 text-primary border border-primary/20',
@@ -21,6 +23,7 @@ export function PatientHeader({
     patientStatus,
     suspectedCase,
     _hasPendingWrites,
+    patient,
 }: {
     name?: string
     address?: string
@@ -28,6 +31,7 @@ export function PatientHeader({
     patientStatus?: string
     suspectedCase?: boolean
     _hasPendingWrites?: boolean
+    patient?: Partial<Patient>
 }) {
     const initials = (name ?? 'U')
         .split(' ')
@@ -74,6 +78,7 @@ export function PatientHeader({
                                 </Tooltip>
                             </TooltipProvider>
                         )}
+                        {patient && <RiskBadge patient={patient} />}
                     </div>
 
                     {/* Address */}

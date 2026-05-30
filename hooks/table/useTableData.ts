@@ -83,7 +83,10 @@ export const useTableData = ({ orgId, ashaId, enabled = true, requiredData }: Us
             if (isPatients) {
                 let patientsQueryRef
                 if (orgId) {
-                    patientsQueryRef = query(collection(db, 'patients'))
+                    patientsQueryRef = query(
+                        collection(db, 'patients'),
+                        where('assignedHospital.id', '==', orgId)
+                    )
                 } else if (ashaId) {
                     patientsQueryRef = query(
                         collection(db, 'patients'),
@@ -121,7 +124,10 @@ export const useTableData = ({ orgId, ashaId, enabled = true, requiredData }: Us
 
         let patientsRef
         if (orgId) {
-            patientsRef = query(collection(db, 'patients'))
+            patientsRef = query(
+                collection(db, 'patients'),
+                where('assignedHospital.id', '==', orgId)
+            )
         } else if (ashaId) {
             patientsRef = query(
                 collection(db, 'patients'),

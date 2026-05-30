@@ -54,7 +54,25 @@ export const PatientSchema = z
         patientStatus: z.enum(['Alive', 'Not Alive', 'Not Available']).optional(),
         patientDeathDate: z.string().optional(),
         // treatmentStatus: z.enum(['Ongoing', 'FollowUp', 'Stopped', 'Not Available']).optional(),
-        aabhaId: z.string().optional(),
+        // ABHA ID is 14 digits only
+        aabhaId: z
+            .string()
+            .optional()
+            .refine(
+                (val) => {
+                    if (!val || val.trim() === '') return true
+                    const digitsOnly = val.replace(/-/g, '')
+                    return /^\d{14}$/.test(digitsOnly)
+                },
+                { message: 'ABHA ID must be exactly 14 digits (e.g. 91-1234-5678-9012)' }
+            )
+            .refine(
+                (val) => {
+                    if (!val || val.trim() === '') return true
+                    return /^(\d{14}|\d{2}-\d{4}-\d{4}-\d{4})$/.test(val)
+                },
+                { message: 'ABHA ID format must be XXXXXXXXXXXXXX or XX-XXXX-XXXX-XXXX' }
+            ),
         diagnosedDate: z.string().optional(),
         diagnosedYearsAgo: z.string().optional(),
         // new fields after second meet
@@ -68,9 +86,26 @@ export const PatientSchema = z
         hasAadhaar: z.boolean(),
         suspectedCase: z.boolean().optional(),
         // additional fields after second meet
-        hbcrID: z.string().optional(),
+        hbcrID: z
+            .preprocess((val) => {
+                if (typeof val === 'string') {
+                    const s = val.trim().toUpperCase()
+                    return s === '' ? undefined : s
+                }
+                return val
+            },
+                z.string().regex(/^[A-Z0-9-]{5,20}$/, {
+                    message:
+                        'HBCR ID must be 5-20 characters and contain only letters, numbers, and hyphens',
+                }))
+            .optional(),
         hospitalRegistrationId: z.string().optional(),
-        stageOfTheCancer: z.string().optional(),
+        stageOfTheCancer: z
+            .object({
+                stage: z.enum(['Stage 0', 'Stage I', 'Stage II', 'Stage III', 'Stage IV']).optional(),
+                subStage: z.enum(['A', 'B', 'C', 'D']).optional(),
+            })
+            .optional(),
         reasonOfRemoval: z.string().optional(),
         treatmentDetails: z.array(z.string().optional()).optional(),
         otherTreatmentDetails: z.string().optional(),
@@ -80,6 +115,23 @@ export const PatientSchema = z
         message: 'Please enter either age or date of birth.',
         path: ['age', 'dob'],
     })
+    // Require cancer stage selection only when cancer-related indicators are present
+    .refine(
+        (data) => {
+            const indicators = Boolean(
+                data.hbcrID || data.biopsyNumber ||
+                (data.diseases && data.diseases.some((d) => /cancer/i.test(String(d))))
+            )
+
+            if (!indicators) return true
+
+            return Boolean(data.stageOfTheCancer && data.stageOfTheCancer.stage)
+        },
+        {
+            message: 'Please select a cancer stage.',
+            path: ['stageOfTheCancer', 'stage'],
+        }
+    )
     // ✅ treatmentStartDate >= hospitalRegistrationDate
     .refine(
         (data) => {

@@ -55,7 +55,11 @@ export default function GenericPatientDialog({
     const draftKey = userId ? getDraftKey(mode, userId, patientData?.id) : null
 
     const form = useForm<PatientFormInputs>({
-        resolver: zodResolver(PatientSchema),
+        // zodResolver typing can sometimes conflict with react-hook-form's Resolver
+        // cast to any to avoid TS incompatible-resolver issues
+        resolver: zodResolver(PatientSchema) as any,
+        mode: 'onChange',
+        reValidateMode: 'onChange',
         defaultValues: {
             name: '',
             caregiverName: '',
@@ -81,7 +85,7 @@ export default function GenericPatientDialog({
             hasAadhaar: true,
             suspectedCase: false,
             biopsyNumber: '',
-            stageOfTheCancer: '',
+            stageOfTheCancer: undefined,
             treatmentDetails: [],
             otherTreatmentDetails: '',
         },
@@ -147,7 +151,7 @@ export default function GenericPatientDialog({
             hasAadhaar: true,
             suspectedCase: false,
             biopsyNumber: '',
-            stageOfTheCancer: '',
+            stageOfTheCancer: undefined,
             treatmentDetails: [],
             otherTreatmentDetails: '',
         })
@@ -160,24 +164,29 @@ export default function GenericPatientDialog({
         setSubmitting(true) // Signal start of submission
 
         try {
+            // Remove undefined values before updating Firestore (from upstream)
+            const cleanedData = Object.fromEntries(
+                Object.entries(data).filter(([_, value]) => value !== undefined)
+            )
+
             const patientRef = isEdit && patientData?.id
                 ? doc(db, 'patients', patientData.id)
                 : collection(db, 'patients')
 
             // Trigger Firestore write
             const firestoreOp = isEdit
-                ? updateDoc(patientRef as any, data)
+                ? updateDoc(patientRef as any, cleanedData)
                 : addDoc(patientRef as any, {
-                    ...data,
+                    ...cleanedData,
                     createdAt: serverTimestamp(),
                 })
 
             console.log('✅ Firestore write initiated')
 
             toast.success(isEdit ? 'Patient updated successfully.' : 'Patient added successfully.')
-            
-            // 5. Invalidate draft immediately and lock persistence
-            setSubmitted() 
+
+            // Invalidate draft immediately and lock persistence
+            setSubmitted()
 
             setIsOpen(false)
             reset()
@@ -185,7 +194,7 @@ export default function GenericPatientDialog({
             // Background task: Handle completion and invalidation
             firestoreOp.then(() => {
                 console.log('🏁 Firestore write confirmed (local/remote)')
-                const queryKey = orgId ? ['patients', orgId] : ['patients']
+                const queryKey = orgId ? ['patients', { orgId }] : ['patients']
                 queryClient.invalidateQueries({ queryKey })
                 onSuccess?.()
             }).catch(err => {
@@ -206,7 +215,7 @@ export default function GenericPatientDialog({
             <Pencil className="h-4 w-4" />
         </Button>
     ) : (
-        <Button variant="outline" className="cursor-pointer border-2 !border-green-400">
+        <Button variant="outline" className="cursor-pointer border-2 border-green-400!">
             <Plus className="h-4 w-4" /> <span className="hidden sm:block">Add Patient</span>
         </Button>
     )
@@ -220,7 +229,7 @@ export default function GenericPatientDialog({
                 <DialogContent
                     onInteractOutside={(e) => e.preventDefault()}
                     className={clsx(
-                        'max-h-[90vh] w-full max-w-[95vw] overflow-y-auto sm:max-w-[640px] md:max-w-[768px] lg:max-w-[1024px] 2xl:max-w-[90vw]'
+                        'max-h-[90vh] w-full max-w-[95vw] overflow-y-auto sm:max-w-2xl md:max-w-3xl lg:max-w-5xl 2xl:max-w-[90vw]'
                     )}
                 >
                     <DialogHeader>
