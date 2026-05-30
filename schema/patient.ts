@@ -192,4 +192,5 @@ export type PatientFormInputs = z.infer<typeof PatientSchema>
 // This type is for fetched data from the database, which always has an ID
 export type Patient = PatientFormInputs & {
     id: string
+    _hasPendingWrites?: boolean
 }

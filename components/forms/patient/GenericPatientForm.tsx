@@ -13,7 +13,9 @@ interface PatientFormProps {
     reset: UseFormReset<PatientFormInputs>
     handleSubmit: UseFormHandleSubmit<PatientFormInputs, any>
     onSubmit: (data: PatientFormInputs) => Promise<void>
+    onClear?: () => void
     isEdit?: boolean
+    isSaving?: boolean
 }
 
 const STEPS = [
@@ -30,7 +32,9 @@ export default function GenericPatientForm({
     reset,
     handleSubmit,
     onSubmit,
+    onClear,
     isEdit = false,
+    isSaving = false,
 }: PatientFormProps) {
     const steps = isEdit ? EDIT_STEPS : STEPS
 
@@ -181,9 +185,10 @@ export default function GenericPatientForm({
                                 ) : (
                                     <Button
                                         type="submit"
+                                        disabled={isSaving}
                                         className="h-10 bg-green-600 px-6 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800"
                                     >
-                                        {isEdit ? 'Update Patient' : 'Save Patient'}
+                                        {isSaving ? (isEdit ? 'Updating...' : 'Saving...') : isEdit ? 'Update Patient' : 'Save Patient'}
                                     </Button>
                                 )}
                             </div>
@@ -192,7 +197,13 @@ export default function GenericPatientForm({
                         <div className="mt-4 flex justify-end">
                             <Button
                                 variant="outline"
-                                onClick={() => reset()}
+                                onClick={() => {
+                                    if (onClear) {
+                                        onClear()
+                                    } else {
+                                        reset()
+                                    }
+                                }}
                                 type="button"
                                 className="border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
                             >
