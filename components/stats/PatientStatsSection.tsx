@@ -1,5 +1,6 @@
 'use client'
 
+import { memo, useCallback, useState, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatCard } from './StatCard'
 import {
@@ -25,6 +26,7 @@ import {
     LineChart,
     Line,
 } from 'recharts'
+import type { PieLabelRenderProps } from 'recharts/types/polar/Pie'
 import { RegistrationAnalytics } from '@/components/analytics/RegistrationAnalytics'
 import type { Patient } from '@/schema/patient'
 
@@ -53,22 +55,54 @@ const GENDER_COLORS: Record<string, string> = {
     Other: '#94a3b8',
 }
 
-interface TooltipPayload {
-    name?: string
-    value?: number | string
-    color?: string
-    fill?: string
+const CustomXAxisTick = memo(({
+    x = 0, y = 0, payload, maxWidth = 60, fontSize = 11,
+}: CustomXAxisTickProps) => {
+    if (!payload) return null
+    const label = normalizeMedicalTerm(payload.value)
+    const charLimit = Math.floor(maxWidth / (fontSize * 0.6))
+    const truncated = label.length > charLimit ? label.slice(0, charLimit - 1) + '…' : label
+    return (
+        <g transform={`translate(${x},${y})`}>
+            <title>{label}</title>
+            <text x={0} y={0} dy={12} textAnchor="end"
+                fill={CHART_COLORS.axis} fontSize={fontSize}
+                transform="rotate(-30)">
+                {truncated}
+            </text>
+        </g>
+    )
+})
+CustomXAxisTick.displayName = 'CustomXAxisTick'
+
+// ── Pie percent label ─────────────────────────────────────────────────────────
+
+function PiePercentLabel({
+    cx = 0, cy = 0, midAngle = 0,
+    innerRadius = 0, outerRadius = 0,
+    percent = 0, value,
+}: PieLabelRenderProps) {
+    if (percent < 0.06) return null
+    const r = innerRadius + (outerRadius - innerRadius) * 0.5
+    const x = (cx as number) + r * Math.cos(-midAngle * RADIAN)
+    const y = (cy as number) + r * Math.sin(-midAngle * RADIAN)
+    return (
+        <text x={x} y={y} fill="white" textAnchor="middle"
+            dominantBaseline="central" fontSize={11} fontWeight={600}>
+            {value}
+        </text>
+    )
 }
 
-const CustomTooltip = ({
-    active,
-    payload,
-    label,
-}: {
+// ── Tooltip ───────────────────────────────────────────────────────────────────
+
+interface ChartTooltipProps {
     active?: boolean
-    payload?: TooltipPayload[]
+    payload?: Array<{ name: string; value: number; color?: string; fill?: string }>
     label?: string | number
-}) => {
+}
+
+const ChartTooltip = memo(({ active, payload, label }: ChartTooltipProps) => {
     if (!active || !payload?.length) return null
 
     return (
@@ -83,9 +117,26 @@ const CustomTooltip = ({
             ))}
         </div>
     )
+})
+ChartTooltip.displayName = 'ChartTooltip'
+
+// ── Color helpers ─────────────────────────────────────────────────────────────
+
+const darkenColor = (color: string, percent: number): string => {
+    if (color.startsWith('#')) {
+        const r = parseInt(color.slice(1, 3), 16)
+        const g = parseInt(color.slice(3, 5), 16)
+        const b = parseInt(color.slice(5, 7), 16)
+        return `#${Math.floor(r * (1 - percent)).toString(16).padStart(2, '0')}${Math.floor(g * (1 - percent)).toString(16).padStart(2, '0')}${Math.floor(b * (1 - percent)).toString(16).padStart(2, '0')}`
+    }
+    const m = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i)
+    if (m) {
+        return `rgb(${Math.floor(+m[1] * (1 - percent))}, ${Math.floor(+m[2] * (1 - percent))}, ${Math.floor(+m[3] * (1 - percent))})`
+    }
+    return color
 }
 
-const RADIAN = Math.PI / 180
+// ── Reusable Chart Wrappers ───────────────────────────────────────────────────
 
 const PieLabel = ({
     cx,
@@ -114,6 +165,15 @@ const PieLabel = ({
             {`${(percent * 100).toFixed(0)}%`}
         </text>
     )
+})
+VerticalBarChart.displayName = 'VerticalBarChart'
+
+interface DonutChartProps {
+    data: DataPoint[]
+    colorFn: (name: string, index: number) => string
+    innerRadius?: number
+    outerRadius?: number
+    height?: number
 }
 
 interface PatientStats {

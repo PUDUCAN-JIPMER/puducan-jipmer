@@ -27,14 +27,18 @@ export default function HomeNavbar() {
                 href={href}
                 onClick={() => setMobileOpen(false)}
                 className={`group relative block rounded px-2 py-1 text-sm text-white transition-all duration-300 md:px-3 md:py-2 lg:px-4 ${
-                    isActive ? 'font-semibold text-white' : ''
+                    isActive ? 'bg-white/20 font-semibold text-white shadow-sm' : 'text-white hover:bg-white/10'
                 }`}
             >
                 <span className="relative z-10 p-2 sm:hover:bg-transparent">{label}</span>
-                <span className="absolute bottom-0 left-0 hidden h-0.5 w-0 bg-white transition-all duration-300 group-hover:w-full sm:block"></span>
+                {/* <span className="absolute bottom-0 left-0 hidden h-0.5 w-0 bg-white transition-all duration-300 group-hover:w-full sm:block"></span> */}
             </Link>
         )
     }
+
+    const isDataEntryActive = NAV_LINKS.some((link) =>
+    pathname.startsWith(link.path)
+    )
 
     return (
         <nav className="border-b bg-[#0e65bc] py-2 text-white shadow sm:px-2 lg:px-6">
@@ -63,11 +67,12 @@ export default function HomeNavbar() {
                     {navItem('Reports', '/home/reports')}
 
                     <DropdownMenu>
-                        <DropdownMenuTrigger className="group relative flex items-center rounded px-2 py-1 text-[13px] text-white transition-all duration-300 focus:outline-none md:px-3 md:py-2 lg:px-4">
+                        <DropdownMenuTrigger className={`group relative flex items-center rounded px-2 py-1 text-[13px] text-white transition-all duration-300 focus:outline-none md:px-3 md:py-2 lg:px-4 ${
+                        isDataEntryActive ? 'bg-white/20 font-semibold text-white shadow-sm' : 'text-white hover:bg-white/10'}`}>
                             <span className="relative z-10">Data Entry</span>
 
                             <ChevronDown className="ml-1 h-4 w-4" />
-                            <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-white transition-all duration-300 group-hover:w-full"></span>
+                            {/* <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-white transition-all duration-300 group-hover:w-full"></span> */}
                         </DropdownMenuTrigger>
 
                         <DropdownMenuContent className="w-44">
