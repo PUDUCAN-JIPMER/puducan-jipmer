@@ -31,7 +31,7 @@ type UsePatientsProps = {
 
 export const useTableData = ({ orgId, ashaId, enabled = true, requiredData }: UsePatientsProps) => {
     // console.log('inside custom user hook')
-    const isPatientsEnabled = requiredData === 'patients' ? true : enabled && (!!orgId || !!ashaId)
+    const isPatientsEnabled = enabled && (requiredData === 'patients' ? true : (!!orgId || !!ashaId))
     const isHospitalsEnabled = enabled && requiredData === 'hospitals'
     const isUsersEnabled =
         enabled &&
@@ -136,6 +136,7 @@ export const useTableData = ({ orgId, ashaId, enabled = true, requiredData }: Us
                     ...doc.data(),
                 })) as Patient[]
             },
+            enabled: enabled,
             staleTime: 60 * 1000,
         })
         return patientsQuery
