@@ -6,6 +6,7 @@ import { updatePatient } from '@/lib/api/patient.api'
 import { Patient } from '@/schema'
 import { PatientFormInputs, PatientSchema } from '@/schema/patient'
 import { zodResolver } from '@hookform/resolvers/zod'
+import type { Resolver } from 'react-hook-form'
 import { useQueryClient } from '@tanstack/react-query'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
@@ -13,6 +14,8 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { ColumnFive, ColumnFour, ColumnOne, ColumnThree, ColumnTwo } from '../forms/patient'
 import { ActionButtons } from '.'
+import { RiskBadge } from '@/components/common/RiskBadge'
+import { computePatientRisk } from '@/lib/patient/riskScoring'
 
 const STEP_LABELS = ['Personal', 'Medical', 'Diagnosis', 'Treatment', 'Follow-ups']
 
@@ -32,8 +35,11 @@ export function PatientWizardDialog({
     const [animating, setAnimating] = useState(false)
     const queryClient = useQueryClient()
 
+    const risk = computePatientRisk(patient)
+
     const form = useForm<PatientFormInputs>({
-        resolver: zodResolver(PatientSchema),
+        // Cast resolver to avoid duplicate react-hook-form type issues during build
+        resolver: zodResolver(PatientSchema) as unknown as Resolver<PatientFormInputs>,
         defaultValues: {
             ...patient,
             followUps: patient.followUps ?? [],
@@ -120,12 +126,19 @@ export function PatientWizardDialog({
                 {/* Header with custom close button only */}
                 <div className="flex items-start justify-between px-4 sm:px-6 pt-5 pb-4 border-b border-border shrink-0">
                     <div className="min-w-0">
-                        <h2 className="text-base font-semibold text-foreground truncate">
+                        <h2 className="text-base font-semibold text-foreground truncate flex items-center gap-2">
                             {patient.name || 'Unnamed Patient'}
+                            <RiskBadge patient={patient} />
                         </h2>
                         <p className="text-xs text-muted-foreground mt-0.5 truncate">
                             {patient.address}
                         </p>
+                        {risk.reasons.length > 0 && (
+                            <p className="text-[11px] text-destructive/80 mt-1 flex flex-wrap gap-x-2 font-medium">
+                                <span className="font-semibold">Risk Flags:</span>
+                                {risk.reasons.map(r => r.split(' (+')[0]).join(' | ')}
+                            </p>
+                        )}
                     </div>
                     <button
                         type="button"

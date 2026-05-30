@@ -24,6 +24,7 @@ import { VerifyPatientButton } from '@/components/verification/VerifyPatientButt
 import { VerificationModal } from '@/components/verification/VerificationModal'
 import { mapVerifiedDataToPatientFields } from '@/lib/verification/mapper'
 import type { VerifiedPatientData, VerificationSource } from '@/lib/verification/types'
+// removed unused imports
 
 interface GenericPatientDialogProps {
     mode: 'add' | 'edit'
@@ -32,7 +33,7 @@ interface GenericPatientDialogProps {
     onSuccess?: () => void
     // for keyboard shortcuts
     open?: boolean
-    onOpenChange?: (open:boolean) => void
+    onOpenChange?: (open: boolean) => void
 }
 
 export default function GenericPatientDialog({
@@ -75,7 +76,11 @@ export default function GenericPatientDialog({
     }, [isOpen, isEdit])
 
     const form = useForm<PatientFormInputs>({
-        resolver: zodResolver(PatientSchema),
+        // zodResolver typing can sometimes conflict with react-hook-form's Resolver
+        // cast to any to avoid TS incompatible-resolver issues
+        resolver: zodResolver(PatientSchema) as any,
+        mode: 'onChange',
+        reValidateMode: 'onChange',
         defaultValues: {
             name: '',
             caregiverName: '',
@@ -101,7 +106,7 @@ export default function GenericPatientDialog({
             hasAadhaar: true,
             suspectedCase: false,
             biopsyNumber: '',
-            stageOfTheCancer: '',
+            stageOfTheCancer: undefined,
             treatmentDetails: [],
             otherTreatmentDetails: '',
         },
@@ -171,10 +176,10 @@ export default function GenericPatientDialog({
 
     // Initialize form with patient data for edit mode
     useEffect(() => {
-        if (isEdit && patientData && open) {
+        if (isEdit && patientData && isOpen) {
             reset(patientData)
         }
-    }, [isEdit, patientData, open, reset])
+    }, [isEdit, patientData, isOpen, reset])
 
     // Aadhaar duplicate check (skip for edit mode if Aadhaar hasn't changed)
     useEffect(() => {
@@ -214,8 +219,13 @@ export default function GenericPatientDialog({
     const onSubmit = async (data: PatientFormInputs) => {
         try {
             if (isEdit && patientData?.id) {
+                // Remove undefined values before updating Firestore
+                const cleanedData = Object.fromEntries(
+                    Object.entries(data).filter(([_, value]) => value !== undefined)
+                )
+
                 // Update existing patient
-                await updateDoc(doc(db, 'patients', patientData.id), data)
+                await updateDoc(doc(db, 'patients', patientData.id), cleanedData)
                 toast.success('Patient updated successfully.')
             } else {
                 // Add new patient
@@ -227,12 +237,9 @@ export default function GenericPatientDialog({
                 localStorage.removeItem('addPatientFormData')
             }
 
-            // queryClient.invalidateQueries({ queryKey: ['patients'] })
-            if (orgId) {
-                queryClient.invalidateQueries({ queryKey: ['patients', orgId] })
-            } else {
-                queryClient.invalidateQueries({ queryKey: ['patients'] })
-            }
+            queryClient.invalidateQueries({
+                queryKey: ['patients'],
+            })
 
             setIsOpen(false)
             reset()
@@ -248,7 +255,7 @@ export default function GenericPatientDialog({
             <Pencil className="h-4 w-4" />
         </Button>
     ) : (
-        <Button variant="outline" className="cursor-pointer border-2 !border-green-400">
+        <Button variant="outline" className="cursor-pointer border-2 border-green-400!">
             <Plus className="h-4 w-4" /> <span className="hidden sm:block">Add Patient</span>
         </Button>
     )
@@ -332,6 +339,28 @@ export default function GenericPatientDialog({
                         onOpenChange={(next) => { if (!next) setVerificationModalOpen(false) }}
                         onVerified={handleVerifiedFromModal}
                         onSelectManual={handleSelectManual}
+            {/* added isOpen to handle both keyboard shortcut and click */}
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
+
+                <DialogContent
+                    onInteractOutside={(e) => e.preventDefault()}
+                    className={clsx(
+                        'max-h-[90vh] w-full max-w-[95vw] overflow-y-auto sm:max-w-2xl md:max-w-3xl lg:max-w-5xl 2xl:max-w-[90vw]'
+                    )}
+                >
+                    <DialogHeader>
+                        <DialogTitle>
+                            {isEdit ? 'Update Patient Details' : 'Add New Patient Details'}
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <GenericPatientForm
+                        form={form}
+                        reset={reset}
+                        handleSubmit={handleSubmit}
+                        onSubmit={onSubmit}
+                        isEdit={isEdit}
                     />
                 </>
             )}

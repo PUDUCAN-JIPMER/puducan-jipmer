@@ -20,9 +20,6 @@ function AshaPageContent() {
         enabled: !isLoadingAuth && !!user?.email,
         requiredData: 'patients' as const,
     }
-
-    console.log('user asha:', user)
-
     const {
         data: patients = [],
         isLoading,
@@ -33,7 +30,6 @@ function AshaPageContent() {
         isError: boolean
     }
 
-    console.log('Fetched patients for ASHA:', patients)
 
     if (isLoading || isLoadingAuth) {
         return (
