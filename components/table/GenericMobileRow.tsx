@@ -2,6 +2,14 @@
 import { memo } from 'react'
 import { GenericCell } from './GenericCell'
 import { RowActions } from './RowActions'
+import { RefreshCw } from 'lucide-react'
+import { Checkbox } from '../ui/checkbox'
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 type Header = {
     name: string
@@ -11,9 +19,12 @@ type Header = {
 type RowDataBase = {
     id: string | number
     [key: string]: unknown
+    _hasPendingWrites?: boolean
 }
 
 type GenericMobileRowProps = {
+    isSelected?: boolean
+    onToggleSelect: () => void
     activeTab: string
     isPatientTab: boolean
     isRemovedPatientsTab?: boolean
@@ -28,6 +39,8 @@ type GenericMobileRowProps = {
 // ✅ Mobile card row (not inside <table>)
 export const GenericMobileRow = memo(function GenericMobileRow(props: GenericMobileRowProps) {
     const {
+        isSelected = false,
+        onToggleSelect,
         activeTab,
         isPatientTab,
         rowData,
@@ -45,7 +58,28 @@ export const GenericMobileRow = memo(function GenericMobileRow(props: GenericMob
         >
             {/* <div className="text-muted-foreground text-sm">#{index + 1}</div> */}
             <div className="flex items-start justify-between">
-                <div className="text-muted-foreground text-sm">#{index + 1}</div>
+                <div className='absolute top-3 right-3'>
+                    <Checkbox 
+                        checked={isSelected}
+                        onCheckedChange={onToggleSelect}
+                        aria-label={`Select row ${index + 1}`}
+                     />
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="text-muted-foreground text-sm">#{index + 1}</div>
+                    {isPatientTab && Boolean(rowData._hasPendingWrites) && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <RefreshCw className="h-3.5 w-3.5 animate-spin text-amber-500" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Pending Sync: Changes will be uploaded when online.</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
+                </div>
 
                 <RowActions
                     rowData={rowData}
@@ -69,6 +103,7 @@ export const GenericMobileRow = memo(function GenericMobileRow(props: GenericMob
                                 value={rowData[header.key]}
                                 keyName={header.key}
                                 isPatientTab={isPatientTab}
+                                rowData={rowData}
                             />
                         </div>
                     ))}
