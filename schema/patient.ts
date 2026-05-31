@@ -159,6 +159,7 @@ export const PatientSchema = z
 
 export type PatientFormInputs = z.infer<typeof PatientSchema>
 
+// Fixed Patient Type with Firebase/Firestore metadata safety
 export type Patient = PatientFormInputs & {
     id: string
 }
