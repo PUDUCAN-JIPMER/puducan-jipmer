@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useCallback, useState, useMemo } from 'react'
+import { memo} from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatCard } from './StatCard'
 import {
@@ -27,8 +27,8 @@ import {
     Line,
 } from 'recharts'
 import type { PieLabelRenderProps } from 'recharts/types/polar/Pie'
-import { RegistrationAnalytics } from '@/components/analytics/RegistrationAnalytics'
-import type { Patient } from '@/schema/patient'
+
+
 
 const COLORS = [
     '#4ade80',
@@ -54,7 +54,20 @@ const GENDER_COLORS: Record<string, string> = {
     Female: '#f472b6',
     Other: '#94a3b8',
 }
-
+const CHART_COLORS = {
+    axis: '#94a3b8',
+}
+const RADIAN = Math.PI / 180
+const normalizeMedicalTerm = (value: string) => value
+interface CustomXAxisTickProps {
+    x?: number
+    y?: number
+    payload?: {
+        value: string
+    }
+    maxWidth?: number
+    fontSize?: number
+}
 const CustomXAxisTick = memo(({
     x = 0, y = 0, payload, maxWidth = 60, fontSize = 11,
 }: CustomXAxisTickProps) => {
@@ -165,8 +178,11 @@ const PieLabel = ({
             {`${(percent * 100).toFixed(0)}%`}
         </text>
     )
-})
-VerticalBarChart.displayName = 'VerticalBarChart'
+};
+type DataPoint = {
+    name: string
+    value: number
+}
 
 interface DonutChartProps {
     data: DataPoint[]
@@ -455,7 +471,7 @@ export function PatientStatsSection({
                                 ))}
                             </Pie>
 
-                            <Tooltip content={<CustomTooltip />} />
+                            <Tooltip content={<ChartTooltip />} />
 
                             <Legend
                                 wrapperStyle={{ fontSize: 12 }}
@@ -487,7 +503,7 @@ export function PatientStatsSection({
                                 ))}
                             </Pie>
 
-                            <Tooltip content={<CustomTooltip />} />
+                            <Tooltip content={<ChartTooltip />} />
 
                             <Legend
                                 wrapperStyle={{ fontSize: 12 }}
@@ -527,7 +543,7 @@ export function PatientStatsSection({
                                 tick={{ fontSize: 11 }}
                             />
 
-                            <Tooltip content={<CustomTooltip />} />
+                            <Tooltip content={<ChartTooltip />} />
 
                             <Bar
                                 dataKey="value"
@@ -576,7 +592,7 @@ export function PatientStatsSection({
                                 tick={{ fontSize: 11 }}
                             />
 
-                            <Tooltip content={<CustomTooltip />} />
+                            <Tooltip content={<ChartTooltip />} />
 
                             <Bar
                                 dataKey="value"
@@ -630,7 +646,7 @@ export function PatientStatsSection({
                                 )}
                             </Pie>
 
-                            <Tooltip content={<CustomTooltip />} />
+                            <Tooltip content={<ChartTooltip />} />
 
                             <Legend
                                 wrapperStyle={{ fontSize: 12 }}
@@ -657,7 +673,7 @@ export function PatientStatsSection({
                                 tick={{ fontSize: 11 }}
                             />
 
-                            <Tooltip content={<CustomTooltip />} />
+                            <Tooltip content={<ChartTooltip />} />
 
                             <Bar
                                 dataKey="value"
@@ -692,7 +708,7 @@ export function PatientStatsSection({
                             tick={{ fontSize: 11 }}
                         />
 
-                        <Tooltip content={<CustomTooltip />} />
+                        <Tooltip content={<ChartTooltip />} />
 
                         <Line
                             type="monotone"
