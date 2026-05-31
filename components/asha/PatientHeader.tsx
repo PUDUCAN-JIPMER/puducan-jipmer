@@ -1,6 +1,12 @@
 'use client'
 
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, RefreshCw } from 'lucide-react'
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { RiskBadge } from '@/components/common/RiskBadge'
 import { Patient } from '@/schema/patient'
 
@@ -13,20 +19,18 @@ const statusStyles: Record<string, string> = {
 export function PatientHeader({
     name,
     address,
-    isOpen,
-    onToggle,
     diseases,
     patientStatus,
     suspectedCase,
+    _hasPendingWrites,
     patient,
 }: {
     name?: string
     address?: string
-    isOpen?: boolean
-    onToggle?: () => void
     diseases?: string[]
     patientStatus?: string
     suspectedCase?: boolean
+    _hasPendingWrites?: boolean
     patient?: Partial<Patient>
 }) {
     const initials = (name ?? 'U')
@@ -62,6 +66,18 @@ export function PatientHeader({
                         <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${statusClass}`}>
                             {statusLabel}
                         </span>
+                        {_hasPendingWrites && (
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <RefreshCw className="h-3.5 w-3.5 animate-spin text-amber-500" />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Pending Sync: Changes will be uploaded when online.</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        )}
                         {patient && <RiskBadge patient={patient} />}
                     </div>
 

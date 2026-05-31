@@ -14,11 +14,13 @@ import { NAV_LINKS } from '@/constants/navbar'
 import { useState } from 'react'
 import Image from 'next/image'
 import { ModeToggle } from '../ui/toggle'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function HomeNavbar() {
     const pathname = usePathname()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [mobileDataEntryOpen, setMobileDataEntryOpen] = useState(false)
+    const { user } = useAuth()
 
     const navItem = (label: string, href: string, exact = false) => {
         const isActive = exact ? pathname === href : pathname.startsWith(href)
@@ -64,7 +66,7 @@ export default function HomeNavbar() {
 
                     {navItem('About', '/home/about')}
 
-                    {navItem('Reports', '/home/reports')}
+                    {user && navItem('Reports', '/home/reports')}
 
                     <DropdownMenu>
                         <DropdownMenuTrigger className={`group relative flex items-center rounded px-2 py-1 text-[13px] text-white transition-all duration-300 focus:outline-none md:px-3 md:py-2 lg:px-4 ${
@@ -111,7 +113,7 @@ export default function HomeNavbar() {
 
                     {navItem('About', '/home/about')}
 
-                    {navItem('Reports', '/home/reports')}
+                    {user && navItem('Reports', '/home/reports')}
 
                     {/* Mobile Data Entry */}
                     <button
@@ -150,5 +152,3 @@ export default function HomeNavbar() {
         </nav>
     )
 }
-
-
