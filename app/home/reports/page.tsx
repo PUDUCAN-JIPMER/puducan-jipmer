@@ -124,6 +124,12 @@ export default function ReportsPage() {
         )
     }
 
+    // Check if all status values are zero
+    const hasStatusData = aggregatedData.statusData.some((item) => item.value > 0)
+
+    // Check if there's any role data
+    const hasRoleData = aggregatedData.roleData.some((item) => item.entries > 0)
+
     return (
         <div className="w-full space-y-6 p-4">
             <div>
@@ -176,22 +182,28 @@ export default function ReportsPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="relative h-64 w-full flex-1">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart
-                                data={aggregatedData.cancerData}
-                                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                            >
-                                <XAxis
-                                    dataKey="name"
-                                    fontSize={12}
-                                    tickLine={false}
-                                    axisLine={false}
-                                />
-                                <YAxis fontSize={12} tickLine={false} axisLine={false} />
-                                <Tooltip />
-                                <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
+                        {aggregatedData.cancerData.length === 0 ? (
+                            <div className="flex h-full w-full items-center justify-center">
+                                <TypographyMuted>No data available</TypographyMuted>
+                            </div>
+                        ) : (
+                            <ResponsiveContainer width="100%" height={250}>
+                                <BarChart
+                                    data={aggregatedData.cancerData}
+                                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                                >
+                                    <XAxis
+                                        dataKey="name"
+                                        fontSize={12}
+                                        tickLine={false}
+                                        axisLine={false}
+                                    />
+                                    <YAxis fontSize={12} tickLine={false} axisLine={false} />
+                                    <Tooltip />
+                                    <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -202,28 +214,34 @@ export default function ReportsPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="relative h-64 w-full flex-1">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={aggregatedData.statusData}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={80}
-                                    paddingAngle={4}
-                                    dataKey="value"
-                                >
-                                    {aggregatedData.statusData.map((_, index) => (
-                                        <Cell
-                                            key={`cell-${index}`}
-                                            fill={COLORS[index % COLORS.length]}
-                                        />
-                                    ))}
-                                </Pie>
-                                <Tooltip />
-                                <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                            </PieChart>
-                        </ResponsiveContainer>
+                        {!hasStatusData ? (
+                            <div className="flex h-full w-full items-center justify-center">
+                                <TypographyMuted>No data available</TypographyMuted>
+                            </div>
+                        ) : (
+                            <ResponsiveContainer width="100%" height={250}>
+                                <PieChart>
+                                    <Pie
+                                        data={aggregatedData.statusData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={80}
+                                        paddingAngle={4}
+                                        dataKey="value"
+                                    >
+                                        {aggregatedData.statusData.map((_, index) => (
+                                            <Cell
+                                                key={`cell-${index}`}
+                                                fill={COLORS[index % COLORS.length]}
+                                            />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip />
+                                    <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -234,34 +252,40 @@ export default function ReportsPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="relative h-64 w-full flex-1">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart
-                                data={aggregatedData.roleData}
-                                layout="vertical"
-                                margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
-                            >
-                                <XAxis
-                                    type="number"
-                                    fontSize={12}
-                                    tickLine={false}
-                                    axisLine={false}
-                                />
-                                <YAxis
-                                    dataKey="name"
-                                    type="category"
-                                    fontSize={12}
-                                    tickLine={false}
-                                    axisLine={false}
-                                />
-                                <Tooltip />
-                                <Bar
-                                    dataKey="entries"
-                                    fill="#8b5cf6"
-                                    radius={[0, 4, 4, 0]}
-                                    name="Entries"
-                                />
-                            </BarChart>
-                        </ResponsiveContainer>
+                        {!hasRoleData ? (
+                            <div className="flex h-full w-full items-center justify-center">
+                                <TypographyMuted>No data available</TypographyMuted>
+                            </div>
+                        ) : (
+                            <ResponsiveContainer width="100%" height={250}>
+                                <BarChart
+                                    data={aggregatedData.roleData}
+                                    layout="vertical"
+                                    margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+                                >
+                                    <XAxis
+                                        type="number"
+                                        fontSize={12}
+                                        tickLine={false}
+                                        axisLine={false}
+                                    />
+                                    <YAxis
+                                        dataKey="name"
+                                        type="category"
+                                        fontSize={12}
+                                        tickLine={false}
+                                        axisLine={false}
+                                    />
+                                    <Tooltip />
+                                    <Bar
+                                        dataKey="entries"
+                                        fill="#8b5cf6"
+                                        radius={[0, 4, 4, 0]}
+                                        name="Entries"
+                                    />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        )}
                     </CardContent>
                 </Card>
             </div>
