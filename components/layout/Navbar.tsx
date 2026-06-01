@@ -23,7 +23,6 @@ export default function Navbar() {
     return (
         <nav className="border-b bg-background shadow-sm">
             <div className="flex items-center justify-between px-4 py-3 md:px-8">
-                {/* Logo */}
                 <Link
                     href="/"
                     className="text-2xl font-bold tracking-tight text-green-600"
@@ -31,7 +30,7 @@ export default function Navbar() {
                     PuduCan
                 </Link>
 
-                {/* Hamburger */}
+                {/* Hamburger Updated*/}
                 <button
                     onClick={() => setMenuOpen(!menuOpen)}
                     className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted md:hidden"
