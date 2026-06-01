@@ -6,23 +6,59 @@ interface StatCardProps {
     title: string
     value: number | string
     subtitle?: string
+    trend?: string
+    trendLabel?: string
     icon: LucideIcon
     iconClassName?: string
 }
 
-export function StatCard({ title, value, subtitle, icon: Icon, iconClassName }: StatCardProps) {
+export function StatCard({
+    title,
+    value,
+    subtitle,
+    trend,
+    trendLabel,
+    icon: Icon,
+    iconClassName,
+}: StatCardProps) {
     return (
         <Card>
-            <CardContent className="flex items-center gap-3 px-4 py-3">
-                <div className={cn('shrink-0 rounded-lg p-2 bg-muted', iconClassName)}>
-                    <Icon className="h-4 w-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs text-muted-foreground">{title}</p>
-                    <p className="text-xl font-bold leading-tight">{value}</p>
-                    {subtitle && (
-                        <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
+            <CardContent className="flex items-start justify-between px-4 py-4">
+                {/* Left Content */}
+                <div className="min-w-0 flex-1 space-y-2">
+                    {/* Title */}
+                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                        {title}
+                    </p>
+
+                    {/* Main Value */}
+                    <p className="text-2xl font-semibold leading-none">
+                        {value}
+                    </p>
+
+                    {/* Trend BELOW value */}
+                    {trend && (
+                        <p className="text-xs font-medium text-muted-foreground">
+                            {trend}
+                        </p>
                     )}
+
+                    {/* Subtitle */}
+                    {(subtitle || trendLabel) && (
+                        <p className="text-xs text-muted-foreground/80">
+                            {subtitle} {trendLabel}
+                        </p>
+                    )}
+                </div>
+
+                {/* Icon */}
+                <div
+                    className={cn(
+                        'shrink-0 rounded-lg bg-muted p-2',
+                        iconClassName
+                    )}
+                >
+                    <Icon className="h-4 w-4" />
                 </div>
             </CardContent>
         </Card>
