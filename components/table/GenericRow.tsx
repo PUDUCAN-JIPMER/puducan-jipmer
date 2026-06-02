@@ -4,6 +4,13 @@ import { memo } from 'react'
 import { GenericCell } from './GenericCell'
 import { RowActions } from './RowActions'
 import { Checkbox } from '../ui/checkbox'
+import { RefreshCcw } from 'lucide-react'
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 type Header = {
   name: string
@@ -13,6 +20,7 @@ type Header = {
 type RowDataBase = {
   id: string | number
   [key: string]: unknown
+  _hasPendingWrites?: boolean
 }
 
 type GenericRowProps = {
@@ -71,12 +79,27 @@ export const GenericRow = memo(function GenericRow(props: GenericRowProps) {
           className={`border-border border-r text-center ${header.key === 'name' ? 'font-semibold' : ''
             }`}
         >
-          <GenericCell
-            value={rowData[header.key]}
-            keyName={header.key}
-            isPatientTab={isPatientTab}
-            rowData={rowData}
-          />
+          <div className="flex items-center justify-center gap-2">
+            <GenericCell
+              value={rowData[header.key]}
+              keyName={header.key}
+              isPatientTab={isPatientTab}
+              rowData={rowData}
+            />
+            {isPatientTab && header.key === 'name' && Boolean(rowData._hasPendingWrites) && (
+              <TooltipProvider>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <RefreshCcw className="h-4 w-4 animate-spin text-amber-500" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Pending Sync: Changes will be uploaded when online.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
         </TableCell>
       ))}
 

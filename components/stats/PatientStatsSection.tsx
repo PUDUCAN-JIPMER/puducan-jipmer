@@ -1,62 +1,165 @@
 'use client'
 
+import { memo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatCard } from './StatCard'
 import {
-    Users, Heart, Skull, HelpCircle,
-    UserCheck, UserX, Activity,
+    Users,
+    Heart,
+    Activity,
+    ShieldCheck,
+    UserCheck,
 } from 'lucide-react'
 import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-    ResponsiveContainer, PieChart, Pie, Cell, Legend,
-    LineChart, Line,
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    PieChart,
+    Pie,
+    Cell,
+    Legend,
+    LineChart,
+    Line,
 } from 'recharts'
+import type { PieLabelRenderProps } from 'recharts/types/polar/Pie'
 import { TreatmentFunnelChart } from './TreatmentFunnelChart'
 
 const COLORS = [
-    '#4ade80', '#22d3ee', '#f97316', '#a78bfa',
-    '#fb7185', '#fbbf24', '#34d399', '#60a5fa',
-    '#f472b6', '#e879f9',
+    '#4ade80',
+    '#22d3ee',
+    '#f97316',
+    '#a78bfa',
+    '#fb7185',
+    '#fbbf24',
+    '#34d399',
+    '#60a5fa',
+    '#f472b6',
+    '#e879f9',
 ]
+
 const STATUS_COLORS: Record<string, string> = {
-    Alive: '#4ade80', 'Not Alive': '#f87171', 'Not Available': '#94a3b8',
-}
-const GENDER_COLORS: Record<string, string> = {
-    Male: '#60a5fa', Female: '#f472b6', Other: '#94a3b8',
+    Alive: '#4ade80',
+    'Not Alive': '#f87171',
+    'Not Available': '#94a3b8',
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const GENDER_COLORS: Record<string, string> = {
+    Male: '#60a5fa',
+    Female: '#f472b6',
+    Other: '#94a3b8',
+}
+
+const CHART_COLORS = {
+    axis: '#94a3b8',
+}
+
+const RADIAN = Math.PI / 180
+const normalizeMedicalTerm = (value: string) => value
+
+interface CustomXAxisTickProps {
+    x?: number
+    y?: number
+    payload?: {
+        value: string
+    }
+    maxWidth?: number
+    fontSize?: number
+}
+
+const CustomXAxisTick = memo(({
+    x = 0, y = 0, payload, maxWidth = 60, fontSize = 11,
+}: CustomXAxisTickProps) => {
+    if (!payload) return null
+    const label = normalizeMedicalTerm(payload.value)
+    const charLimit = Math.floor(maxWidth / (fontSize * 0.6))
+    const truncated = label.length > charLimit ? label.slice(0, charLimit - 1) + '…' : label
+    return (
+        <g transform={`translate(${x},${y})`}>
+            <title>{label}</title>
+            <text x={0} y={0} dy={12} textAnchor="end"
+                fill={CHART_COLORS.axis} fontSize={fontSize}
+                transform="rotate(-30)">
+                {truncated}
+            </text>
+        </g>
+    )
+})
+CustomXAxisTick.displayName = 'CustomXAxisTick'
+
+function PiePercentLabel({
+    cx = 0, cy = 0, midAngle = 0,
+    innerRadius = 0, outerRadius = 0,
+    percent = 0, value,
+}: PieLabelRenderProps) {
+    if (percent < 0.06) return null
+    const r = innerRadius + (outerRadius - innerRadius) * 0.5
+    const x = (cx as number) + r * Math.cos(-midAngle * RADIAN)
+    const y = (cy as number) + r * Math.sin(-midAngle * RADIAN)
+    return (
+        <text x={x} y={y} fill="white" textAnchor="middle"
+            dominantBaseline="central" fontSize={11} fontWeight={600}>
+            {value}
+        </text>
+    )
+}
+
+interface ChartTooltipProps {
+    active?: boolean
+    payload?: Array<{ name: string; value: number; color?: string; fill?: string }>
+    label?: string | number
+}
+
+const ChartTooltip = memo(({ active, payload, label }: ChartTooltipProps) => {
     if (!active || !payload?.length) return null
+
     return (
         <div className="rounded-lg border bg-background p-2 shadow-md text-xs">
-            {label && <p className="font-medium mb-1">{label}</p>}
+            {label != null && <p className="mb-1 font-medium">{label}</p>}
             {payload.map((e: any, i: number) => (
                 <p key={i} style={{ color: e.color ?? e.fill }}>
-                    {e.name}: <span className="font-semibold">{e.value}</span>
+                    {e.name}:{' '}
+                    <span className="font-semibold">{e.value}</span>
                 </p>
             ))}
         </div>
     )
-}
+})
+ChartTooltip.displayName = 'ChartTooltip'
 
-const RADIAN = Math.PI / 180
-const PieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+const PieLabel = ({
+    cx, cy, midAngle, innerRadius, outerRadius, percent,
+}: any) => {
     if (percent < 0.06) return null
     const r = innerRadius + (outerRadius - innerRadius) * 0.5
     const x = cx + r * Math.cos(-midAngle * RADIAN)
     const y = cy + r * Math.sin(-midAngle * RADIAN)
     return (
-        <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central"
-            fontSize={11} fontWeight={600}>
+        <text x={x} y={y} fill="white" textAnchor="middle"
+            dominantBaseline="central" fontSize={11} fontWeight={600}>
             {`${(percent * 100).toFixed(0)}%`}
         </text>
     )
 }
 
+type DataPoint = {
+    name: string
+    value: number
+}
+
 interface PatientStats {
-    total: number; alive: number; deceased: number; notAvailable: number
-    male: number; female: number; other: number
-    withAsha: number; withoutAsha: number
+    total: number
+    alive: number
+    deceased: number
+    notAvailable: number
+    male: number
+    female: number
+    other: number
+    withAsha: number
+    withoutAsha: number
     diseaseData: { name: string; value: number }[]
     stageData: { name: string; value: number }[]
     insuranceData: { name: string; value: number }[]
@@ -64,29 +167,145 @@ interface PatientStats {
     registrationTrend: { month: string; count: number }[]
     statusData: { name: string; value: number }[]
     genderData: { name: string; value: number }[]
-    funnelData: { name: string; value: number }[]   // 👈 add this
+    funnelData: { name: string; value: number }[]
 }
 
-export function PatientStatsSection({ stats, role }: { stats: PatientStats; role: string }) {
-    const pct = (n: number) => stats.total ? `${((n / stats.total) * 100).toFixed(0)}%` : '0%'
+export function PatientStatsSection({
+    stats,
+    role,
+}: {
+    stats: PatientStats
+    role: string
+}) {
+    const pct = (n: number) =>
+        stats.total ? `${((n / stats.total) * 100).toFixed(0)}%` : '0%'
+
+    const trendLength = stats.registrationTrend.length
+    const lastMonthPatients = stats.registrationTrend[trendLength - 2]?.count || 0
+    const previousToLastMonthPatients = stats.registrationTrend[trendLength - 3]?.count || 0
+    const patientTrendPercent =
+        previousToLastMonthPatients > 0
+            ? (((lastMonthPatients - previousToLastMonthPatients) / previousToLastMonthPatients) * 100).toFixed(0)
+            : '0'
+    const patientTrendDirection = lastMonthPatients >= previousToLastMonthPatients ? '↑' : '↓'
+    const patientTrendMonth = stats.registrationTrend[trendLength - 2]?.month || ''
+
+    const latestInsurance = stats.insuranceData[0]?.value || 0
+    const previousInsurance = stats.insuranceData[1]?.value || 0
+    const insuranceTrendPercent =
+        previousInsurance > 0
+            ? (((latestInsurance - previousInsurance) / previousInsurance) * 100).toFixed(0)
+            : '0'
+    const insuranceTrendDirection = latestInsurance >= previousInsurance ? '↑' : '↓'
+    const previousMonthLabel = stats.registrationTrend[trendLength - 2]?.month || 'Previous Month'
 
     return (
         <div className="space-y-4">
-            {/* ── 8 KPI cards — 2 rows × 4 cols ─────────────────── */}
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                <StatCard title="Total Patients"  value={stats.total}        icon={Users}      iconClassName="text-primary" />
-                <StatCard title="Alive"           value={stats.alive}        icon={Heart}      iconClassName="text-green-500"   subtitle={`${pct(stats.alive)} of total`} />
-                <StatCard title="Deceased"        value={stats.deceased}     icon={Skull}      iconClassName="text-red-500"     subtitle={`${pct(stats.deceased)} of total`} />
-                <StatCard title="Not Available"   value={stats.notAvailable} icon={HelpCircle} iconClassName="text-slate-500" />
-                <StatCard title="Male Patients"   value={stats.male}         icon={Activity}   iconClassName="text-blue-500" />
-                <StatCard title="Female Patients" value={stats.female}       icon={Activity}   iconClassName="text-pink-500" />
-                <StatCard title="ASHA Assigned"   value={stats.withAsha}     icon={UserCheck}  iconClassName="text-emerald-500" subtitle={`${pct(stats.withAsha)} coverage`} />
-                <StatCard title="No ASHA Yet"     value={stats.withoutAsha}  icon={UserX}      iconClassName="text-orange-500" />
+            <h2 className="text-lg font-semibold">Executive Summary</h2>
+
+            {/* ── KPI Cards ───────────────────────── */}
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
+                <StatCard
+                    title="Total Patients"
+                    value={stats.total}
+                    icon={Users}
+                    iconClassName="text-primary"
+                    trend={`${patientTrendDirection} ${patientTrendPercent}% in ${patientTrendMonth}`}
+                />
+
+                <Card>
+                    <CardContent className="space-y-4 px-4 py-4">
+                        <div className="flex items-center justify-between">
+                            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                                Patient Status
+                            </p>
+                            <Heart className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium">Active</p>
+                                    <p className="text-xs text-muted-foreground">{pct(stats.alive)}</p>
+                                </div>
+                                <p className="text-lg font-semibold">{stats.alive}</p>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium">Deceased</p>
+                                    <p className="text-xs text-muted-foreground">{pct(stats.deceased)}</p>
+                                </div>
+                                <p className="text-lg font-semibold">{stats.deceased}</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardContent className="space-y-4 px-4 py-4">
+                        <div className="flex items-center justify-between">
+                            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                                Gender Distribution
+                            </p>
+                            <Activity className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium">Male</p>
+                                    <p className="text-xs text-muted-foreground">{pct(stats.male)}</p>
+                                </div>
+                                <p className="text-lg font-semibold">{stats.male}</p>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium">Female</p>
+                                    <p className="text-xs text-muted-foreground">{pct(stats.female)}</p>
+                                </div>
+                                <p className="text-lg font-semibold">{stats.female}</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardContent className="space-y-4 px-4 py-4">
+                        <div className="flex items-center justify-between">
+                            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                                ASHA Coverage
+                            </p>
+                            <UserCheck className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium">Assigned</p>
+                                    <p className="text-xs text-muted-foreground">{pct(stats.withAsha)}</p>
+                                </div>
+                                <p className="text-lg font-semibold">{stats.withAsha}</p>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium">Unassigned</p>
+                                    <p className="text-xs text-muted-foreground">{pct(stats.withoutAsha)}</p>
+                                </div>
+                                <p className="text-lg font-semibold">{stats.withoutAsha}</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <StatCard
+                    title="Insurance Coverage"
+                    value={`${pct(latestInsurance)}`}
+                    icon={ShieldCheck}
+                    iconClassName="text-cyan-500"
+                    trend={`${insuranceTrendDirection} ${insuranceTrendPercent}% in ${previousMonthLabel}`}
+                />
             </div>
 
-            {/* ── Row 1: Status pie + Gender pie ─────────────────── */}
+            {/* ── Row 1 ───────────────────────────── */}
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <ChartCard title="Patient Status">
+                <ChartCard title="Patient Status" empty={!stats.statusData.length}>
                     <ResponsiveContainer width="100%" height={220}>
                         <PieChart>
                             <Pie data={stats.statusData} cx="50%" cy="50%" outerRadius={80}
@@ -95,13 +314,13 @@ export function PatientStatsSection({ stats, role }: { stats: PatientStats; role
                                     <Cell key={e.name} fill={STATUS_COLORS[e.name] ?? '#94a3b8'} />
                                 ))}
                             </Pie>
-                            <Tooltip content={<CustomTooltip />} />
+                            <Tooltip content={<ChartTooltip />} />
                             <Legend wrapperStyle={{ fontSize: 12 }} />
                         </PieChart>
                     </ResponsiveContainer>
                 </ChartCard>
 
-                <ChartCard title="Gender Distribution">
+                <ChartCard title="Gender Distribution" empty={!stats.genderData.length}>
                     <ResponsiveContainer width="100%" height={220}>
                         <PieChart>
                             <Pie data={stats.genderData} cx="50%" cy="50%" outerRadius={80}
@@ -110,14 +329,14 @@ export function PatientStatsSection({ stats, role }: { stats: PatientStats; role
                                     <Cell key={e.name} fill={GENDER_COLORS[e.name] ?? '#94a3b8'} />
                                 ))}
                             </Pie>
-                            <Tooltip content={<CustomTooltip />} />
+                            <Tooltip content={<ChartTooltip />} />
                             <Legend wrapperStyle={{ fontSize: 12 }} />
                         </PieChart>
                     </ResponsiveContainer>
                 </ChartCard>
             </div>
 
-            {/* ── Row 2: Disease bar + Stage bar ─────────────────── */}
+            {/* ── Row 2 ───────────────────────────── */}
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <ChartCard title="Disease Distribution" empty={!stats.diseaseData.length}>
                     <ResponsiveContainer width="100%" height={260}>
@@ -125,7 +344,7 @@ export function PatientStatsSection({ stats, role }: { stats: PatientStats; role
                             <CartesianGrid strokeDasharray="3 3" horizontal={false} />
                             <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
                             <YAxis type="category" dataKey="name" width={115} tick={{ fontSize: 11 }} />
-                            <Tooltip content={<CustomTooltip />} />
+                            <Tooltip content={<ChartTooltip />} />
                             <Bar dataKey="value" name="Patients" radius={[0, 4, 4, 0]}>
                                 {stats.diseaseData.map((_, i) => (
                                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
@@ -141,7 +360,7 @@ export function PatientStatsSection({ stats, role }: { stats: PatientStats; role
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
                             <XAxis dataKey="name" tick={{ fontSize: 11 }} angle={-25} textAnchor="end" interval={0} />
                             <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                            <Tooltip content={<CustomTooltip />} />
+                            <Tooltip content={<ChartTooltip />} />
                             <Bar dataKey="value" name="Patients" radius={[4, 4, 0, 0]}>
                                 {stats.stageData.map((_, i) => (
                                     <Cell key={i} fill={COLORS[(i + 2) % COLORS.length]} />
@@ -152,9 +371,9 @@ export function PatientStatsSection({ stats, role }: { stats: PatientStats; role
                 </ChartCard>
             </div>
 
-            {/* ── Row 3: Insurance donut + Ration card bar ───────── */}
+            {/* ── Row 3 ───────────────────────────── */}
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <ChartCard title="Insurance Coverage">
+                <ChartCard title="Insurance Coverage" empty={!stats.insuranceData.length}>
                     <ResponsiveContainer width="100%" height={210}>
                         <PieChart>
                             <Pie data={stats.insuranceData} cx="50%" cy="50%"
@@ -164,19 +383,19 @@ export function PatientStatsSection({ stats, role }: { stats: PatientStats; role
                                     <Cell key={i} fill={COLORS[(i + 4) % COLORS.length]} />
                                 ))}
                             </Pie>
-                            <Tooltip content={<CustomTooltip />} />
+                            <Tooltip content={<ChartTooltip />} />
                             <Legend wrapperStyle={{ fontSize: 12 }} />
                         </PieChart>
                     </ResponsiveContainer>
                 </ChartCard>
 
-                <ChartCard title="Ration Card Type">
+                <ChartCard title="Ration Card Type" empty={stats.rationData.every((d) => d.value === 0)}>
                     <ResponsiveContainer width="100%" height={210}>
                         <BarChart data={stats.rationData}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} />
                             <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                             <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                            <Tooltip content={<CustomTooltip />} />
+                            <Tooltip content={<ChartTooltip />} />
                             <Bar dataKey="value" name="Patients" radius={[4, 4, 0, 0]}>
                                 <Cell fill="#f87171" />
                                 <Cell fill="#fbbf24" />
@@ -187,31 +406,35 @@ export function PatientStatsSection({ stats, role }: { stats: PatientStats; role
                 </ChartCard>
             </div>
 
-            {/* ── Registration trend ─────────────────────────────── */}
+            {/* ── Registration Trend ─────────────── */}
             <ChartCard title="New Registrations – Last 12 Months">
                 <ResponsiveContainer width="100%" height={200}>
                     <LineChart data={stats.registrationTrend}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
                         <XAxis dataKey="month" tick={{ fontSize: 11 }} />
                         <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                        <Tooltip content={<CustomTooltip />} />
+                        <Tooltip content={<ChartTooltip />} />
                         <Line type="monotone" dataKey="count" name="Registrations"
                             stroke="#4ade80" strokeWidth={2}
                             dot={{ fill: '#4ade80', r: 3 }} activeDot={{ r: 5 }} />
                     </LineChart>
                 </ResponsiveContainer>
             </ChartCard>
+
             {/* ── Treatment Outcome Funnel ────────────────────────── */}
             <TreatmentFunnelChart data={stats.funnelData} />
         </div>
     )
 }
 
-// ── tiny wrapper to keep JSX above clean ──────────────────────────
 function ChartCard({
-    title, children, empty = false,
+    title,
+    children,
+    empty = false,
 }: {
-    title: string; children: React.ReactNode; empty?: boolean
+    title: string
+    children: React.ReactNode
+    empty?: boolean
 }) {
     return (
         <Card>
@@ -220,8 +443,12 @@ function ChartCard({
             </CardHeader>
             <CardContent className="px-4 pb-4 pt-0">
                 {empty ? (
-                    <p className="py-8 text-center text-xs text-muted-foreground">No data yet</p>
-                ) : children}
+                    <p className="py-8 text-center text-xs text-muted-foreground">
+                        No data yet
+                    </p>
+                ) : (
+                    children
+                )}
             </CardContent>
         </Card>
     )
