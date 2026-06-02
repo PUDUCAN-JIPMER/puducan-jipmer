@@ -193,7 +193,7 @@ export default function GenericPatientDialog({
             } else {
                 // Add new patient
 
-                const docRef = await addDoc(collection(db, 'patients'), {
+                await addDoc(collection(db, 'patients'), {
                     ...sanitizedData,
                     createdAt: serverTimestamp(), // ✅ Firestore timestamp
                     updatedAt: serverTimestamp(),
@@ -203,7 +203,6 @@ export default function GenericPatientDialog({
 
             // queryClient.invalidateQueries({ queryKey: ['patients'] })
             if (orgId) {
-
                 queryClient.invalidateQueries({ queryKey: ['patients', orgId] })
             } else {
                 queryClient.invalidateQueries({ queryKey: ['patients'] })

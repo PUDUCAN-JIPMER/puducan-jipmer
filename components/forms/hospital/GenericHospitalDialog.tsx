@@ -48,8 +48,10 @@ export default function GenericHospitalDialog({
     const isEdit = mode === 'edit'
 
     const onSubmit = async (data: HospitalFormInputs) => {
+        
         try {
             if (isEdit && hospitalData?.id) {
+                
                 await updateDoc(doc(db, 'hospitals', hospitalData.id), data)
                 toast.success('Hospital updated successfully.')
             } else {
