@@ -14,14 +14,15 @@ import { Plus, Pencil } from 'lucide-react'
 import { db } from '@/firebase'
 import { addDoc, collection, doc, serverTimestamp, updateDoc } from 'firebase/firestore'
 import { toast } from 'sonner'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { checkAadhaarDuplicateUtil } from '@/lib/patient/checkPatientRecord'
 import { PatientSchema, PatientFormInputs } from '@/schema/patient'
 import GenericPatientForm from './GenericPatientForm'
 import clsx from 'clsx'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/contexts/AuthContext'
-import { int } from 'zod'
+import { getDraftKey } from '@/lib/common/draft-utils'
+import { useFormPersistence } from '@/hooks/useFormPersistence'
 
 interface GenericPatientDialogProps {
     mode: 'add' | 'edit'
@@ -30,7 +31,7 @@ interface GenericPatientDialogProps {
     onSuccess?: () => void
     // for keyboard shortcuts
     open?: boolean
-    onOpenChange?: (open:boolean) => void
+    onOpenChange?: (open: boolean) => void
 }
 
 export default function GenericPatientDialog({
@@ -43,17 +44,22 @@ export default function GenericPatientDialog({
     onOpenChange,
 }: GenericPatientDialogProps) {
     const [internalOpen, setInternalOpen] = useState(false)
+    const [isSaving, setIsSaving] = useState(false)
     const isEdit = mode === 'edit'
     const queryClient = useQueryClient()
 
     const isOpen = open ?? internalOpen
-
     const setIsOpen = onOpenChange ?? setInternalOpen
 
-    const {orgId} = useAuth()
+    const { orgId, userId } = useAuth()
+    const draftKey = userId ? getDraftKey(mode, userId, patientData?.id) : null
 
     const form = useForm<PatientFormInputs>({
-        resolver: zodResolver(PatientSchema),
+        // zodResolver typing can sometimes conflict with react-hook-form's Resolver
+        // cast to any to avoid TS incompatible-resolver issues
+        resolver: zodResolver(PatientSchema) as any,
+        mode: 'onChange',
+        reValidateMode: 'onChange',
         defaultValues: {
             name: '',
             caregiverName: '',
@@ -79,24 +85,24 @@ export default function GenericPatientDialog({
             hasAadhaar: true,
             suspectedCase: false,
             biopsyNumber: '',
-            stageOfTheCancer: '',
+            stageOfTheCancer: undefined,
             treatmentDetails: [],
             otherTreatmentDetails: '',
         },
     })
 
-    const { handleSubmit, reset, watch, setValue } = form
+    const { handleSubmit, reset, watch } = form
     const aadhaarId = watch('aadhaarId')
     const hasAadhaar = watch('hasAadhaar')
 
-    // Initialize form with patient data for edit mode
-    useEffect(() => {
-        if (isEdit && patientData && open) {
-            reset(patientData)
-        }
-    }, [isEdit, patientData, open, reset])
+    // Initialize Persistence Hook
+    const { flush, clear, setSubmitting, setSubmitted } = useFormPersistence(form, {
+        key: draftKey,
+        enabled: !!isOpen,
+        initialData: isEdit ? patientData : undefined,
+    })
 
-    // Aadhaar duplicate check (skip for edit mode if Aadhaar hasn't changed)
+    // 1. Aadhaar duplicate check
     useEffect(() => {
         if (
             hasAadhaar &&
@@ -110,56 +116,97 @@ export default function GenericPatientDialog({
         }
     }, [aadhaarId, hasAadhaar, isEdit, patientData])
 
-    // Save to localStorage (for add mode only)
-    useEffect(() => {
-        if (!isEdit) {
-            localStorage.setItem('addPatientFormData', JSON.stringify(form.getValues()))
+    // 2. Flush-on-Close & Atomic Clear
+    const handleOpenChange = (open: boolean) => {
+        if (!open) {
+            flush() // Immediate flush before closing
         }
-    }, [watch(), form, isEdit])
+        setIsOpen(open)
+    }
 
-    // Load from localStorage (for add mode only)
-    useEffect(() => {
-        if (isOpen && !isEdit) {
-            const saved = localStorage.getItem('addPatientFormData')
-            if (saved) {
-                try {
-                    reset(JSON.parse(saved))
-                } catch {
-                    console.warn('Invalid saved form data')
-                }
-            }
-        }
-    }, [open, reset, isEdit])
+    const handleClear = () => {
+        clear() // Atomic Clear
+        reset({
+            name: '',
+            caregiverName: '',
+            hbcrID: '',
+            phoneNumber: [''],
+            hospitalRegistrationDate: '',
+            sex: undefined,
+            dob: '',
+            address: '',
+            aadhaarId: '',
+            aabhaId: '',
+            rationCardColor: 'none',
+            religion: 'none',
+            bloodGroup: '',
+            diseases: [],
+            assignedHospital: isEdit ? patientData?.assignedHospital : { id: '', name: '' },
+            diagnosedYearsAgo: '',
+            diagnosedDate: '',
+            treatmentStartDate: null,
+            treatmentEndDate: null,
+            patientStatus: 'Alive',
+            patientDeathDate: '',
+            hasAadhaar: true,
+            suspectedCase: false,
+            biopsyNumber: '',
+            stageOfTheCancer: undefined,
+            treatmentDetails: [],
+            otherTreatmentDetails: '',
+        })
+        toast.success('Form and draft cleared')
+    }
 
     const onSubmit = async (data: PatientFormInputs) => {
-        try {
-            if (isEdit && patientData?.id) {
-                // Update existing patient
-                await updateDoc(doc(db, 'patients', patientData.id), data)
-                toast.success('Patient updated successfully.')
-            } else {
-                // Add new patient
-                await addDoc(collection(db, 'patients'), {
-                    ...data,
-                    createdAt: serverTimestamp(), // ✅ Firestore timestamp
-                })
-                toast.success('Patient added successfully.')
-                localStorage.removeItem('addPatientFormData')
-            }
+        console.log('📝 Submitting patient data (Optimistic)...', mode)
+        setIsSaving(true)
+        setSubmitting(true) // Signal start of submission
 
-            // queryClient.invalidateQueries({ queryKey: ['patients'] })
-            if (orgId) {
-                queryClient.invalidateQueries({ queryKey: ['patients', orgId] })
-            } else {
-                queryClient.invalidateQueries({ queryKey: ['patients'] })
-            }
+        try {
+            // Remove undefined values before updating Firestore (from upstream)
+            const cleanedData = Object.fromEntries(
+                Object.entries(data).filter(([_, value]) => value !== undefined)
+            )
+
+            const patientRef = isEdit && patientData?.id
+                ? doc(db, 'patients', patientData.id)
+                : collection(db, 'patients')
+
+            // Trigger Firestore write
+            const firestoreOp = isEdit
+                ? updateDoc(patientRef as any, cleanedData)
+                : addDoc(patientRef as any, {
+                    ...cleanedData,
+                    createdAt: serverTimestamp(),
+                })
+
+            console.log('✅ Firestore write initiated')
+
+            toast.success(isEdit ? 'Patient updated successfully.' : 'Patient added successfully.')
+
+            // Invalidate draft immediately and lock persistence
+            setSubmitted()
 
             setIsOpen(false)
             reset()
-            onSuccess?.()
+
+            // Background task: Handle completion and invalidation
+            firestoreOp.then(() => {
+                console.log('🏁 Firestore write confirmed (local/remote)')
+                const queryKey = orgId ? ['patients', { orgId }] : ['patients']
+                queryClient.invalidateQueries({ queryKey })
+                onSuccess?.()
+            }).catch(err => {
+                console.error('❌ Background Firestore write failed:', err)
+            })
+
         } catch (err) {
-            console.error(`Error ${isEdit ? 'updating' : 'adding'} patient:`, err)
-            toast.error(`Failed to ${isEdit ? 'update' : 'add'} patient. Please try again.`)
+            console.error('❌ Immediate submission error:', err)
+            toast.error('Failed to process patient data.')
+            setSubmitting(false) // Release lock on error
+        } finally {
+            setIsSaving(false)
         }
     }
 
@@ -168,7 +215,7 @@ export default function GenericPatientDialog({
             <Pencil className="h-4 w-4" />
         </Button>
     ) : (
-        <Button variant="outline" className="cursor-pointer border-2 !border-green-400">
+        <Button variant="outline" className="cursor-pointer border-2 border-green-400!">
             <Plus className="h-4 w-4" /> <span className="hidden sm:block">Add Patient</span>
         </Button>
     )
@@ -176,13 +223,13 @@ export default function GenericPatientDialog({
     return (
         <FormProvider {...form}>
             {/* added isOpen to handle both keyboard shortcut and click */}
-            <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <Dialog open={isOpen} onOpenChange={handleOpenChange}>
                 <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
 
                 <DialogContent
                     onInteractOutside={(e) => e.preventDefault()}
                     className={clsx(
-                        'max-h-[90vh] w-full max-w-[95vw] overflow-y-auto sm:max-w-[640px] md:max-w-[768px] lg:max-w-[1024px] 2xl:max-w-[90vw]'
+                        'max-h-[90vh] w-full max-w-[95vw] overflow-y-auto sm:max-w-2xl md:max-w-3xl lg:max-w-5xl 2xl:max-w-[90vw]'
                     )}
                 >
                     <DialogHeader>
@@ -196,7 +243,9 @@ export default function GenericPatientDialog({
                         reset={reset}
                         handleSubmit={handleSubmit}
                         onSubmit={onSubmit}
+                        onClear={handleClear}
                         isEdit={isEdit}
+                        isSaving={isSaving}
                     />
                 </DialogContent>
             </Dialog>

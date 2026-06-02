@@ -3,86 +3,449 @@ import { LabelList } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatCard } from './StatCard'
 import {
-    Users, Heart, Skull, HelpCircle,
-    UserCheck, UserX, Activity,
+    Users,
+    Heart,
+    Activity,
+    ShieldCheck,
+    UserCheck,
 } from 'lucide-react'
+
 import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-    ResponsiveContainer, PieChart, Pie, Cell, Legend,
-    LineChart, Line,
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    PieChart,
+    Pie,
+    Cell,
+    Legend,
+    LineChart,
+    Line,
 } from 'recharts'
+import type { PieLabelRenderProps } from 'recharts/types/polar/Pie'
+
+
 
 const COLORS = [
-    '#4ade80', '#22d3ee', '#f97316', '#a78bfa',
-    '#fb7185', '#fbbf24', '#34d399', '#60a5fa',
-    '#f472b6', '#e879f9',
+    '#4ade80',
+    '#22d3ee',
+    '#f97316',
+    '#a78bfa',
+    '#fb7185',
+    '#fbbf24',
+    '#34d399',
+    '#60a5fa',
+    '#f472b6',
+    '#e879f9',
 ]
+
 const STATUS_COLORS: Record<string, string> = {
-    Alive: '#4ade80', 'Not Alive': '#f87171', 'Not Available': '#94a3b8',
+    Alive: '#4ade80',
+    'Not Alive': '#f87171',
+    'Not Available': '#94a3b8',
 }
+
 const GENDER_COLORS: Record<string, string> = {
-    Male: '#60a5fa', Female: '#f472b6', Other: '#94a3b8',
+    Male: '#60a5fa',
+    Female: '#f472b6',
+    Other: '#94a3b8',
 }
-
-const CustomTooltip = ({ active, payload, label }: any) => {
-    if (!active || !payload?.length) return null
-    return (
-        <div className="rounded-lg border bg-background p-2 shadow-md text-xs">
-            {label && <p className="font-medium mb-1">{label}</p>}
-            {payload.map((e: any, i: number) => (
-                <p key={i} style={{ color: e.color ?? e.fill }}>
-                    {e.name}: <span className="font-semibold">{e.value}</span>
-                </p>
-            ))}
-        </div>
-    )
+const CHART_COLORS = {
+    axis: '#94a3b8',
 }
-
 const RADIAN = Math.PI / 180
-const PieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+const normalizeMedicalTerm = (value: string) => value
+interface CustomXAxisTickProps {
+    x?: number
+    y?: number
+    payload?: {
+        value: string
+    }
+    maxWidth?: number
+    fontSize?: number
+}
+const CustomXAxisTick = memo(({
+    x = 0, y = 0, payload, maxWidth = 60, fontSize = 11,
+}: CustomXAxisTickProps) => {
+    if (!payload) return null
+    const label = normalizeMedicalTerm(payload.value)
+    const charLimit = Math.floor(maxWidth / (fontSize * 0.6))
+    const truncated = label.length > charLimit ? label.slice(0, charLimit - 1) + '…' : label
+    return (
+        <g transform={`translate(${x},${y})`}>
+            <title>{label}</title>
+            <text x={0} y={0} dy={12} textAnchor="end"
+                fill={CHART_COLORS.axis} fontSize={fontSize}
+                transform="rotate(-30)">
+                {truncated}
+            </text>
+        </g>
+    )
+})
+CustomXAxisTick.displayName = 'CustomXAxisTick'
+
+// ── Pie percent label ─────────────────────────────────────────────────────────
+
+function PiePercentLabel({
+    cx = 0, cy = 0, midAngle = 0,
+    innerRadius = 0, outerRadius = 0,
+    percent = 0, value,
+}: PieLabelRenderProps) {
     if (percent < 0.06) return null
     const r = innerRadius + (outerRadius - innerRadius) * 0.5
-    const x = cx + r * Math.cos(-midAngle * RADIAN)
-    const y = cy + r * Math.sin(-midAngle * RADIAN)
+    const x = (cx as number) + r * Math.cos(-midAngle * RADIAN)
+    const y = (cy as number) + r * Math.sin(-midAngle * RADIAN)
     return (
-        <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central"
-            fontSize={11} fontWeight={600}>
-            {`${(percent * 100).toFixed(0)}%`}
+        <text x={x} y={y} fill="white" textAnchor="middle"
+            dominantBaseline="central" fontSize={11} fontWeight={600}>
+            {value}
         </text>
     )
 }
 
+// ── Tooltip ───────────────────────────────────────────────────────────────────
+
+interface ChartTooltipProps {
+    active?: boolean
+    payload?: Array<{ name: string; value: number; color?: string; fill?: string }>
+    label?: string | number
+}
+
+const ChartTooltip = memo(({ active, payload, label }: ChartTooltipProps) => {
+    if (!active || !payload?.length) return null
+
+    return (
+        <div className="rounded-lg border bg-background p-2 shadow-md text-xs">
+            {label && <p className="mb-1 font-medium">{label}</p>}
+
+            {payload.map((e: any, i: number) => (
+                <p key={i} style={{ color: e.color ?? e.fill }}>
+                    {e.name}:{' '}
+                    <span className="font-semibold">{e.value}</span>
+                </p>
+            ))}
+        </div>
+    )
+})
+ChartTooltip.displayName = 'ChartTooltip'
+
+// ── Color helpers ─────────────────────────────────────────────────────────────
+
+const darkenColor = (color: string, percent: number): string => {
+    if (color.startsWith('#')) {
+        const r = parseInt(color.slice(1, 3), 16)
+        const g = parseInt(color.slice(3, 5), 16)
+        const b = parseInt(color.slice(5, 7), 16)
+        return `#${Math.floor(r * (1 - percent)).toString(16).padStart(2, '0')}${Math.floor(g * (1 - percent)).toString(16).padStart(2, '0')}${Math.floor(b * (1 - percent)).toString(16).padStart(2, '0')}`
+    }
+    const m = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i)
+    if (m) {
+        return `rgb(${Math.floor(+m[1] * (1 - percent))}, ${Math.floor(+m[2] * (1 - percent))}, ${Math.floor(+m[3] * (1 - percent))})`
+    }
+    return color
+}
+
+// ── Reusable Chart Wrappers ───────────────────────────────────────────────────
+
+const PieLabel = ({
+    cx,
+    cy,
+    midAngle,
+    innerRadius,
+    outerRadius,
+    percent,
+}: any) => {
+    if (percent < 0.06) return null
+
+    const r = innerRadius + (outerRadius - innerRadius) * 0.5
+    const x = cx + r * Math.cos(-midAngle * RADIAN)
+    const y = cy + r * Math.sin(-midAngle * RADIAN)
+
+    return (
+        <text
+            x={x}
+            y={y}
+            fill="white"
+            textAnchor="middle"
+            dominantBaseline="central"
+            fontSize={11}
+            fontWeight={600}
+        >
+            {`${(percent * 100).toFixed(0)}%`}
+        </text>
+    )
+};
+type DataPoint = {
+    name: string
+    value: number
+}
+
+interface DonutChartProps {
+    data: DataPoint[]
+    colorFn: (name: string, index: number) => string
+    innerRadius?: number
+    outerRadius?: number
+    height?: number
+}
+
 interface PatientStats {
-    total: number; alive: number; deceased: number; notAvailable: number
-    male: number; female: number; other: number
-    withAsha: number; withoutAsha: number
+    total: number
+    alive: number
+    deceased: number
+    notAvailable: number
+
+    male: number
+    female: number
+    other: number
+
+    withAsha: number
+    withoutAsha: number
+
     diseaseData: { name: string; value: number }[]
     stageData: { name: string; value: number }[]
     insuranceData: { name: string; value: number }[]
     rationData: { name: string; value: number }[]
+
     registrationTrend: { month: string; count: number }[]
+
     statusData: { name: string; value: number }[]
     genderData: { name: string; value: number }[]
 }
 
-export function PatientStatsSection({ stats, role }: { stats: PatientStats; role: string }) {
-    const pct = (n: number) => stats.total ? `${((n / stats.total) * 100).toFixed(0)}%` : '0%'
+export function PatientStatsSection({
+    stats,
+    role,
+}: {
+    stats: PatientStats
+    role: string
+}) {
+    const pct = (n: number) =>
+        stats.total
+            ? `${((n / stats.total) * 100).toFixed(0)}%`
+            : '0%'
+
+    // ── Patient Trend ─────────────────────────────
+    const trendLength = stats.registrationTrend.length
+    const lastMonthPatients =
+        stats.registrationTrend[trendLength - 2]?.count || 0
+
+    const previousToLastMonthPatients =
+        stats.registrationTrend[trendLength - 3]?.count || 0
+
+    const patientTrendPercent =
+        previousToLastMonthPatients > 0
+            ? (
+                  ((lastMonthPatients -
+                      previousToLastMonthPatients) /
+                      previousToLastMonthPatients) *
+                  100
+              ).toFixed(0)
+            : '0'
+
+    const patientTrendDirection =
+        lastMonthPatients >= previousToLastMonthPatients
+            ? '↑'
+            : '↓'
+
+    const patientTrendMonth =
+        stats.registrationTrend[trendLength - 2]?.month || ''
+
+    // ── Insurance Trend ───────────────────────────
+    const latestInsurance =
+        stats.insuranceData[0]?.value || 0
+
+    const previousInsurance =
+        stats.insuranceData[1]?.value || 0
+
+    const insuranceTrendPercent =
+        previousInsurance > 0
+            ? (
+                  ((latestInsurance - previousInsurance) /
+                      previousInsurance) *
+                  100
+              ).toFixed(0)
+            : '0'
+
+    const insuranceTrendDirection =
+        latestInsurance >= previousInsurance
+            ? '↑'
+            : '↓'
+
+    const previousMonthLabel =
+        stats.registrationTrend[trendLength - 2]?.month ||
+        'Previous Month'
 
     return (
         <div className="space-y-4">
-            {/* ── 8 KPI cards — 2 rows × 4 cols ─────────────────── */}
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                <StatCard title="Total Patients"  value={stats.total}        icon={Users}      iconClassName="text-primary" />
-                <StatCard title="Alive"           value={stats.alive}        icon={Heart}      iconClassName="text-green-500"   subtitle={`${pct(stats.alive)} of total`} />
-                <StatCard title="Deceased"        value={stats.deceased}     icon={Skull}      iconClassName="text-red-500"     subtitle={`${pct(stats.deceased)} of total`} />
-                <StatCard title="Not Available"   value={stats.notAvailable} icon={HelpCircle} iconClassName="text-slate-500" />
-                <StatCard title="Male Patients"   value={stats.male}         icon={Activity}   iconClassName="text-blue-500" />
-                <StatCard title="Female Patients" value={stats.female}       icon={Activity}   iconClassName="text-pink-500" />
-                <StatCard title="ASHA Assigned"   value={stats.withAsha}     icon={UserCheck}  iconClassName="text-emerald-500" subtitle={`${pct(stats.withAsha)} coverage`} />
-                <StatCard title="No ASHA Yet"     value={stats.withoutAsha}  icon={UserX}      iconClassName="text-orange-500" />
+            <h2 className="text-lg font-semibold">
+                Executive Summary
+            </h2>
+
+            {/* ── KPI Cards ───────────────────────── */}
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
+                <StatCard
+                    title="Total Patients"
+                    value={stats.total}
+                    icon={Users}
+                    iconClassName="text-primary"
+                    trend={`${patientTrendDirection} ${patientTrendPercent}% in ${patientTrendMonth}`}
+                />
+
+                {/* Patient Status */}
+                <Card>
+                    <CardContent className="space-y-4 px-4 py-4">
+                        <div className="flex items-center justify-between">
+                            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                                Patient Status
+                            </p>
+
+                            <Heart className="h-4 w-4 text-muted-foreground" />
+                        </div>
+
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        Active
+                                    </p>
+
+                                    <p className="text-xs text-muted-foreground">
+                                        {pct(stats.alive)}
+                                    </p>
+                                </div>
+
+                                <p className="text-lg font-semibold">
+                                    {stats.alive}
+                                </p>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        Deceased
+                                    </p>
+
+                                    <p className="text-xs text-muted-foreground">
+                                        {pct(stats.deceased)}
+                                    </p>
+                                </div>
+
+                                <p className="text-lg font-semibold">
+                                    {stats.deceased}
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Gender Distribution */}
+                <Card>
+                    <CardContent className="space-y-4 px-4 py-4">
+                        <div className="flex items-center justify-between">
+                            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                                Gender Distribution
+                            </p>
+
+                            <Activity className="h-4 w-4 text-muted-foreground" />
+                        </div>
+
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        Male
+                                    </p>
+
+                                    <p className="text-xs text-muted-foreground">
+                                        {pct(stats.male)}
+                                    </p>
+                                </div>
+
+                                <p className="text-lg font-semibold">
+                                    {stats.male}
+                                </p>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        Female
+                                    </p>
+
+                                    <p className="text-xs text-muted-foreground">
+                                        {pct(stats.female)}
+                                    </p>
+                                </div>
+
+                                <p className="text-lg font-semibold">
+                                    {stats.female}
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* ASHA Coverage */}
+                <Card>
+                    <CardContent className="space-y-4 px-4 py-4">
+                        <div className="flex items-center justify-between">
+                            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                                ASHA Coverage
+                            </p>
+
+                            <UserCheck className="h-4 w-4 text-muted-foreground" />
+                        </div>
+
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        Assigned
+                                    </p>
+
+                                    <p className="text-xs text-muted-foreground">
+                                        {pct(stats.withAsha)}
+                                    </p>
+                                </div>
+
+                                <p className="text-lg font-semibold">
+                                    {stats.withAsha}
+                                </p>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm font-medium">
+                                        Unassigned
+                                    </p>
+
+                                    <p className="text-xs text-muted-foreground">
+                                        {pct(stats.withoutAsha)}
+                                    </p>
+                                </div>
+
+                                <p className="text-lg font-semibold">
+                                    {stats.withoutAsha}
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Insurance */}
+                <StatCard
+                    title="Insurance Coverage"
+                    value={`${pct(latestInsurance)}`}
+                    icon={ShieldCheck}
+                    iconClassName="text-cyan-500"
+                    trend={`${insuranceTrendDirection} ${insuranceTrendPercent}% in ${previousMonthLabel}`}
+                />
             </div>
 
-            {/* ── Row 1: Status pie + Gender pie ─────────────────── */}
+            {/* ── Row 1 ───────────────────────────── */}
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <ChartCard title="Patient Status">
     <div className="flex flex-col items-center gap-4 md:flex-row md:items-center md:justify-between">
@@ -323,7 +686,7 @@ export function PatientStatsSection({ stats, role }: { stats: PatientStats; role
 </ChartCard>
             </div>
 
-            {/* ── Row 2: Disease bar + Stage bar ─────────────────── */}
+            {/* ── Row 2 ───────────────────────────── */}
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <ChartCard title="Disease Distribution" empty={!stats.diseaseData.length}>
     <ResponsiveContainer width="100%" height={300}>
@@ -453,7 +816,7 @@ export function PatientStatsSection({ stats, role }: { stats: PatientStats; role
 
             </div>
 
-            {/* ── Row 3: Insurance donut + Ration card bar ───────── */}
+            {/* ── Row 3 ───────────────────────────── */}
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <ChartCard title="Insurance Coverage">
   <div className="flex flex-col items-center gap-4 md:flex-row md:items-center md:justify-between">
@@ -703,7 +1066,7 @@ export function PatientStatsSection({ stats, role }: { stats: PatientStats; role
 
             </div>
 
-            {/* ── Registration trend ─────────────────────────────── */}
+            {/* ── Registration Trend ─────────────── */}
             <ChartCard title="New Registrations – Last 12 Months">
   <ResponsiveContainer width="100%" height={220}>
     <LineChart data={stats.registrationTrend} margin={{ top: 20, right: 20, bottom: 10, left: 0 }}>
@@ -752,21 +1115,32 @@ export function PatientStatsSection({ stats, role }: { stats: PatientStats; role
     )
 }
 
-// ── tiny wrapper to keep JSX above clean ──────────────────────────
+// ── Chart Card Wrapper ─────────────────────────
 function ChartCard({
-    title, children, empty = false,
+    title,
+    children,
+    empty = false,
 }: {
-    title: string; children: React.ReactNode; empty?: boolean
+    title: string
+    children: React.ReactNode
+    empty?: boolean
 }) {
     return (
         <Card>
             <CardHeader className="px-4 py-3">
-                <CardTitle className="text-sm font-semibold">{title}</CardTitle>
+                <CardTitle className="text-sm font-semibold">
+                    {title}
+                </CardTitle>
             </CardHeader>
+
             <CardContent className="px-4 pb-4 pt-0">
                 {empty ? (
-                    <p className="py-8 text-center text-xs text-muted-foreground">No data yet</p>
-                ) : children}
+                    <p className="py-8 text-center text-xs text-muted-foreground">
+                        No data yet
+                    </p>
+                ) : (
+                    children
+                )}
             </CardContent>
         </Card>
     )

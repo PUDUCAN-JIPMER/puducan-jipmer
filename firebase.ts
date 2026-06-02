@@ -1,7 +1,13 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  Firestore,
+  getFirestore,
+} from 'firebase/firestore'
 
 // Validate required Firebase environment variables before initialization
 // Missing variables cause silent failures in auth and Firestore — critical in a healthcare context
@@ -23,7 +29,6 @@ if (process.env.NODE_ENV !== 'test' && process.env.NODE_ENV !== 'development') {
 }
 
 // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -36,9 +41,33 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp()
-const auth = getAuth(app)
-const db = getFirestore(app)
 
-auth.useDeviceLanguage()
+// In test environment we avoid initializing `auth` to prevent failures when
+// NEXT_PUBLIC_FIREBASE_API_KEY (and other env vars) are not set. Tests should
+// mock Firebase calls instead of hitting the real SDK.
+let auth: any = undefined
+if (process.env.NODE_ENV === 'test') {
+  // Provide a lightweight dummy auth object so tests can pass a defined
+  // value into mocked auth functions (tests assert the first arg is present).
+  auth = {}
+} else {
+  auth = getAuth(app)
+  auth.useDeviceLanguage()
+}
+
+// Initialize Firestore with Persistence (Offline-First)
+// We use initializeFirestore instead of getFirestore to configure the cache.
+let db: Firestore
+
+if (typeof window !== 'undefined') {
+  db = initializeFirestore(app, {
+    localCache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager(),
+    }),
+  })
+} else {
+  // Fallback for SSR
+  db = getFirestore(app)
+}
 
 export { auth, db, app }
