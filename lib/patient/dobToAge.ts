@@ -1,26 +1,13 @@
+import { parseDateResilient } from './dateHelpers'
+
 const checkDateValidation = (dob: string | undefined, today: Date): Date | string => {
     if (!dob) return 'N/A'
 
-    const [day, month, year] = dob.split('-').map(Number)
-    if (!day || !month || !year) return 'Invalid date'
+    const birthDate = parseDateResilient(dob)
+    if (!birthDate) return 'Invalid date'
 
-    // Basic range checks
-    if (month < 1 || month > 12 || day < 1 || year > today.getFullYear()) return 'Invalid date'
-
-    // Leap-year-aware days in month
-    const daysInMonth = new Date(year, month, 0).getDate()
-    if (day > daysInMonth) return 'Invalid date'
-
-    const birthDate = new Date(year, month - 1, day)
-
-    // Reject auto-corrected dates (e.g., 31 April -> 1 May)
-    if (
-        birthDate.getDate() !== day ||
-        birthDate.getMonth() !== month - 1 ||
-        birthDate.getFullYear() !== year
-    ) {
-        return 'Invalid date'
-    }
+    // Basic range checks (e.g. no future years)
+    if (birthDate.getFullYear() > today.getFullYear()) return 'Invalid date'
 
     // No future dates
     if (birthDate > today) return 'Invalid date'
