@@ -97,7 +97,7 @@ export const PatientSchema = z
                 z.string().regex(/^[A-Z0-9-]{5,20}$/, {
                     message:
                         'HBCR ID must be 5-20 characters and contain only letters, numbers, and hyphens',
-                }))
+                }).optional())
             .optional(),
         hospitalRegistrationId: z.string().optional(),
         stageOfTheCancer: z

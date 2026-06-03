@@ -14,7 +14,7 @@ import { Plus, Pencil } from 'lucide-react'
 import { db } from '@/firebase'
 import { addDoc, collection, doc, serverTimestamp, updateDoc } from 'firebase/firestore'
 import { toast } from 'sonner'
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { checkAadhaarDuplicateUtil } from '@/lib/patient/checkPatientRecord'
 import { PatientSchema, PatientFormInputs } from '@/schema/patient'
 import GenericPatientForm from './GenericPatientForm'
@@ -56,8 +56,8 @@ export default function GenericPatientDialog({
 
     const form = useForm<PatientFormInputs>({
         // zodResolver typing can sometimes conflict with react-hook-form's Resolver
-        // cast to any to avoid TS incompatible-resolver issues
-        resolver: zodResolver(PatientSchema) as any,
+        // cast to unknown as never to avoid TS incompatible-resolver issues and no-explicit-any rule
+        resolver: zodResolver(PatientSchema) as unknown as never,
         mode: 'onChange',
         reValidateMode: 'onChange',
         defaultValues: {
@@ -158,55 +158,83 @@ export default function GenericPatientDialog({
         toast.success('Form and draft cleared')
     }
 
+    // Helper to deeply strip undefined values before writing to Firestore
+    const sanitizeForFirestore = (obj: unknown): unknown => {
+        if (obj === null || obj === undefined) return null
+        if (Array.isArray(obj)) {
+            return obj.map(sanitizeForFirestore)
+        }
+        if (typeof obj === 'object') {
+            const result: Record<string, unknown> = {}
+            for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+                if (value !== undefined) {
+                    result[key] = sanitizeForFirestore(value)
+                }
+            }
+            return result
+        }
+        return obj
+    }
+
     const onSubmit = async (data: PatientFormInputs) => {
-        console.log('📝 Submitting patient data (Optimistic)...', mode)
+        const sanitizedData = sanitizeForFirestore(data) as Record<string, unknown>
+
         setIsSaving(true)
-        setSubmitting(true) // Signal start of submission
-
+        setSubmitting(true)
         try {
-            // Remove undefined values before updating Firestore (from upstream)
-            const cleanedData = Object.fromEntries(
-                Object.entries(data).filter(([_, value]) => value !== undefined)
-            )
+            if (isEdit && patientData?.id) {
+                // Update existing patient
 
-            const patientRef = isEdit && patientData?.id
-                ? doc(db, 'patients', patientData.id)
-                : collection(db, 'patients')
-
-            // Trigger Firestore write
-            const firestoreOp = isEdit
-                ? updateDoc(patientRef as any, cleanedData)
-                : addDoc(patientRef as any, {
-                    ...cleanedData,
-                    createdAt: serverTimestamp(),
+                await updateDoc(doc(db, 'patients', patientData.id), {
+                    ...sanitizedData,
+                    updatedAt: serverTimestamp(),
                 })
+                toast.success('Patient updated successfully.')
+            } else {
+                // Add new patient
 
-            console.log('✅ Firestore write initiated')
+                await addDoc(collection(db, 'patients'), {
+                    ...sanitizedData,
+                    createdAt: serverTimestamp(), // ✅ Firestore timestamp
+                    updatedAt: serverTimestamp(),
+                })
+                toast.success('Patient added successfully.')
+            }
 
-            toast.success(isEdit ? 'Patient updated successfully.' : 'Patient added successfully.')
+            // queryClient.invalidateQueries({ queryKey: ['patients'] })
+            if (orgId) {
+                queryClient.invalidateQueries({ queryKey: ['patients', orgId] })
+            } else {
+                queryClient.invalidateQueries({ queryKey: ['patients'] })
+            }
 
-            // Invalidate draft immediately and lock persistence
             setSubmitted()
-
             setIsOpen(false)
             reset()
-
-            // Background task: Handle completion and invalidation
-            firestoreOp.then(() => {
-                console.log('🏁 Firestore write confirmed (local/remote)')
-                const queryKey = orgId ? ['patients', { orgId }] : ['patients']
-                queryClient.invalidateQueries({ queryKey })
-                onSuccess?.()
-            }).catch(err => {
-                console.error('❌ Background Firestore write failed:', err)
-            })
-
+            onSuccess?.()
         } catch (err) {
-            console.error('❌ Immediate submission error:', err)
-            toast.error('Failed to process patient data.')
-            setSubmitting(false) // Release lock on error
+            const e = err as any
+            const code = String(e?.code ?? '')
+            const message = String(e?.message ?? '')
+
+            let friendly = `Could not ${isEdit ? 'update' : 'add'} patient. Please try again.`
+            if (code.includes('permission-denied')) {
+                friendly = 'Permission denied. Please login again or contact an admin.'
+            } else if (code.includes('unauthenticated')) {
+                friendly = 'Session expired. Please login and try again.'
+            } else if (code.includes('unavailable')) {
+                friendly = 'Network issue. Please check your internet connection and try again.'
+            } else if (code.includes('resource-exhausted')) {
+                friendly = 'Server is busy. Please try again in a minute.'
+            }
+
+            toast.error(friendly, {
+                description: code || message ? `${code}${code && message ? ' — ' : ''}${message}` : undefined,
+                duration: 8000,
+            })
         } finally {
             setIsSaving(false)
+            setSubmitting(false)
         }
     }
 
@@ -222,7 +250,6 @@ export default function GenericPatientDialog({
 
     return (
         <FormProvider {...form}>
-            {/* added isOpen to handle both keyboard shortcut and click */}
             <Dialog open={isOpen} onOpenChange={handleOpenChange}>
                 <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
 
