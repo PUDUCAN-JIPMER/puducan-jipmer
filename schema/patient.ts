@@ -77,7 +77,20 @@ export const PatientSchema = z
         transferredFrom: z.string().optional(),
         hasAadhaar: z.boolean(),
         suspectedCase: z.boolean().optional(),
-        hbcrID: z.string().optional(),
+        // Resolved conflict: Keeping preprocessed logic for safety
+        hbcrID: z
+            .preprocess((val) => {
+                if (typeof val === 'string') {
+                    const s = val.trim().toUpperCase()
+                    return s === '' ? undefined : s
+                }
+                return val
+            },
+                z.string().regex(/^[A-Z0-9-]{5,20}$/, {
+                    message:
+                        'HBCR ID must be 5-20 characters and contain only letters, numbers, and hyphens',
+                }).optional())
+            .optional(),
         hospitalRegistrationId: z.string().optional(),
         stageOfTheCancer: z
             .object({
@@ -89,7 +102,6 @@ export const PatientSchema = z
         treatmentDetails: z.array(z.string().optional()).optional(),
         otherTreatmentDetails: z.string().optional(),
         insurance: InsuranceSchema,
-        // Added triageLevel field
         triageLevel: z
             .enum(['critical', 'high', 'urgent', 'non-urgent'])
             .optional()
