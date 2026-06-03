@@ -2,10 +2,9 @@ import { dobToAgeUtil } from '../../lib/patient/dobToAge'
 import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest'
 
 describe('dobToAgeUtil', () => {
-    // Freeze current date for all tests
     beforeAll(() => {
         vi.useFakeTimers()
-        // Pretend today is 2025-08-16
+
         vi.setSystemTime(new Date('2025-08-16T00:00:00Z'))
     })
 
@@ -46,5 +45,14 @@ describe('dobToAgeUtil', () => {
         expect(dobToAgeUtil('17-07-2025')).toBe('<1 month')
         expect(dobToAgeUtil('31-07-2025')).toBe('<1 month')
         expect(dobToAgeUtil('01-08-2025')).toBe('<1 month')
+    })
+
+    it('handles various alternative resilient date formats gracefully', () => {
+        expect(dobToAgeUtil('2023-06-01')).toBe('2 yrs')
+        expect(dobToAgeUtil('01/06/2023')).toBe('2 yrs')
+        expect(dobToAgeUtil('2023/06/01')).toBe('2 yrs')
+        expect(dobToAgeUtil('06/28/2023')).toBe('2 yrs')
+        expect(dobToAgeUtil('2023-06-01T00:00:00Z')).toBe('2 yrs')
+        expect(dobToAgeUtil('Thu Jun 01 2023 00:00:00 GMT+0000')).toBe('2 yrs')
     })
 })
