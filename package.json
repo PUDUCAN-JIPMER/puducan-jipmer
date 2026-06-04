@@ -63,7 +63,7 @@
         "react": "^19.2.4",
         "react-day-picker": "^9.9.0",
         "react-dom": "^19.2.4",
-        "react-hook-form": "^7.73.1",
+        "react-hook-form": "^7.77.0",
         "react-phone-number-input": "^3.4.12",
         "react-swipeable": "^7.0.2",
         "recharts": "^3.8.1",
