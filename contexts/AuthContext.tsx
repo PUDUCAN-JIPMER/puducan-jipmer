@@ -6,7 +6,7 @@ import { AuthState, UserDoc } from '@/schema/user'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { User as FirebaseAuthUser, onAuthStateChanged } from 'firebase/auth'
 import { collection, getDocs, query, where } from 'firebase/firestore'
-import { usePathname, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -22,10 +22,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Listen to Firebase Auth changes
     useEffect(() => {
+        if (!auth) {
+            setTimeout(() => setInitialAuthLoading(false), 0)
+            return
+        }
+
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setFirebaseUser(user)
             setInitialAuthLoading(false)
         })
+
         return () => unsubscribe()
     }, [])
 
@@ -65,7 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         if (isErrorUserRole && firebaseUser) {
             toast.error(error?.message || 'Failed to load user profile. Please log in again.')
-            auth.signOut()
+            auth?.signOut()
             router.push('/login')
             queryClient.removeQueries({ queryKey: ['userDoc', firebaseUser.uid] })
         }

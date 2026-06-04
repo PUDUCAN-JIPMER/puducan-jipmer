@@ -1,30 +1,25 @@
 'use client'
 
 import { FOOTER_GROUPS } from '@/constants/footer'
-import { auth } from '@/firebase'
-import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth'
+import { useAuth } from '@/contexts/AuthContext'
 import { useEffect, useState } from 'react'
 import { getPaperSavedCount, calculateSheetsSaved } from '@/lib/papersaved'
 
 export default function Footer() {
     const [sheetsSaved, setSheetsSaved] = useState<number | null>(null)
+    const { user } = useAuth() // ✅ Get the user beautifully from your global auth context
 
     useEffect(() => {
-        // Only run the aggregation query once we know there is an
-        // authenticated user to avoid Firestore permission-denied errors.
-        const unsubscribe = onAuthStateChanged(auth, (user: FirebaseUser | null) => {
-            if (user) {
-                getPaperSavedCount().then((count) => {
-                    if (count > 0) {
-                        setSheetsSaved(calculateSheetsSaved(count))
-                    }
-                })
-            } else {
-                setSheetsSaved(null)
-            }
-        })
-        return () => unsubscribe()
-    }, [])
+        if (user) {
+            getPaperSavedCount().then((count) => {
+                if (count > 0) {
+                    setSheetsSaved(calculateSheetsSaved(count))
+                }
+            })
+        } else {
+            setSheetsSaved(null)
+        }
+    }, [user]) // ✅ Automatically runs whenever the user logs in or out
 
     return (
         <footer className="border-t border-gray-200 bg-gradient-to-b from-gray-100 to-gray-50 text-sm text-gray-700 dark:border-gray-800 dark:from-[#111827] dark:to-[#0f172a] dark:text-gray-200">
