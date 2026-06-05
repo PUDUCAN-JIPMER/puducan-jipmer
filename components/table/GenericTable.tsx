@@ -11,12 +11,11 @@ import {
 import { useAuth } from '@/contexts/AuthContext'
 import { useFilteredPatients } from '@/hooks/table/useFilteredPatients'
 import { usePagination } from '@/hooks/table/usePagination'
-
 import DeleteEntityDialog from '@/components/dialogs/DeleteEntityDialog'
 import { hospitalFields, patientFields, SEARCH_FIELDS, userFields } from '@/constants'
 import { useSearch, useStats, useTableData } from '@/hooks'
 import { Hospital, Patient, UserDoc } from '@/schema'
-import { use, useCallback, useEffect, useMemo } from 'react'
+import { use, useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import ViewDetailsDialog from '../dialogs/ViewDetailsDialog'
 import { GenericPagination, GenericRow, GenericToolbar } from './'
 import { useTableStore } from '@/store'
@@ -24,7 +23,7 @@ import { useResponsiveRows } from '@/hooks/table/useResponsiveRows'
 import { TabDataMap, RowDataBase, ModalType } from '@/types/table/types'
 import { GenericMobileRow } from './GenericMobileRow'
 import TableSkeleton from '@/components/skeletons/TableSkeleton'
-import { ArrowUp, ArrowDown, ArrowUpDown, Trash2, UserPlus, Download, } from 'lucide-react'
+import { ArrowUp, ArrowDown, ArrowUpDown, Trash2, UserPlus, Download } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useSorting, SORTABLE_KEYS } from '@/hooks/table/useSorting'
 import { BulkAction, BulkActionBar } from './BulkActionBar'
@@ -33,6 +32,9 @@ import { Checkbox } from '../ui/checkbox'
 import BulkDeleteDialog from '../dialogs/BulkDeleteDialog'
 import { useBulkExport } from '@/hooks/table/useBulkExport'
 import { BulkAssignDialog } from '../dialogs/BulkAssignDialog'
+import { QueryDocumentSnapshot } from 'firebase/firestore'
+
+const PAGE_SIZE = 50
 
 export function GenericTable({
     headers,
@@ -54,17 +56,22 @@ export function GenericTable({
     }
 
     const { selectedRow, modal, setSelectedRow, openModal, closeModal } = useTableStore()
-
     const { selectedIds, toggleRow, selectAll, clearSelection, isSelected, selectedIdsArray, selectionCount } = useBulkSelectionStore()
     const { exportSelected } = useBulkExport()
 
+    // ── Pagination state ──
+    const [cursor, setCursor] = useState<QueryDocumentSnapshot | null>(null)
+    const [pageHistory, setPageHistory] = useState<QueryDocumentSnapshot[]>([]) // for going back
+    const [currentPage, setCurrentPage] = useState(1)
+    const [hasMore, setHasMore] = useState(true)
+
     const queryProps = {
-        // Admins should see all patients (no org filter).
         orgId: role === 'admin' ? null : orgId,
         ashaId: role === 'asha' ? user?.id : null,
         enabled: !isLoadingAuth,
         requiredData: activeTab,
-        searchTerm,
+        pageSize: PAGE_SIZE,
+        cursor: cursor,
     }
 
     const fieldsMap = {
@@ -77,7 +84,25 @@ export function GenericTable({
     } as const
 
     const fieldsToDisplay = fieldsMap[activeTab]
-    const { data = [], isLoading } = useTableData(queryProps) ?? {}
+    const { data: rawData, isLoading } = useTableData(queryProps) ?? {}
+
+    // Extract actual data array from the new response shape (could be { data, lastDoc } or just array for old code)
+    const data = useMemo(() => {
+        if (Array.isArray(rawData)) return rawData
+        if (rawData && typeof rawData === 'object' && 'data' in rawData) return (rawData as any).data as any[]
+        return []
+    }, [rawData])
+
+    const lastDoc = useMemo(() => {
+        if (rawData && typeof rawData === 'object' && 'lastDoc' in rawData) return (rawData as any).lastDoc as QueryDocumentSnapshot | null
+        return null
+    }, [rawData])
+
+    // Update hasMore based on whether we got a full page
+    useEffect(() => {
+        if (data.length < PAGE_SIZE) setHasMore(false)
+        else setHasMore(true)
+    }, [data])
 
     const searchFields = SEARCH_FIELDS[activeTab]
 
@@ -85,26 +110,18 @@ export function GenericTable({
     const isHospitalTab = activeTab == 'hospitals'
     const patients = (data as Patient[]) ?? []
     const filteredPatients = useFilteredPatients(isPatientTab ? patients : [])
-
-    // ✅ Choose correct baseData (patients → filtered first, others → raw data)
     const baseData = isPatientTab ? filteredPatients : (data ?? [])
-    type ActiveDataType = TabDataMap[typeof activeTab] // infer based on activeTab
+    type ActiveDataType = TabDataMap[typeof activeTab]
 
-    const {
-        filteredRows: searchedData,
-        searchTerm,
-        setSearchTerm,
-    } = useSearch<ActiveDataType>(baseData, searchFields)
+    // We still use client-side search for instant feedback on the current page
+    const { filteredRows: searchedData, searchTerm, setSearchTerm } = useSearch<ActiveDataType>(baseData, searchFields)
 
-    // ✅ Apply sorting after search
     const { sorting, toggle, sortedData } = useSorting(searchedData)
-
-    // ✅ Use searchedData for pagination
     const dataToPaginate = useMemo(() => sortedData, [sortedData])
 
+    // Use client-side pagination on the already fetched page (for display)
     const tableData = usePagination<(typeof dataToPaginate)[number]>(dataToPaginate, rowsPerPage)
-
-    const { paginated: paginatedData, currentPage, totalPages, setCurrentPage } = tableData
+    const { paginated: paginatedData, totalPages, setCurrentPage: setClientPage } = tableData
 
     const tableStats = useStats({
         TableData: searchedData ?? [],
@@ -121,21 +138,27 @@ export function GenericTable({
         removedPatients: 'removed patients',
     }
 
-    //clear selection when filters change or page changes
-    useEffect(() => {
-        setCurrentPage(1)
-    }, [filteredPatients.length, setCurrentPage])
-
-    // Reset to page 1 whenever sorting changes
-    useEffect(() => {
-        setCurrentPage(1)
-    }, [sorting, setCurrentPage])
-
-    useEffect(() => {
-        clearSelection()
-    }, [currentPage, searchFields, filteredPatients.length, clearSelection])
-
-
+    // Handle page change – if we have a lastDoc and we're going forward, set cursor
+    const handlePageChange = (newPage: number) => {
+        if (newPage > currentPage && lastDoc && hasMore) {
+            // Move to next server-side page
+            setPageHistory(prev => [...prev, cursor!])
+            setCursor(lastDoc)
+            setCurrentPage(newPage)
+            setClientPage(1) // reset client page to 1 for the new data
+        } else if (newPage < currentPage && pageHistory.length > 0) {
+            // Go back to previous server page
+            const prevCursor = pageHistory[pageHistory.length - 1]
+            setPageHistory(prev => prev.slice(0, -1))
+            setCursor(prevCursor)
+            setCurrentPage(newPage)
+            setClientPage(1)
+        } else {
+            // Within the same page, just update client page
+            setClientPage(newPage)
+            setCurrentPage(newPage)
+        }
+    }
 
     const handleRowAction = useCallback(
         (row: RowDataBase, action: ModalType) => {
@@ -172,10 +195,9 @@ export function GenericTable({
         {
             key: 'Assign',
             label: 'Assign',
-            hidden: !isPatientTab, // only show for patients
+            hidden: !isPatientTab,
             icon: <UserPlus className="h-3 w-3" />,
             onClick: () => {
-                // handle assign action
                 openModal('bulkAssign')
             }
         },
@@ -192,10 +214,7 @@ export function GenericTable({
                 )
             }
         }
-
     ], [openModal, isPatientTab, exportSelected, data, stableHeaders, activeTab])
-
-
 
     return (
         <div className="flex min-h-screen flex-col">
@@ -221,8 +240,7 @@ export function GenericTable({
                 </caption>
                 <TableHeader className="bg-muted hidden sm:table-header-group">
                     <TableRow className="border-border border-b">
-                        {/* bulk actions */}
-                        <TableHead className="border-border w-12 border-r  text-center">
+                        <TableHead className="border-border w-12 border-r text-center">
                             <div className='flex items-center justify-center'>
                                 <Checkbox
                                     checked={
@@ -232,12 +250,10 @@ export function GenericTable({
                                     aria-label='Select all rows on this page'
                                 />
                             </div>
-
                         </TableHead>
-                        <TableHead className="border-border w-12 border-r text-center items-center justify-center">
+                        <TableHead className="border-border w-12 border-r text-center">
                             S/NO
                         </TableHead>
-
                         {headers.map((header, id) => {
                             const isSortable = SORTABLE_KEYS.includes(header.key)
                             const isActive = sorting[0]?.id === header.key
@@ -283,10 +299,10 @@ export function GenericTable({
                                                 <TooltipContent>
                                                     {
                                                         !isActive
-                                                            ? 'Sort ascending' // not sorted yet → first click = asc
+                                                            ? 'Sort ascending'
                                                             : direction === 'asc'
-                                                                ? 'Sort descending' // currently asc → next click = desc
-                                                                : 'Sort ascending' // currently desc → next click = asc
+                                                                ? 'Sort descending'
+                                                                : 'Sort ascending'
                                                     }
                                                 </TooltipContent>
                                             </Tooltip>
@@ -297,10 +313,7 @@ export function GenericTable({
                                 </TableHead>
                             )
                         })}
-                        <TableHead
-                            scope="col"
-                            className="border-border w-12 border-r text-center"
-                        >
+                        <TableHead scope="col" className="border-border w-12 border-r text-center">
                             Actions
                         </TableHead>
                     </TableRow>
@@ -343,7 +356,6 @@ export function GenericTable({
                 </TableBody>
             </Table>
 
-            {/* ✅ Mobile rows outside table */}
             <div className="sm:hidden">
                 {paginatedData.map((data, index) => (
                     <GenericMobileRow
@@ -366,55 +378,46 @@ export function GenericTable({
             <div className="">
                 <GenericPagination
                     currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                    stats={tableStats} // only show stats for patients
+                    totalPages={hasMore ? currentPage + 1 : currentPage} // simple indication of more pages
+                    onPageChange={handlePageChange}
+                    stats={tableStats}
                     isPatientTab={isPatientTab}
                     isLoading={isLoading || isLoadingAuth}
                 />
             </div>
+
             {selectedRow && modal === 'view' && (
-                <>
-                    <ViewDetailsDialog
-                        open={modal === 'view'}
-                        onOpenChange={(open) => !open && closeModal()}
-                        rowData={selectedRow}
-                        fieldsToDisplay={fieldsToDisplay}
-                    />
-                </>
+                <ViewDetailsDialog
+                    open={modal === 'view'}
+                    onOpenChange={(open) => !open && closeModal()}
+                    rowData={selectedRow}
+                    fieldsToDisplay={fieldsToDisplay}
+                />
             )}
             <DeleteEntityDialog
                 open={modal === 'delete'}
                 entityData={selectedRow}
-                collectionName={activeTab} // 'patients' | 'hospitals' | 'doctors' | 'nurses' | 'ashas' | 'removedPatients'
+                collectionName={activeTab}
                 onClose={closeModal}
             />
-
-            {/* Bulk delete confirmation dialog */}
-
             <BulkDeleteDialog
                 open={modal === 'bulkDelete'}
                 collectionName={activeTab}
                 ids={selectedIdsArray()}
                 rowsData={paginatedData as Record<string, any>[]}
                 onClose={() => {
-                    closeModal(),
-                        clearSelection()
+                    closeModal()
+                    clearSelection()
                 }}
-
             />
-
             <BulkAssignDialog
                 open={modal === 'bulkAssign'}
                 ids={selectedIdsArray()}
                 onClose={() => {
                     closeModal()
                     clearSelection()
-                }
-
-                }
+                }}
             />
-
         </div>
     )
 }

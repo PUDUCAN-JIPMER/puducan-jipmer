@@ -3,17 +3,28 @@ import { Patient } from '@/schema/patient'
 import { Hospital } from '@/schema/hospital'
 import { UserDoc } from '@/schema/user'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { collection, getDocs, onSnapshot, query, where } from 'firebase/firestore'
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  startAt,
+  endAt,
+  startAfter,
+  limit,
+  onSnapshot,
+  DocumentSnapshot,
+  QueryDocumentSnapshot,
+} from 'firebase/firestore'
 import { useEffect, useMemo } from 'react'
+import { useDebounce } from '@/hooks/useDebounce'
 
-/**
- * Removes the last character from a string.
- */
 function cutLastCharacter(str: string | undefined): string | undefined {
-    return str?.slice(0, -1)
+  return str?.slice(0, -1)
 }
 
-const SEARCH_LIMIT = 50
+const DEFAULT_PAGE_SIZE = 50
 
 type UsePatientsProps = {
   orgId?: string | null
@@ -27,135 +38,146 @@ type UsePatientsProps = {
     | 'patients'
     | 'removedPatients'
     | undefined
-  /** When provided, the hook will build a filtered Firestore query instead of fetching all docs. */
   searchTerm?: string
+  pageSize?: number
+  cursor?: QueryDocumentSnapshot | null
 }
 
-export const useTableData = ({ orgId, ashaId, enabled = true, requiredData }: UsePatientsProps) => {
-    const queryClient = useQueryClient()
+export const useTableData = ({
+  orgId,
+  ashaId,
+  enabled = true,
+  requiredData,
+  searchTerm,
+  pageSize,
+  cursor,
+}: UsePatientsProps) => {
+  const queryClient = useQueryClient()
+  const debouncedSearch = useDebounce(searchTerm ?? '', 300)
+  const shouldSearch = debouncedSearch.length > 0
 
-    // 1. Memoize queryKey to avoid infinite effect triggers
-    const queryKeyValue = useMemo(() => {
-        if (!requiredData) return ['none']
-        if (requiredData === 'patients') {
-            if (orgId) return ['patients', { orgId }]
-            if (ashaId) return ['patients', { ashaId }]
-            return ['patients']
+  const isPatients = requiredData === 'patients'
+  const isHospitals = requiredData === 'hospitals'
+  const isUsers = ['ashas', 'doctors', 'nurses'].includes(requiredData as string)
+  const isRemoved = requiredData === 'removedPatients'
+
+  const effectiveLimit = pageSize ?? 10000
+  const isPaginated = pageSize !== undefined
+
+  const queryKeyValue = useMemo(() => {
+    if (!requiredData) return ['none']
+    const base: unknown[] = [requiredData]
+    if (isPatients) {
+      if (orgId) base.push({ orgId })
+      if (ashaId) base.push({ ashaId })
+    }
+    if (shouldSearch) base.push({ search: debouncedSearch })
+    if (isPaginated) {
+      base.push({ pageSize })
+      if (cursor) base.push({ cursor: cursor.id })
+      else base.push({ cursor: null })
+    }
+    return base
+  }, [requiredData, orgId, ashaId, shouldSearch, debouncedSearch, isPaginated, pageSize, cursor, isPatients])
+
+  const fetchEnabled = enabled && !!requiredData
+
+  const tableQuery = useQuery<{ data: any[]; lastDoc: QueryDocumentSnapshot | null } | any[], Error>({
+    queryKey: queryKeyValue,
+    queryFn: async () => {
+      if (!requiredData) return { data: [], lastDoc: null }
+
+      const buildPaginatedQuery = (baseQuery: any) => {
+        let q = baseQuery
+        if (shouldSearch) {
+          q = query(q, orderBy('name'), startAt(debouncedSearch.toLowerCase()), endAt(debouncedSearch.toLowerCase() + '\uf8ff'))
         }
-        if (['ashas', 'doctors', 'nurses'].includes(requiredData)) {
-            return ['users', requiredData]
+        if (isPaginated) {
+          q = query(q, orderBy('name'), limit(effectiveLimit))
+          if (cursor) {
+            q = query(q, startAfter(cursor))
+          }
         }
-        return [requiredData]
-    }, [requiredData, orgId, ashaId])
+        return q
+      }
 
-    const isPatients = requiredData === 'patients'
-    const isHospitals = requiredData === 'hospitals'
-    const isUsers = ['ashas', 'doctors', 'nurses'].includes(requiredData as string)
-    const isRemoved = requiredData === 'removedPatients'
+      if (isHospitals) {
+        const base = query(collection(db, 'hospitals'))
+        const q = buildPaginatedQuery(base)
+        const snap = await getDocs(q)
+        const docs = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Hospital[]
+        return { data: docs, lastDoc: snap.docs[snap.docs.length - 1] ?? null }
+      }
 
-    const fetchEnabled = enabled && !!requiredData && (isPatients || isHospitals || isUsers || isRemoved)
+      if (isUsers) {
+        const roleFilter = cutLastCharacter(requiredData)
+        const base = query(collection(db, 'users'), where('role', '==', roleFilter))
+        const q = buildPaginatedQuery(base)
+        const snap = await getDocs(q)
+        const docs = snap.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Omit<UserDoc, 'id'>) })) as UserDoc[]
+        return { data: docs, lastDoc: snap.docs[snap.docs.length - 1] ?? null }
+      }
 
-    // 2. Single unified useQuery (Hooks must be top-level and unconditional)
-    const tableQuery = useQuery<any[], Error>({
-        queryKey: queryKeyValue,
-        queryFn: async () => {
-            if (!requiredData) return []
-
-            if (isHospitals) {
-                const hospitalQuery = query(collection(db, 'hospitals'))
-                const hospitalsSnap = await getDocs(hospitalQuery)
-                return hospitalsSnap.docs.map((hos) => ({
-                    id: hos.id,
-                    ...hos.data(),
-                })) as Hospital[]
-            }
-
-            if (isUsers) {
-                const usersQueryRef = query(
-                    collection(db, 'users'),
-                    where('role', '==', cutLastCharacter(requiredData))
-                )
-                const usersSnap = await getDocs(usersQueryRef)
-                return usersSnap.docs.map((user) => ({
-                    id: user.id,
-                    ...(user.data() as Omit<UserDoc, 'id'>),
-                })) as UserDoc[]
-            }
-
-            if (isPatients) {
-                let patientsQueryRef
-                if (orgId) {
-                    patientsQueryRef = query(
-                        collection(db, 'patients'),
-                        where('assignedHospital.id', '==', orgId)
-                    )
-                } else if (ashaId) {
-                    patientsQueryRef = query(
-                        collection(db, 'patients'),
-                        where('assignedAsha', '==', ashaId)
-                    )
-                } else {
-                    patientsQueryRef = query(collection(db, 'patients'))
-                }
-                const patientsSnap = await getDocs(patientsQueryRef)
-                return patientsSnap.docs.map((doc) => ({
-                    id: doc.id,
-                    ...doc.data(),
-                    _hasPendingWrites: doc.metadata.hasPendingWrites,
-                })) as Patient[]
-            }
-
-            if (isRemoved) {
-                const removedPatientsQueryRef = query(collection(db, 'removedPatients'))
-                const removedPatientsSnap = await getDocs(removedPatientsQueryRef)
-                return removedPatientsSnap.docs.map((doc) => ({
-                    id: doc.id,
-                    ...doc.data(),
-                })) as Patient[]
-            }
-
-            return []
-        },
-        enabled: fetchEnabled,
-        staleTime: 60 * 1000,
-    })
-
-    // 3. Unified Real-time listener for metadata changes (Sync status)
-    useEffect(() => {
-        if (!fetchEnabled || !isPatients) return
-
-        let patientsRef
+      if (isPatients) {
+        let base
         if (orgId) {
-            patientsRef = query(
-                collection(db, 'patients'),
-                where('assignedHospital.id', '==', orgId)
-            )
+          base = query(collection(db, 'patients'), where('assignedHospital.id', '==', orgId))
         } else if (ashaId) {
-            patientsRef = query(
-                collection(db, 'patients'),
-                where('assignedAsha', '==', ashaId)
-            )
+          base = query(collection(db, 'patients'), where('assignedAsha', '==', ashaId))
         } else {
-            patientsRef = query(collection(db, 'patients'))
+          base = query(collection(db, 'patients'))
         }
+        const q = buildPaginatedQuery(base)
+        const snap = await getDocs(q)
+        const docs = snap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          _hasPendingWrites: doc.metadata.hasPendingWrites,
+        })) as Patient[]
+        return { data: docs, lastDoc: snap.docs[snap.docs.length - 1] ?? null }
+      }
 
-        const unsubscribe = onSnapshot(
-            patientsRef,
-            { includeMetadataChanges: true },
-            (snapshot) => {
-                const data = snapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    ...doc.data(),
-                    _hasPendingWrites: doc.metadata.hasPendingWrites,
-                })) as Patient[]
+      if (isRemoved) {
+        const base = query(collection(db, 'removedPatients'))
+        const q = buildPaginatedQuery(base)
+        const snap = await getDocs(q)
+        const docs = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Patient[]
+        return { data: docs, lastDoc: snap.docs[snap.docs.length - 1] ?? null }
+      }
 
-                // Update TanStack Query cache with real-time data + metadata push
-                queryClient.setQueryData(queryKeyValue, data)
-            }
-        )
+      return { data: [], lastDoc: null }
+    },
+    enabled: fetchEnabled,
+    staleTime: 60 * 1000,
+  })
 
-        return () => unsubscribe()
-    }, [fetchEnabled, isPatients, orgId, ashaId, queryClient, queryKeyValue])
+  useEffect(() => {
+    if (!fetchEnabled || !isPatients || isPaginated) return
 
-    return tableQuery
+    let patientsRef
+    if (orgId) {
+      patientsRef = query(collection(db, 'patients'), where('assignedHospital.id', '==', orgId))
+    } else if (ashaId) {
+      patientsRef = query(collection(db, 'patients'), where('assignedAsha', '==', ashaId))
+    } else {
+      patientsRef = query(collection(db, 'patients'))
+    }
+
+    const unsubscribe = onSnapshot(
+      patientsRef,
+      { includeMetadataChanges: true },
+      (snapshot) => {
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          _hasPendingWrites: doc.metadata.hasPendingWrites,
+        })) as Patient[]
+        queryClient.setQueryData(queryKeyValue, { data, lastDoc: null })
+      }
+    )
+
+    return () => unsubscribe()
+  }, [fetchEnabled, isPatients, orgId, ashaId, queryClient, queryKeyValue, isPaginated])
+
+  return tableQuery
 }
