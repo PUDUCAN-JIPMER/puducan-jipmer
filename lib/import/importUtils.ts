@@ -5,7 +5,6 @@ import { db } from '@/firebase'
 import { getCollectionName } from '@/lib/common/getCollectionName'
 import { PatientSchema } from '@/schema/patient'
 import { bulkCheckDuplicates } from '@/lib/patient/checkPatientRecord'
-
 // ─── Entry point ──────────────────────────────────────────────────────────────
 // onReviewNeeded is called when duplicates are found — it opens ImportReviewDialog.
 // If no duplicates, import proceeds silently without calling it.
@@ -57,8 +56,8 @@ const preprocessPatientRow = async (
 
     cleaned.phoneNumber = row.phoneNumber
         ? String(row.phoneNumber)
-            .split(',')
-            .map((p) => p.trim())
+              .split(',')
+              .map((p) => p.trim())
         : []
 
     if (row.dob) {
@@ -83,23 +82,15 @@ const preprocessPatientRow = async (
     cleaned.suspectedCase = String(row.suspectedCase).toLowerCase() === 'yes'
 
     cleaned.diseases = row.disease
-<<<<<<< HEAD
         ? String(row.disease)
-            .split(',')
-            .map((d) => d.trim())
+              .split(',')
+              .map((d) => d.trim())
         : []
 
     cleaned.treatmentDetails = row.treatmentDetails
         ? String(row.treatmentDetails)
-            .split(',')
-            .map((d) => d.trim())
-=======
-        ? String(row.disease).split(',').map((d: string) => d.trim())
-        : []
-
-    cleaned.treatmentDetails = row.treatmentDetails
-        ? String(row.treatmentDetails).split(',').map((d: string) => d.trim())
->>>>>>> c61b91e (fuzzy duplicates identification updated)
+              .split(',')
+              .map((d) => d.trim())
         : []
 
     Object.assign(cleaned, {

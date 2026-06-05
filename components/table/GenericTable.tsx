@@ -24,11 +24,7 @@ import { useResponsiveRows } from '@/hooks/table/useResponsiveRows'
 import { TabDataMap, RowDataBase, ModalType } from '@/types/table/types'
 import { GenericMobileRow } from './GenericMobileRow'
 import TableSkeleton from '@/components/skeletons/TableSkeleton'
-<<<<<<< HEAD
 import { ArrowUp, ArrowDown, ArrowUpDown, Trash2, UserPlus, Download, } from 'lucide-react'
-=======
-import { ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react'
->>>>>>> dba3532 (resolve)
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useSorting, SORTABLE_KEYS } from '@/hooks/table/useSorting'
 import { BulkAction, BulkActionBar } from './BulkActionBar'
@@ -208,17 +204,6 @@ export function GenericTable({
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 searchFields={SEARCH_FIELDS[activeTab]}
-                isLoading={isLoading || isLoadingAuth}
-<<<<<<< HEAD
-            />
-
-            <BulkActionBar
-                selectedCount={selectionCount()}
-                selectedIds={selectedIdsArray()}
-                actions={bulkActions}
-                onClearSelection={clearSelection}
-=======
->>>>>>> dba3532 (resolve)
             />
 
             <Table className="border-border flex-1 overflow-auto rounded-md border">
