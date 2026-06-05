@@ -26,7 +26,7 @@ interface GenericHospitalDialogProps {
 
     // for keyboard shortcuts
     open?: boolean
-    onOpenChange?: (open:boolean) => void
+    onOpenChange?: (open: boolean) => void
 }
 
 export default function GenericHospitalDialog({
@@ -48,22 +48,22 @@ export default function GenericHospitalDialog({
     const isEdit = mode === 'edit'
 
     const onSubmit = async (data: HospitalFormInputs) => {
+        
         try {
             if (isEdit && hospitalData?.id) {
+                
                 await updateDoc(doc(db, 'hospitals', hospitalData.id), data)
                 toast.success('Hospital updated successfully.')
             } else {
-                await addDoc(collection(db, 'hospitals'), data)
+                const docRef = await addDoc(collection(db, 'hospitals'), data)
                 toast.success('Hospital added successfully.')
             }
 
-            // ✅ Invalidate hospitals query so tables refresh
             queryClient.invalidateQueries({ queryKey: ['hospitals'] })
 
             setIsOpen(false)
             onSuccess?.()
         } catch (err) {
-            console.error(`Error ${isEdit ? 'updating' : 'adding'} hospital:`, err)
             toast.error(`Failed to ${isEdit ? 'update' : 'add'} hospital. Please try again.`)
         }
     }
@@ -73,11 +73,8 @@ export default function GenericHospitalDialog({
             <Pencil className="h-4 w-4" />
         </Button>
     ) : (
-        <Button
-            variant="outline"
-            className="cursor-pointer border-2 !border-green-400 capitalize"
-        >
-            <Plus className="h-4 w-4" /> <span className='hidden sm:block'>Add Hospital</span>
+        <Button variant="outline" className="cursor-pointer border-2 !border-green-400 capitalize">
+            <Plus className="h-4 w-4" /> <span className="hidden sm:block">Add Hospital</span>
         </Button>
     )
 
