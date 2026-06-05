@@ -1,6 +1,8 @@
 'use client'
 
 import { FOOTER_GROUPS } from '@/constants/footer'
+import { auth } from '@/firebase'
+import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth'
 import { useEffect, useState } from 'react'
 import { getPaperSavedCount, calculateSheetsSaved } from '@/lib/papersaved'
 
@@ -8,11 +10,20 @@ export default function Footer() {
     const [sheetsSaved, setSheetsSaved] = useState<number | null>(null)
 
     useEffect(() => {
-        getPaperSavedCount().then((count) => {
-            if (count > 0) {
-                setSheetsSaved(calculateSheetsSaved(count))
+        // Only run the aggregation query once we know there is an
+        // authenticated user to avoid Firestore permission-denied errors.
+        const unsubscribe = onAuthStateChanged(auth, (user: FirebaseUser | null) => {
+            if (user) {
+                getPaperSavedCount().then((count) => {
+                    if (count > 0) {
+                        setSheetsSaved(calculateSheetsSaved(count))
+                    }
+                })
+            } else {
+                setSheetsSaved(null)
             }
         })
+        return () => unsubscribe()
     }, [])
 
     return (

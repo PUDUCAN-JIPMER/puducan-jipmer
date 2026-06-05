@@ -2,15 +2,15 @@ import { db } from '@/firebase'
 import { Patient } from '@/schema/patient'
 import { Hospital } from '@/schema/hospital'
 import { UserDoc } from '@/schema/user'
-import { useQuery } from '@tanstack/react-query'
-import { collection, getDocs, query, where, orderBy, startAt, endAt, limit } from 'firebase/firestore'
-import { useDebounce } from '@/hooks/useDebounce'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { collection, getDocs, onSnapshot, query, where } from 'firebase/firestore'
+import { useEffect, useMemo } from 'react'
 
 /**
  * Removes the last character from a string.
  */
 function cutLastCharacter(str: string | undefined): string | undefined {
-  return str?.slice(0, -1)
+    return str?.slice(0, -1)
 }
 
 const SEARCH_LIMIT = 50
@@ -31,137 +31,131 @@ type UsePatientsProps = {
   searchTerm?: string
 }
 
-export const useTableData = ({ orgId, ashaId, enabled = true, requiredData, searchTerm }: UsePatientsProps) => {
-  const debouncedSearch = useDebounce(searchTerm ?? '', 300)
-  const shouldSearch = debouncedSearch.length > 0
+export const useTableData = ({ orgId, ashaId, enabled = true, requiredData }: UsePatientsProps) => {
+    const queryClient = useQueryClient()
 
-  // ── Hospitals (always fetched when tab is hospitals, no search overrides yet) ──
-  if (requiredData === 'hospitals') {
-    const hospitalsQuery = useQuery<Hospital[], Error>({
-      queryKey: ['hospitals', { search: debouncedSearch }],
-      queryFn: async () => {
-        let hospitalQuery
-        if (shouldSearch) {
-          hospitalQuery = query(
-            collection(db, 'hospitals'),
-            orderBy('name'),
-            startAt(debouncedSearch.toLowerCase()),
-            endAt(debouncedSearch.toLowerCase() + '\uf8ff'),
-            limit(SEARCH_LIMIT)
-          )
-        } else {
-          hospitalQuery = query(collection(db, 'hospitals'))
+    // 1. Memoize queryKey to avoid infinite effect triggers
+    const queryKeyValue = useMemo(() => {
+        if (!requiredData) return ['none']
+        if (requiredData === 'patients') {
+            if (orgId) return ['patients', { orgId }]
+            if (ashaId) return ['patients', { ashaId }]
+            return ['patients']
         }
-        const hospitalsSnap = await getDocs(hospitalQuery)
-        return hospitalsSnap.docs.map((hos) => ({
-          id: hos.id,
-          ...hos.data(),
-        })) as Hospital[]
-      },
-      enabled,
-      staleTime: 60 * 1000,
-    })
-    return hospitalsQuery
-  }
-
-  // ── Users (doctors/nurses/ashas) ──
-  if (requiredData === 'ashas' || requiredData === 'doctors' || requiredData === 'nurses') {
-    const roleFilter = cutLastCharacter(requiredData) // 'asha','doctor','nurse'
-    const usersQuery = useQuery<UserDoc[], Error>({
-      queryKey: ['users', requiredData, { search: debouncedSearch }],
-      queryFn: async () => {
-        let usersQuery
-        if (shouldSearch) {
-          usersQuery = query(
-            collection(db, 'users'),
-            where('role', '==', roleFilter),
-            orderBy('name'),
-            startAt(debouncedSearch.toLowerCase()),
-            endAt(debouncedSearch.toLowerCase() + '\uf8ff'),
-            limit(SEARCH_LIMIT)
-          )
-        } else {
-          usersQuery = query(
-            collection(db, 'users'),
-            where('role', '==', roleFilter)
-          )
+        if (['ashas', 'doctors', 'nurses'].includes(requiredData)) {
+            return ['users', requiredData]
         }
-        const usersSnap = await getDocs(usersQuery)
-        return usersSnap.docs.map((user) => ({
-          id: user.id,
-          ...(user.data() as Omit<UserDoc, 'id'>),
-        })) as UserDoc[]
-      },
-      enabled,
-      staleTime: 60 * 1000,
+        return [requiredData]
+    }, [requiredData, orgId, ashaId])
+
+    const isPatients = requiredData === 'patients'
+    const isHospitals = requiredData === 'hospitals'
+    const isUsers = ['ashas', 'doctors', 'nurses'].includes(requiredData as string)
+    const isRemoved = requiredData === 'removedPatients'
+
+    const fetchEnabled = enabled && !!requiredData && (isPatients || isHospitals || isUsers || isRemoved)
+
+    // 2. Single unified useQuery (Hooks must be top-level and unconditional)
+    const tableQuery = useQuery<any[], Error>({
+        queryKey: queryKeyValue,
+        queryFn: async () => {
+            if (!requiredData) return []
+
+            if (isHospitals) {
+                const hospitalQuery = query(collection(db, 'hospitals'))
+                const hospitalsSnap = await getDocs(hospitalQuery)
+                return hospitalsSnap.docs.map((hos) => ({
+                    id: hos.id,
+                    ...hos.data(),
+                })) as Hospital[]
+            }
+
+            if (isUsers) {
+                const usersQueryRef = query(
+                    collection(db, 'users'),
+                    where('role', '==', cutLastCharacter(requiredData))
+                )
+                const usersSnap = await getDocs(usersQueryRef)
+                return usersSnap.docs.map((user) => ({
+                    id: user.id,
+                    ...(user.data() as Omit<UserDoc, 'id'>),
+                })) as UserDoc[]
+            }
+
+            if (isPatients) {
+                let patientsQueryRef
+                if (orgId) {
+                    patientsQueryRef = query(
+                        collection(db, 'patients'),
+                        where('assignedHospital.id', '==', orgId)
+                    )
+                } else if (ashaId) {
+                    patientsQueryRef = query(
+                        collection(db, 'patients'),
+                        where('assignedAsha', '==', ashaId)
+                    )
+                } else {
+                    patientsQueryRef = query(collection(db, 'patients'))
+                }
+                const patientsSnap = await getDocs(patientsQueryRef)
+                return patientsSnap.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                    _hasPendingWrites: doc.metadata.hasPendingWrites,
+                })) as Patient[]
+            }
+
+            if (isRemoved) {
+                const removedPatientsQueryRef = query(collection(db, 'removedPatients'))
+                const removedPatientsSnap = await getDocs(removedPatientsQueryRef)
+                return removedPatientsSnap.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                })) as Patient[]
+            }
+
+            return []
+        },
+        enabled: fetchEnabled,
+        staleTime: 60 * 1000,
     })
-    return usersQuery
-  }
 
-  // ── Patients ──
-  if (requiredData === 'patients') {
-    let queryKeyValue: unknown[] = ['patients']
-    if (orgId) queryKeyValue.push({ orgId })
-    else if (ashaId) queryKeyValue.push({ ashaId })
-    if (shouldSearch) queryKeyValue.push({ search: debouncedSearch })
+    // 3. Unified Real-time listener for metadata changes (Sync status)
+    useEffect(() => {
+        if (!fetchEnabled || !isPatients) return
 
-    const patientsQuery = useQuery<Patient[], Error>({
-      queryKey: queryKeyValue,
-      queryFn: async () => {
-        let patientsQuery
+        let patientsRef
         if (orgId) {
-          patientsQuery = query(
-            collection(db, 'patients'),
-            where('assignedHospital.id', '==', orgId)
-          )
+            patientsRef = query(
+                collection(db, 'patients'),
+                where('assignedHospital.id', '==', orgId)
+            )
         } else if (ashaId) {
-          patientsQuery = query(
-            collection(db, 'patients'),
-            where('assignedAsha', '==', ashaId)
-          )
+            patientsRef = query(
+                collection(db, 'patients'),
+                where('assignedAsha', '==', ashaId)
+            )
         } else {
-          patientsQuery = query(collection(db, 'patients'))
+            patientsRef = query(collection(db, 'patients'))
         }
 
-        // If searching, add orderBy + startAt/endAt on name
-        if (shouldSearch) {
-          patientsQuery = query(
-            patientsQuery,
-            orderBy('name'),
-            startAt(debouncedSearch.toLowerCase()),
-            endAt(debouncedSearch.toLowerCase() + '\uf8ff'),
-            limit(SEARCH_LIMIT)
-          )
-        }
+        const unsubscribe = onSnapshot(
+            patientsRef,
+            { includeMetadataChanges: true },
+            (snapshot) => {
+                const data = snapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                    _hasPendingWrites: doc.metadata.hasPendingWrites,
+                })) as Patient[]
 
-        const patientsSnap = await getDocs(patientsQuery)
-        return patientsSnap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Patient[]
-      },
-      enabled: true,
-      staleTime: 60 * 1000,
-    })
-    return patientsQuery
-  }
+                // Update TanStack Query cache with real-time data + metadata push
+                queryClient.setQueryData(queryKeyValue, data)
+            }
+        )
 
-  // ── removedPatients (no search needed) ──
-  if (requiredData === 'removedPatients') {
-    const patientsQuery = useQuery<Patient[], Error>({
-      queryKey: ['removedPatients'],
-      queryFn: async () => {
-        const removedPatientsSnap = await getDocs(collection(db, 'removedPatients'))
-        return removedPatientsSnap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Patient[]
-      },
-      staleTime: 60 * 1000,
-    })
-    return patientsQuery
-  }
+        return () => unsubscribe()
+    }, [fetchEnabled, isPatients, orgId, ashaId, queryClient, queryKeyValue])
 
-  // fallback
-  return { data: undefined, isLoading: false } as any
+    return tableQuery
 }

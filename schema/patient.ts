@@ -97,7 +97,7 @@ export const PatientSchema = z
                 z.string().regex(/^[A-Z0-9-]{5,20}$/, {
                     message:
                         'HBCR ID must be 5-20 characters and contain only letters, numbers, and hyphens',
-                }))
+                }).optional())
             .optional(),
         hospitalRegistrationId: z.string().optional(),
         stageOfTheCancer: z
@@ -192,4 +192,5 @@ export type PatientFormInputs = z.infer<typeof PatientSchema>
 // This type is for fetched data from the database, which always has an ID
 export type Patient = PatientFormInputs & {
     id: string
+    _hasPendingWrites?: boolean
 }
