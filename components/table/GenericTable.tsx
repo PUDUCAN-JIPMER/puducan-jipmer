@@ -64,6 +64,7 @@ export function GenericTable({
         ashaId: role === 'asha' ? user?.id : null,
         enabled: !isLoadingAuth,
         requiredData: activeTab,
+        searchTerm,
     }
 
     const fieldsMap = {
