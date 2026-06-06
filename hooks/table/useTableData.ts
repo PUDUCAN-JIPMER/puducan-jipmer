@@ -1,4 +1,4 @@
-import { db } from '@/firebase'
+﻿import { db } from '@/firebase'
 import { Patient } from '@/schema/patient'
 import { Hospital } from '@/schema/hospital'
 import { UserDoc } from '@/schema/user'
@@ -14,8 +14,8 @@ import {
   startAfter,
   limit,
   onSnapshot,
-  DocumentSnapshot,
   QueryDocumentSnapshot,
+  DocumentData,
 } from 'firebase/firestore'
 import { useEffect, useMemo } from 'react'
 import { useDebounce } from '@/hooks/useDebounce'
@@ -24,7 +24,7 @@ function cutLastCharacter(str: string | undefined): string | undefined {
   return str?.slice(0, -1)
 }
 
-const DEFAULT_PAGE_SIZE = 50
+type PaginatedResult = { data: any[]; lastDoc: QueryDocumentSnapshot<DocumentData, DocumentData> | null }
 
 type UsePatientsProps = {
   orgId?: string | null
@@ -40,7 +40,7 @@ type UsePatientsProps = {
     | undefined
   searchTerm?: string
   pageSize?: number
-  cursor?: QueryDocumentSnapshot | null
+  cursor?: QueryDocumentSnapshot<DocumentData, DocumentData> | null
 }
 
 export const useTableData = ({
@@ -82,9 +82,9 @@ export const useTableData = ({
 
   const fetchEnabled = enabled && !!requiredData
 
-  const tableQuery = useQuery<{ data: any[]; lastDoc: QueryDocumentSnapshot | null } | any[], Error>({
+  const tableQuery = useQuery<PaginatedResult, Error>({
     queryKey: queryKeyValue,
-    queryFn: async () => {
+    queryFn: async (): Promise<PaginatedResult> => {
       if (!requiredData) return { data: [], lastDoc: null }
 
       const buildPaginatedQuery = (baseQuery: any) => {
@@ -105,8 +105,9 @@ export const useTableData = ({
         const base = query(collection(db, 'hospitals'))
         const q = buildPaginatedQuery(base)
         const snap = await getDocs(q)
-        const docs = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Hospital[]
-        return { data: docs, lastDoc: snap.docs[snap.docs.length - 1] ?? null }
+        const docs = snap.docs.map((doc) => ({ id: doc.id, ...(doc.data() as DocumentData) })) as Hospital[]
+        const lastDoc = (snap.docs[snap.docs.length - 1] ?? null) as QueryDocumentSnapshot<DocumentData, DocumentData> | null
+        return { data: docs, lastDoc }
       }
 
       if (isUsers) {
@@ -115,7 +116,8 @@ export const useTableData = ({
         const q = buildPaginatedQuery(base)
         const snap = await getDocs(q)
         const docs = snap.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Omit<UserDoc, 'id'>) })) as UserDoc[]
-        return { data: docs, lastDoc: snap.docs[snap.docs.length - 1] ?? null }
+        const lastDoc = (snap.docs[snap.docs.length - 1] ?? null) as QueryDocumentSnapshot<DocumentData, DocumentData> | null
+        return { data: docs, lastDoc }
       }
 
       if (isPatients) {
@@ -131,18 +133,20 @@ export const useTableData = ({
         const snap = await getDocs(q)
         const docs = snap.docs.map((doc) => ({
           id: doc.id,
-          ...doc.data(),
+          ...(doc.data() as DocumentData),
           _hasPendingWrites: doc.metadata.hasPendingWrites,
         })) as Patient[]
-        return { data: docs, lastDoc: snap.docs[snap.docs.length - 1] ?? null }
+        const lastDoc = (snap.docs[snap.docs.length - 1] ?? null) as QueryDocumentSnapshot<DocumentData, DocumentData> | null
+        return { data: docs, lastDoc }
       }
 
       if (isRemoved) {
         const base = query(collection(db, 'removedPatients'))
         const q = buildPaginatedQuery(base)
         const snap = await getDocs(q)
-        const docs = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Patient[]
-        return { data: docs, lastDoc: snap.docs[snap.docs.length - 1] ?? null }
+        const docs = snap.docs.map((doc) => ({ id: doc.id, ...(doc.data() as DocumentData) })) as Patient[]
+        const lastDoc = (snap.docs[snap.docs.length - 1] ?? null) as QueryDocumentSnapshot<DocumentData, DocumentData> | null
+        return { data: docs, lastDoc }
       }
 
       return { data: [], lastDoc: null }
@@ -169,7 +173,7 @@ export const useTableData = ({
       (snapshot) => {
         const data = snapshot.docs.map((doc) => ({
           id: doc.id,
-          ...doc.data(),
+          ...(doc.data() as DocumentData),
           _hasPendingWrites: doc.metadata.hasPendingWrites,
         })) as Patient[]
         queryClient.setQueryData(queryKeyValue, { data, lastDoc: null })
