@@ -1,4 +1,5 @@
 'use client'
+import { memo } from 'react'
 import { LabelList } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatCard } from './StatCard'
