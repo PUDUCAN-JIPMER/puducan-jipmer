@@ -166,7 +166,12 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
     }
 
     return (
-        <div className={clsx('flex w-full flex-col sm:border-l-2 md:pl-4 gap-4 md:w-1/2 lg:w-1/3', isAsha && 'md:w-2/3 lg:w-full px-2 mx-auto border-none')} >
+        <div
+            className={clsx(
+                'flex w-full flex-col gap-4 sm:border-l-2 md:w-1/2 md:pl-4 lg:w-1/3',
+                isAsha && 'mx-auto border-none px-2 md:w-2/3 lg:w-full'
+            )}
+        >
             {/* --- Follow-Ups Section --- */}
             <div className="w-full space-y-3 pt-2">
                 <div className="flex items-center space-x-4">
@@ -174,7 +179,7 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
                     <Button
                         type="button"
                         size="icon"
-                        className='w-auto px-2 py-1'
+                        className="w-auto px-2 py-1"
                         onClick={() => setIsAddingFollowUp(!isAddingFollowUp)}
                     >
                         <Plus className="h-5 w-5" /> Add
@@ -191,13 +196,19 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
                         />
                         <div className="flex justify-end gap-2">
                             <Button
+                                type="button"
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setIsAddingFollowUp(false)}
                             >
                                 Cancel
                             </Button>
-                            <Button size="sm" variant={'outline'} onClick={handleSaveNewFollowUp}>
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant={'outline'}
+                                onClick={handleSaveNewFollowUp}
+                            >
                                 Save Follow-up
                             </Button>
                         </div>

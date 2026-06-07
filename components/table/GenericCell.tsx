@@ -4,14 +4,16 @@
 import { DiseasesCell, PhoneCell, StatusCell } from '.'
 import { dobToAgeUtil } from '@/lib/patient/dobToAge'
 import { formatDobToDDMMYYYY } from '@/lib/patient/dateFormatter'
+import { RiskBadge } from '@/components/common/RiskBadge'
 
 type GenericCellProps = {
   value: unknown
   keyName: string
   isPatientTab?: boolean
+  rowData?: any
 }
 
-export function GenericCell({ value, keyName, isPatientTab }: GenericCellProps) {
+export function GenericCell({ value, keyName, isPatientTab, rowData }: GenericCellProps) {
   switch (keyName) {
     case 'phoneNumber':
     case 'contactNumber':
@@ -25,6 +27,9 @@ export function GenericCell({ value, keyName, isPatientTab }: GenericCellProps) 
 
     case 'patientStatus':
       return <StatusCell status={value as string} />
+
+    case 'riskLevel':
+      return <RiskBadge patient={rowData || {}} />
 
     case 'sex':
       return <span className="capitalize">{value as string}</span>
