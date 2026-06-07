@@ -510,7 +510,7 @@ export function PatientStatsSection({
                         Total
                     </text>
 
-                    <Tooltip content={<CustomTooltip />} />
+                    <Tooltip />
                 </PieChart>
             </ResponsiveContainer>
         </div>
@@ -628,7 +628,7 @@ export function PatientStatsSection({
                         Total
                     </text>
 
-                    <Tooltip content={<CustomTooltip />} />
+                    <Tooltip />
                 </PieChart>
             </ResponsiveContainer>
         </div>
@@ -881,7 +881,7 @@ export function PatientStatsSection({
             Total
           </text>
 
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip />
         </PieChart>
       </ResponsiveContainer>
     </div>
@@ -1006,7 +1006,7 @@ export function PatientStatsSection({
             Total
           </text>
 
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip />
         </PieChart>
       </ResponsiveContainer>
     </div>
@@ -1075,7 +1075,7 @@ export function PatientStatsSection({
       <XAxis dataKey="month" tick={{ fontSize: 11 }} />
       <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
 
-      <Tooltip content={<CustomTooltip />} />
+      <Tooltip />
 
       {/* Blue gradient for line */}
       <defs>
