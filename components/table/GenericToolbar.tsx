@@ -22,6 +22,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useRef, useState } from 'react'
 import { useKeyboardShortcurts } from '@/hooks/keyboardshortcut/keyboardShortcuts'
 import { KeyBoardShortcuts } from '../common/KeyBoardShortcuts'
+import ImportReviewDialog from '@/components/dialogs/ImportReviewDialog' // ✅ TERA ADDITION
 
 export function GenericToolbar({
     activeTab,
@@ -42,11 +43,20 @@ export function GenericToolbar({
     const queryClient = useQueryClient()
     const { role } = useAuth()
 
+    // ✅ ORIGINAL STATE — mobile states preserved
     const [mobileFilterOpen, setMobileFilterOpen] = useState(false)
     const [mobileAddOpen, setMobileAddOpen] = useState(false)
     const searchInputRef = useRef<HTMLInputElement>(null)
     const [shortcutDialogOpen, setShortcutDialogOpen] = useState(false)
     const [activeDialog, setActiveDialog] = useState<'patients' | 'hospitals' | 'users' | null>(null)
+
+    // ✅  ADDITION — import review dialog state
+    const [reviewData, setReviewData] = useState<{
+        flagged: any[]
+        cleanRows: any[]
+        onResolved: (decisions: any[]) => Promise<void>
+    } | null>(null)
+
     // deployment fix
     useKeyboardShortcurts({
         onSearchFocus: () => { searchInputRef.current?.focus() },
@@ -59,6 +69,7 @@ export function GenericToolbar({
         },
     })
 
+    // ✅ ORIGINAL — class order as in original
     const dashboardTitleContent = pathname.includes('/admin') ? (
         <h1 className="hidden text-2xl font-bold sm:block">Admin Dashboard</h1>
     ) : pathname.includes('/nurse') ? (
@@ -76,7 +87,7 @@ export function GenericToolbar({
 
             <div className="flex flex-col gap-2 w-full sm:flex-row sm:items-center sm:justify-end">
 
-                {/* MOBILE TOOLBAR */}
+                {/* ✅ ORIGINAL — MOBILE TOOLBAR */}
                 <div className="flex flex-row items-center gap-2 w-full sm:hidden">
 
                     {activeTab && (
@@ -169,7 +180,7 @@ export function GenericToolbar({
                     )}
                 </div>
 
-                {/* DESKTOP TOOLBAR */}
+                {/* ✅ ORIGINAL — DESKTOP TOOLBAR */}
                 <div className="hidden sm:flex sm:flex-row sm:items-center sm:justify-end sm:gap-2 w-full">
 
                     {activeTab && (
@@ -195,7 +206,6 @@ export function GenericToolbar({
                             mode="add"
                             open={activeDialog === 'hospitals'}
                             onOpenChange={(open) => setActiveDialog(open ? 'hospitals' : null)}
-
                         />
                     )}
                     {['ashas', 'doctors', 'nurses'].includes(activeTab) && (
@@ -248,13 +258,17 @@ export function GenericToolbar({
                     )}
                 </div>
 
-                {/* Hidden file input */}
+                
                 <input
                     id="file-upload"
                     type="file"
                     accept=".csv, .xlsx, .xls"
                     className="hidden"
-                    onChange={(e) => importData(e, queryClient)}
+                    onChange={(e) => {
+                        importData(e, queryClient, (flagged, cleanRows, onResolved) => {
+                            setReviewData({ flagged, cleanRows, onResolved })
+                        })
+                    }}
                 />
 
             </div>
@@ -263,6 +277,17 @@ export function GenericToolbar({
                 open={shortcutDialogOpen}
                 onOpenChange={setShortcutDialogOpen}
             />
+
+            
+            {reviewData && (
+                <ImportReviewDialog
+                    open={!!reviewData}
+                    onOpenChange={(open) => { if (!open) setReviewData(null) }}
+                    flaggedRows={reviewData.flagged}
+                    cleanRows={reviewData.cleanRows}
+                    onResolved={reviewData.onResolved}
+                />
+            )}
         </div>
     )
 }

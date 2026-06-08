@@ -204,14 +204,6 @@ export function GenericTable({
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 searchFields={SEARCH_FIELDS[activeTab]}
-                isLoading={isLoading || isLoadingAuth}
-            />
-
-            <BulkActionBar
-                selectedCount={selectionCount()}
-                selectedIds={selectedIdsArray()}
-                actions={bulkActions}
-                onClearSelection={clearSelection}
             />
 
             <Table className="border-border flex-1 overflow-auto rounded-md border">
