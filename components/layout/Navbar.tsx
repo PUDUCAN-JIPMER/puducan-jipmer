@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { ModeToggle } from '../ui/toggle'
 import SignOutButton from './SignOutButton'
+import SustainabilityTip from './SustainabilityTip'
 
 const STATS_ROLES = ['admin', 'doctor', 'nurse']
 
@@ -21,14 +22,18 @@ export default function Navbar() {
     const isStatsActive = pathname === statsHref
 
     return (
-        <nav className="border-b bg-background shadow-sm">
-            <div className="flex items-center justify-between px-4 py-3 md:px-8">
-                <Link
-                    href="/"
-                    className="text-2xl font-bold tracking-tight text-green-600"
-                >
-                    PuduCan
-                </Link>
+        <div>
+            <nav className="bg-background flex items-center justify-between border-b px-4 py-3 shadow md:px-8">
+                {/* Logo + Sustainability Tip */}
+                <div className="flex items-end gap-3">
+                    <Link href="/" className="text-2xl font-bold text-green-600">
+                        PuduCan
+                    </Link>
+                    <span className="text-muted-foreground hidden sm:block">|</span>
+                    <div className="hidden sm:block">
+                        <SustainabilityTip />
+                    </div>
+                </div>
 
                 {/* Hamburger Updated*/}
                 <button
@@ -46,13 +51,9 @@ export default function Navbar() {
                 </button>
 
                 {/* Desktop Menu */}
-                <div className="hidden items-center gap-4 md:flex">
-                    <div className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium">
-                        Press{' '}
-                        <kbd className="rounded border bg-muted px-1.5 py-0.5 text-xs">
-                            ?
-                        </kbd>{' '}
-                        for shortcuts
+                <div className="hidden md:flex items-center gap-4">
+                    <div className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors">
+                        Press <kbd className="rounded border bg-muted px-1.5 py-0.5 text-xs">?</kbd> for shortcuts
                     </div>
 
                     {canViewStats && (
