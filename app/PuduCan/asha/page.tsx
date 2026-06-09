@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import WelcomeBanner from '@/components/dashboard/WelcomeBanner'
 import { withAuth } from '@/components/hoc/withAuth'
 import PatientFormMobile from '@/components/asha/PatientFormMobile'
@@ -9,27 +9,19 @@ import { useTableData } from '@/hooks/table/useTableData'
 import { Patient } from '@/schema/patient'
 import { toast } from 'sonner'
 
-
 function AshaPageContent() {
     const { user, userId, isLoadingAuth } = useAuth()
 
-    // 🔹 Build queryProps like the doctor page
     const queryProps = {
         orgId: null,
         ashaId: userId,
         enabled: !isLoadingAuth && !!user?.email,
         requiredData: 'patients' as const,
     }
-    const {
-        data: patients = [],
-        isLoading,
-        isError,
-    } = (useTableData(queryProps) ?? {}) as {
-        data: Patient[]
-        isLoading: boolean
-        isError: boolean
-    }
 
+    const { data: queryResult, isLoading, isError } = useTableData(queryProps)
+
+    const patients: Patient[] = (queryResult as { data: Patient[]; lastDoc: any } | undefined)?.data ?? []
 
     if (isLoading || isLoadingAuth) {
         return (
@@ -50,32 +42,29 @@ function AshaPageContent() {
     }
 
     return (
-    <main className="mt-4 p-4">
-
-        <div className="mb-4 flex justify-end">
-            <WelcomeBanner />
-        </div>
-
-        <h1 className="mb-4 text-center text-xl font-bold">
-            Your Assigned Patients
-        </h1>
-
-        {patients.length === 0 ? (
-            <p className="text-center text-sm">
-                No patients assigned to you.
-            </p>
-        ) : (
-            <div className="mx-auto flex flex-col items-center gap-4 overflow-auto">
-                {patients.map((patient: Patient) => (
-                    <PatientFormMobile
-                        key={patient.id}
-                        patient={patient}
-                    />
-                ))}
+        <main className="mt-4 p-4">
+            <div className="mb-4 flex justify-end">
+                <WelcomeBanner />
             </div>
-        )}
-    </main>
-)
+            <h1 className="mb-4 text-center text-xl font-bold">
+                Your Assigned Patients
+            </h1>
+            {patients.length === 0 ? (
+                <p className="text-center text-sm">
+                    No patients assigned to you.
+                </p>
+            ) : (
+                <div className="mx-auto flex flex-col items-center gap-4 overflow-auto">
+                    {patients.map((patient: Patient) => (
+                        <PatientFormMobile
+                            key={patient.id}
+                            patient={patient}
+                        />
+                    ))}
+                </div>
+            )}
+        </main>
+    )
 }
 
 export default withAuth(AshaPageContent, ROLE_CONFIG.asha)
