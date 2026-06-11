@@ -21,10 +21,8 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
         queryFn: async () => {
             let q
             if (isAdmin) {
-                // Admin sees all patients across every hospital
                 q = query(collection(db, 'patients'))
             } else if (orgId) {
-                // Doctor / Nurse see only their hospital's patients
                 q = query(collection(db, 'patients'), where('assignedHospital.id', '==', orgId))
             } else {
                 return []
@@ -87,7 +85,7 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
         const diseaseData = Object.entries(diseaseMap)
             .map(([name, value]) => ({ name, value }))
             .sort((a, b) => b.value - a.value)
-            .slice(0, 10) // top 10 diseases
+            .slice(0, 10)
 
         // Cancer stage distribution
         const stageMap: Record<string, number> = {}
@@ -151,12 +149,42 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
             if (p.patientStatus === 'Alive') aliveAtLastUpdate++
         }
         const funnelData = [
-            { name: 'Registered',          value: registered },
-            { name: 'Treatment Started',   value: treatmentStarted },
-            { name: 'Treatment Completed', value: treatmentCompleted },
-            { name: 'Follow-up Recorded',  value: followUpRecorded },
-            { name: 'Alive at Last Update',value: aliveAtLastUpdate },
+            { name: 'Registered',           value: registered },
+            { name: 'Treatment Started',    value: treatmentStarted },
+            { name: 'Treatment Completed',  value: treatmentCompleted },
+            { name: 'Follow-up Recorded',   value: followUpRecorded },
+            { name: 'Alive at Last Update', value: aliveAtLastUpdate },
         ]
+
+        return {
+            total,
+            alive,
+            deceased,
+            notAvailable,
+            male,
+            female,
+            other,
+            withAsha,
+            withoutAsha: total - withAsha,
+            diseaseData,
+            stageData,
+            insuranceData,
+            rationData,
+            registrationTrend,
+            funnelData,
+            statusData: [
+                { name: 'Alive', value: alive },
+                { name: 'Not Alive', value: deceased },
+                { name: 'Not Available', value: notAvailable },
+            ].filter((d) => d.value > 0),
+            genderData: [
+                { name: 'Male', value: male },
+                { name: 'Female', value: female },
+                { name: 'Other', value: other },
+            ].filter((d) => d.value > 0),
+        }
+    }, [patients])
+
     // ── Derived admin stats ───────────────────────────────────────────
     const adminStats = useMemo(() => {
         if (!isAdmin) return null
@@ -166,7 +194,6 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
         const ashas = users.filter((u) => u.role === 'asha').length
         const admins = users.filter((u) => u.role === 'admin').length
 
-        // Patients per hospital (sorted by count)
         const hospitalMap: Record<string, { name: string; patients: number }> = {}
         hospitals.forEach((h) => {
             hospitalMap[h.id!] = { name: h.name, patients: 0 }
@@ -186,7 +213,6 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
             { name: 'Admins', value: admins },
         ].filter((d) => d.value > 0)
 
-        // ASHA coverage: patients with vs without assigned ASHA per hospital
         const ashaCoverageData = Object.values(hospitalMap).map((h) => {
             const hPatients = patients.filter((p) => p.assignedHospital?.id === Object.keys(hospitalMap).find((k) => hospitalMap[k] === h))
             const covered = hPatients.filter((p) => p.assignedAsha && p.assignedAsha !== 'none').length
