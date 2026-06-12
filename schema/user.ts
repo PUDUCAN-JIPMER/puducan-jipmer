@@ -22,6 +22,7 @@ export interface AuthState {
     userId: string | null
     role: string | null
     orgId: string | null
+    orgName: string | null
     isLoadingAuth: boolean
     error: Error | null
 }
