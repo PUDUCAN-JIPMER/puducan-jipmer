@@ -15,7 +15,7 @@ const FOOTER_COLUMNS: FooterColumn[] = [
         label: 'Quick Links',
         links: [
             { text: 'Home', href: '/home' },
-            { text: 'About PuduCan', href: '/home/about' },
+            { text: 'About PuduCan', href: '/home#about' },
             { text: 'Access Dashboard', href: '/login' },
             { text: 'Reports', href: '/dashboard/reports' },
             { text: 'Data Entry', href: '/dashboard/data-entry' },
@@ -34,9 +34,9 @@ const FOOTER_COLUMNS: FooterColumn[] = [
     {
         label: 'Study Info',
         links: [
-            { text: 'Study Protocol', href: '/home/about#protocol' },
+            { text: 'Study Protocol', href: '/home#about' },
             { text: 'JIPMER Website', href: 'https://jipmer.edu.in', external: true },
-            { text: 'Ethics & Compliance', href: '/home/about#ethics' },
+            { text: 'Ethics & Compliance', href: '/home#about' },
             { text: 'Publications', href: '/home/publications' },
             { text: 'Data Privacy', href: '/home/privacy' },
         ],
@@ -170,7 +170,7 @@ export default function Footer() {
                             Terms of Use
                         </Link>
                         <Link
-                            href="/home/about#ethics"
+                            href="/home#about"
                             className="hover:text-foreground transition-colors duration-150"
                         >
                             Ethics
