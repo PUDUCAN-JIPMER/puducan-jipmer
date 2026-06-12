@@ -16,7 +16,10 @@ export default function HomeNavbar() {
     const { user } = useAuth()
 
     const navItem = (label: string, href: string, exact = false) => {
-        const isActive = exact ? pathname === href : pathname.startsWith(href)
+        const cleanHref = href.split('#')[0]
+        const isActive = exact
+            ? pathname === cleanHref
+            : pathname.startsWith(cleanHref)
         return (
             <Link
                 href={href}
@@ -50,7 +53,7 @@ export default function HomeNavbar() {
 
                 <div className="hidden items-center space-x-1 text-nowrap sm:flex md:space-x-2 lg:space-x-3">
                     {navItem('Home', '/home', true)}
-                    {navItem('About', '/home/about')}
+                    {navItem('About', '/home#about')}
                     {user && navItem('Reports', '/home/reports')}
 
                     {/* Desktop Data Entry — plain div, no Radix */}
@@ -103,7 +106,7 @@ export default function HomeNavbar() {
             >
                 <div className="flex flex-col border-t border-white/10 bg-pink-950/60 backdrop-blur-md">
                     {navItem('Home', '/home', true)}
-                    {navItem('About', '/home/about')}
+                    {navItem('About', '/home#about')}
                     {user && navItem('Reports', '/home/reports')}
 
                     {/* Mobile Data Entry */}
