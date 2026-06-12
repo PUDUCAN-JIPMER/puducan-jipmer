@@ -3,9 +3,8 @@ import { Patient } from '@/schema/patient'
 import { Hospital } from '@/schema/hospital'
 import { UserDoc } from '@/schema/user'
 import { useQuery } from '@tanstack/react-query'
-import { collection, getDocs, query } from 'firebase/firestore'
+import { collection, getDocs, query, where } from 'firebase/firestore'
 import { useMemo } from 'react'
-import { MAX_ANALYTICS_ITEMS } from '@/lib/analytics/analyticsUtils'
 
 interface UseStatsDataProps {
     role: string | null
@@ -14,30 +13,24 @@ interface UseStatsDataProps {
 
 export function useStatsData({ role, orgId }: UseStatsDataProps) {
     const isAdmin = role === 'admin'
+    const isPatientRole = role === 'doctor' || role === 'nurse'
 
     // ── Patients ──────────────────────────────────────────────────────
-    // NOTE: useTableData (Doctor Dashboard) always fetches ALL patients with no
-    // Firestore-level filter, even when orgId is present. The previous
-    // where('assignedHospital.id', '==', orgId) filter returned 0 results
-    // because the nested field path / index was not matching correctly.
-    // We mirror the dashboard's proven approach: fetch the full collection and
-    // let the derived stats memos do the in-memory per-hospital aggregation.
     const patientsQuery = useQuery<Patient[], Error>({
-        queryKey: ['stats-patients', { role }],
+        queryKey: ['stats-patients', { role, orgId }],
         queryFn: async () => {
-            const collectionName = 'patients'
-            console.log('Analytics collection:', collectionName)
-            const q = query(collection(db, collectionName))
-            const snap = await getDocs(q)
-            console.log('Fetched analytics docs:', snap.docs.length)
-            if (snap.docs.length > 0) {
-                const sample = snap.docs[0].data()
-                console.log('Sample doc assignedHospital:', sample.assignedHospital, '| orgId:', orgId)
-                console.log('Sample hospitalRegistrationDate:', sample.hospitalRegistrationDate)
+            let q
+            if (isAdmin) {
+                q = query(collection(db, 'patients'))
+            } else if (orgId) {
+                q = query(collection(db, 'patients'), where('assignedHospital.id', '==', orgId))
+            } else {
+                return []
             }
+            const snap = await getDocs(q)
             return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Patient[]
         },
-        enabled: !!role,
+        enabled: !!(role && (isAdmin || (isPatientRole && !!orgId))),
         staleTime: 60 * 1000,
     })
 
@@ -63,9 +56,9 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
         staleTime: 60 * 1000,
     })
 
-    const patients = useMemo(() => patientsQuery.data ?? [], [patientsQuery.data])
-    const hospitals = useMemo(() => hospitalsQuery.data ?? [], [hospitalsQuery.data])
-    const users = useMemo(() => usersQuery.data ?? [], [usersQuery.data])
+    const patients = patientsQuery.data ?? []
+    const hospitals = hospitalsQuery.data ?? []
+    const users = usersQuery.data ?? []
 
     // ── Derived patient stats (shared by all roles) ───────────────────
     const patientStats = useMemo(() => {
@@ -85,24 +78,19 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
         // Disease distribution
         const diseaseMap: Record<string, number> = {}
         patients.forEach((p) => {
-            ; (p.diseases ?? []).forEach((d) => {
+            ;(p.diseases ?? []).forEach((d) => {
                 if (d) diseaseMap[d] = (diseaseMap[d] ?? 0) + 1
             })
         })
         const diseaseData = Object.entries(diseaseMap)
             .map(([name, value]) => ({ name, value }))
             .sort((a, b) => b.value - a.value)
-            .slice(0, MAX_ANALYTICS_ITEMS)
+            .slice(0, 10)
 
-        // Cancer stage distribution (use structured stage + optional sub-stage)
+        // Cancer stage distribution
         const stageMap: Record<string, number> = {}
         patients.forEach((p) => {
-            const s = p.stageOfTheCancer
-            const stage = s?.stage
-                ? s.subStage
-                    ? `${s.stage} + ${s.subStage}`
-                    : s.stage
-                : 'Unknown'
+            const stage = p.stageOfTheCancer?.trim() || 'Unknown'
             stageMap[stage] = (stageMap[stage] ?? 0) + 1
         })
         const stageData = Object.entries(stageMap)
@@ -131,6 +119,43 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
         })
         const rationData = Object.entries(rationMap).map(([name, value]) => ({ name, value }))
 
+        // Monthly registrations – last 12 months
+        const monthMap: Record<string, number> = {}
+        const now = new Date()
+        for (let i = 11; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+            const key = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+            monthMap[key] = 0
+        }
+        patients.forEach((p) => {
+            if (p.hospitalRegistrationDate) {
+                const d = new Date(p.hospitalRegistrationDate)
+                const key = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+                if (key in monthMap) monthMap[key]++
+            }
+        })
+        const registrationTrend = Object.entries(monthMap).map(([month, count]) => ({
+            month,
+            count,
+        }))
+
+        // Treatment Outcome Funnel — single pass for efficiency
+        let registered = 0, treatmentStarted = 0, treatmentCompleted = 0, followUpRecorded = 0, aliveAtLastUpdate = 0
+        for (const p of patients) {
+            if (p.hospitalRegistrationDate) registered++
+            if (p.treatmentStartDate) treatmentStarted++
+            if (p.treatmentEndDate) treatmentCompleted++
+            if ((p.followUps?.length ?? 0) > 0) followUpRecorded++
+            if (p.patientStatus === 'Alive') aliveAtLastUpdate++
+        }
+        const funnelData = [
+            { name: 'Registered',           value: registered },
+            { name: 'Treatment Started',    value: treatmentStarted },
+            { name: 'Treatment Completed',  value: treatmentCompleted },
+            { name: 'Follow-up Recorded',   value: followUpRecorded },
+            { name: 'Alive at Last Update', value: aliveAtLastUpdate },
+        ]
+
         return {
             total,
             alive,
@@ -145,36 +170,8 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
             stageData,
             insuranceData,
             rationData,
-            // Registration trend: last 12 months (chronological)
-            registrationTrend: (() => {
-                const now = new Date()
-                // build list of last 12 months keys in YYYY-MM format
-                const months: string[] = Array.from({ length: 12 }).map((_, i) => {
-                    const d = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1)
-                    const y = d.getFullYear()
-                    const m = String(d.getMonth() + 1).padStart(2, '0')
-                    return `${y}-${m}`
-                })
-
-                const counts: Record<string, number> = {}
-                for (const key of months) counts[key] = 0
-
-                for (const p of patients) {
-                    const raw = p.hospitalRegistrationDate ?? p.createdAt ?? null
-                    if (!raw) continue
-                    const d = new Date(String(raw))
-                    if (Number.isNaN(d.getTime())) continue
-                    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-                    if (key in counts) counts[key]++
-                }
-
-                return months.map((k) => {
-                    const [y, m] = k.split('-')
-                    const date = new Date(Number(y), Number(m) - 1, 1)
-                    const label = date.toLocaleString('default', { month: 'short', year: 'numeric' })
-                    return { month: label, count: counts[k] ?? 0 }
-                })
-            })(),
+            registrationTrend,
+            funnelData,
             statusData: [
                 { name: 'Alive', value: alive },
                 { name: 'Not Alive', value: deceased },
@@ -197,7 +194,6 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
         const ashas = users.filter((u) => u.role === 'asha').length
         const admins = users.filter((u) => u.role === 'admin').length
 
-        // Patients per hospital (sorted by count)
         const hospitalMap: Record<string, { name: string; patients: number }> = {}
         hospitals.forEach((h) => {
             hospitalMap[h.id!] = { name: h.name, patients: 0 }
@@ -217,7 +213,6 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
             { name: 'Admins', value: admins },
         ].filter((d) => d.value > 0)
 
-        // ASHA coverage: patients with vs without assigned ASHA per hospital
         const ashaCoverageData = Object.values(hospitalMap).map((h) => {
             const hPatients = patients.filter((p) => p.assignedHospital?.id === Object.keys(hospitalMap).find((k) => hospitalMap[k] === h))
             const covered = hPatients.filter((p) => p.assignedAsha && p.assignedAsha !== 'none').length
@@ -239,7 +234,6 @@ export function useStatsData({ role, orgId }: UseStatsDataProps) {
 
     return {
         patientStats,
-        patients,
         adminStats,
         isLoading:
             patientsQuery.isLoading ||
