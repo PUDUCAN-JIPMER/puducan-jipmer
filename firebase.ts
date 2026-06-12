@@ -12,13 +12,12 @@ import {
 // Validate required Firebase environment variables before initialization
 // Missing variables cause silent failures in auth and Firestore — critical in a healthcare context
 const requiredEnvVars = {
-  NEXT_PUBLIC_FIREBASE_API_KEY: 'AIzaSyAHLgbuZqBaMK-hRAklZ3CyeqK-vj_Pl74',
-  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: 'puducan-jipmer-29523.firebaseapp.com',
-  NEXT_PUBLIC_FIREBASE_PROJECT_ID: 'puducan-jipmer-29523',
-  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: 'puducan-jipmer-29523.firebasestorage.app',
-  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: '63383542916',
-  NEXT_PUBLIC_FIREBASE_APP_ID: '1:63383542916:web:aea7cd4e48d6d703ec76d1',
-  NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: 'G-246PEB6XW2',
+  NEXT_PUBLIC_FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  NEXT_PUBLIC_FIREBASE_PROJECT_ID: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
 if (process.env.NODE_ENV !== 'test' && process.env.NODE_ENV !== 'development') {
