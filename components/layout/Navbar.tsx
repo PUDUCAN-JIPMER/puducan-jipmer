@@ -1,7 +1,7 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
-import { BarChart3, Menu } from 'lucide-react'
+import { BarChart3, Menu, Moon, X } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
@@ -35,62 +35,85 @@ export default function Navbar() {
                     </div>
                 </div>
 
-                {/* Hamburger (mobile) */}
-                <div className="md:hidden">
-                    <button
-                        onClick={() => setMenuOpen(!menuOpen)}
-                        className="text-gray-600 focus:outline-none"
-                    >
+                {/* Hamburger Updated*/}
+                <button
+                    onClick={() => setMenuOpen(!menuOpen)}
+                    className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted md:hidden"
+                    aria-label="Toggle menu"
+                    aria-expanded={menuOpen}
+                    aria-controls="mobile-menu"
+                >
+                    {menuOpen ? (
+                        <X className="h-6 w-6" />
+                    ) : (
                         <Menu className="h-6 w-6" />
-                    </button>
-                </div>
+                    )}
+                </button>
 
                 {/* Desktop Menu */}
                 <div className="hidden md:flex items-center gap-4">
                     <div className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors">
                         Press <kbd className="rounded border bg-muted px-1.5 py-0.5 text-xs">?</kbd> for shortcuts
                     </div>
+
                     {canViewStats && (
                         <Link
                             href={statsHref}
-                            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${isStatsActive
-                                ? 'bg-primary/10 text-primary'
-                                : 'text-foreground hover:bg-muted'
-                                }`}
+                            className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                                isStatsActive
+                                    ? 'bg-primary/10 text-primary'
+                                    : 'text-foreground hover:bg-muted'
+                            }`}
                         >
                             <BarChart3 className="h-4 w-4" />
                             Stats
                         </Link>
                     )}
+
                     <ModeToggle />
                     <SignOutButton />
                 </div>
+            </div>
 
-                {/* Mobile Dropdown */}
-                {menuOpen && (
-                    <div className="absolute top-16 right-0 z-50 min-w-[180px] rounded-md border-t bg-background shadow-md md:hidden">
-                        <div className="flex flex-col items-start gap-2 p-4">
-                            {canViewStats && (
-                                <Link
-                                    href={statsHref}
-                                    onClick={() => setMenuOpen(false)}
-                                    className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${isStatsActive
+            {/* Mobile Dropdown */}
+            {menuOpen && (
+                <div
+                    id="mobile-menu"
+                    className="animate-in slide-in-from-top-2 border-t bg-background md:hidden"
+                >
+                    <div className="flex flex-col divide-y px-4 py-2">
+                        {canViewStats && (
+                            <Link
+                                href={statsHref}
+                                onClick={() => setMenuOpen(false)}
+                                className={`flex items-center gap-3 rounded-md px-3 py-4 text-sm font-medium transition-colors ${
+                                    isStatsActive
                                         ? 'bg-primary/10 text-primary'
-                                        : 'text-foreground hover:bg-muted'
-                                        }`}
-                                >
-                                    <BarChart3 className="h-4 w-4" />
-                                    Stats
-                                </Link>
-                            )}
-                            <div className="w-full flex justify-center">
-                                <ModeToggle />
+                                        : 'text-foreground hover:bg-muted/50 hover:text-primary'
+                                }`}
+                            >
+                                <BarChart3 className="h-4 w-4" />
+                                <span>Stats</span>
+                            </Link>
+                        )}
+
+                        {/* Theme Toggle */}
+                        <div className="flex items-center justify-between rounded-md px-3 py-4 transition-colors hover:bg-muted/50">
+                            <div className="flex items-center gap-3 text-sm font-medium">
+                                <Moon className="h-4 w-4" />
+                                Appearance
                             </div>
-                            <SignOutButton className="w-full" />
+
+                            <ModeToggle />
+                        </div>
+
+                        {/* Sign Out */}
+                        <div className="pt-3">
+                            <SignOutButton className="w-full justify-start rounded-md px-3 py-2 text-sm font-medium hover:bg-muted/50" />
                         </div>
                     </div>
-                )}
-            </nav>
-        </div>
+                </div>
+            )}
+        </nav>
     )
 }
