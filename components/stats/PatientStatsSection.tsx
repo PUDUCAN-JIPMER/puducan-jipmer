@@ -1,6 +1,6 @@
 'use client'
-
-import { memo} from 'react'
+import { memo } from 'react'
+import { LabelList } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StatCard } from './StatCard'
 import {
@@ -448,280 +448,670 @@ export function PatientStatsSection({
 
             {/* ── Row 1 ───────────────────────────── */}
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <ChartCard title="Patient Status" empty={!stats.statusData.length}>
-                    <ResponsiveContainer width="100%" height={220}>
-                        <PieChart>
-                            <Pie
-                                data={stats.statusData}
-                                cx="50%"
-                                cy="50%"
-                                outerRadius={80}
-                                dataKey="value"
-                                labelLine={false}
-                                label={PieLabel}
-                            >
-                                {stats.statusData.map((e) => (
-                                    <Cell
-                                        key={e.name}
-                                        fill={
-                                            STATUS_COLORS[e.name] ??
-                                            '#94a3b8'
-                                        }
-                                    />
-                                ))}
-                            </Pie>
+                <ChartCard title="Patient Status">
+    <div className="flex flex-col items-center gap-4 md:flex-row md:items-center md:justify-between">
 
-                            <Tooltip content={<ChartTooltip />} />
+        {/* Donut */}
+        <div className="h-[250px] w-full md:w-[45%]">
+            <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                    <defs>
+                        <linearGradient id="statusGradient" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stopColor="#3b82f6" />
+                            <stop offset="100%" stopColor="#1e3a8a" />
+                        </linearGradient>
+                    </defs>
 
-                            <Legend
-                                wrapperStyle={{ fontSize: 12 }}
+                    <Pie
+                        data={stats.statusData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={70}
+                        outerRadius={105}
+                        paddingAngle={2}
+                        dataKey="value"
+                        stroke="none"
+                    >
+                        {stats.statusData.map((_, index) => (
+                            <Cell
+                                key={index}
+                                fill={
+                                    index === 0
+                                        ? 'url(#statusGradient)'
+                                        : index === 1
+                                            ? '#64748b'
+                                            : '#cbd5e1'
+                                }
                             />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </ChartCard>
+                        ))}
+                    </Pie>
 
-                <ChartCard title="Gender Distribution" empty={!stats.genderData.length}>
-                    <ResponsiveContainer width="100%" height={220}>
-                        <PieChart>
-                            <Pie
-                                data={stats.genderData}
-                                cx="50%"
-                                cy="50%"
-                                outerRadius={80}
-                                dataKey="value"
-                                labelLine={false}
-                                label={PieLabel}
-                            >
-                                {stats.genderData.map((e) => (
-                                    <Cell
-                                        key={e.name}
-                                        fill={
-                                            GENDER_COLORS[e.name] ??
-                                            '#94a3b8'
-                                        }
-                                    />
-                                ))}
-                            </Pie>
+                    {/* Center Content */}
+                    <text
+                        x="50%"
+                        y="47%"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fill="currentColor"
+                        fontSize="34"
+                        fontWeight="700"
+                    >
+                        {stats.total}
+                    </text>
 
-                            <Tooltip content={<ChartTooltip />} />
+                    <text
+                        x="50%"
+                        y="60%"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fill="#94a3b8"
+                        fontSize="13"
+                    >
+                        Total
+                    </text>
 
-                            <Legend
-                                wrapperStyle={{ fontSize: 12 }}
+                    <Tooltip />
+                </PieChart>
+            </ResponsiveContainer>
+        </div>
+
+        {/* Status Summary */}
+        <div className="w-full space-y-2 md:w-[50%]">
+            {stats.statusData.map((item, index) => {
+                const percentage = stats.total
+                    ? ((item.value / stats.total) * 100).toFixed(1)
+                    : '0'
+
+                const dotColor =
+                    index === 0
+                        ? '#2563eb'
+                        : index === 1
+                            ? '#64748b'
+                            : '#cbd5e1'
+
+                return (
+                    <div
+                        key={item.name}
+                        className="
+                            flex items-center justify-between
+                            rounded-xl border
+                            px-4 py-3
+                            transition-all duration-200
+                            hover:border-primary/40
+                            hover:bg-muted/30
+                            hover:shadow-sm
+                        "
+                    >
+                        <div className="flex items-center gap-3">
+                            <span
+                                className="h-3 w-3 rounded-full"
+                                style={{ backgroundColor: dotColor }}
                             />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </ChartCard>
+
+                            <span className="font-medium">
+                                {item.name}
+                            </span>
+                        </div>
+
+                        <div className="text-right">
+                            <div className="font-semibold">
+                                {item.value}
+                            </div>
+
+                            <div className="text-xs text-muted-foreground">
+                                {percentage}%
+                            </div>
+                        </div>
+                    </div>
+                )
+            })}
+        </div>
+    </div>
+</ChartCard>
+
+                <ChartCard title="Gender Distribution">
+    <div className="flex flex-col items-center gap-4 md:flex-row md:items-center md:justify-between">
+
+        {/* Donut */}
+        <div className="h-[250px] w-full md:w-[45%]">
+            <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                    <defs>
+                        <linearGradient id="genderGradient" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stopColor="#60a5fa" />
+                            <stop offset="100%" stopColor="#2563eb" />
+                        </linearGradient>
+                    </defs>
+
+                    <Pie
+                        data={stats.genderData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={70}
+                        outerRadius={105}
+                        paddingAngle={2}
+                        dataKey="value"
+                        stroke="none"
+                    >
+                        {stats.genderData.map((_, index) => (
+                            <Cell
+                                key={index}
+                                fill={
+                                    index === 0
+                                        ? 'url(#genderGradient)'
+                                        : '#93c5fd'
+                                }
+                            />
+                        ))}
+                    </Pie>
+
+                    <text
+                        x="50%"
+                        y="47%"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fill="currentColor"
+                        fontSize="34"
+                        fontWeight="700"
+                    >
+                        {stats.male + stats.female + stats.other}
+                    </text>
+
+                    <text
+                        x="50%"
+                        y="60%"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fill="#94a3b8"
+                        fontSize="13"
+                    >
+                        Total
+                    </text>
+
+                    <Tooltip />
+                </PieChart>
+            </ResponsiveContainer>
+        </div>
+
+        {/* Breakdown */}
+        <div className="w-full space-y-2 md:w-[50%]">
+            {stats.genderData.map((item, index) => {
+                const percentage =
+                    stats.total > 0
+                        ? ((item.value / stats.total) * 100).toFixed(1)
+                        : '0'
+
+                const color =
+                    index === 0
+                        ? '#2563eb'
+                        : '#93c5fd'
+
+                return (
+                    <div
+                        key={item.name}
+                        className="
+                            flex items-center justify-between
+                            rounded-xl border
+                            px-4 py-3
+                            transition-all duration-200
+                            hover:border-primary/40
+                            hover:bg-muted/30
+                            hover:shadow-sm
+                        "
+                    >
+                        <div className="flex items-center gap-3">
+                            <span
+                                className="h-3 w-3 rounded-full"
+                                style={{ backgroundColor: color }}
+                            />
+
+                            <span className="font-medium">
+                                {item.name}
+                            </span>
+                        </div>
+
+                        <div className="text-right">
+                            <div className="font-semibold">
+                                {item.value}
+                            </div>
+
+                            <div className="text-xs text-muted-foreground">
+                                {percentage}%
+                            </div>
+                        </div>
+                    </div>
+                )
+            })}
+        </div>
+    </div>
+</ChartCard>
             </div>
 
             {/* ── Row 2 ───────────────────────────── */}
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <ChartCard
-                    title="Disease Distribution"
-                    empty={!stats.diseaseData.length}
-                >
-                    <ResponsiveContainer width="100%" height={260}>
-                        <BarChart
-                            data={stats.diseaseData}
-                            layout="vertical"
-                            margin={{ left: 4 }}
-                        >
-                            <CartesianGrid
-                                strokeDasharray="3 3"
-                                horizontal={false}
-                            />
+                <ChartCard title="Disease Distribution" empty={!stats.diseaseData.length}>
+    <ResponsiveContainer width="100%" height={300}>
+        <BarChart
+            data={[...stats.diseaseData].sort((a, b) => b.value - a.value)}
+            layout="vertical"
+            margin={{ top: 10, right: 60, left: 10, bottom: 10 }}
+        >
+            <CartesianGrid
+                strokeDasharray="3 3"
+                horizontal={false}
+                strokeOpacity={0.3}
+            />
 
-                            <XAxis
-                                type="number"
-                                allowDecimals={false}
-                                tick={{ fontSize: 11 }}
-                            />
+            <XAxis
+                type="number"
+                allowDecimals={false}
+                tick={{ fontSize: 11 }}
+            />
 
-                            <YAxis
-                                type="category"
-                                dataKey="name"
-                                width={115}
-                                tick={{ fontSize: 11 }}
-                            />
+            <YAxis
+                type="category"
+                dataKey="name"
+                width={120}
+                tick={{ fontSize: 11 }}
+            />
 
-                            <Tooltip content={<ChartTooltip />} />
+            <Tooltip
+          formatter={(value: any) => {
+            const percentage = stats.total
+              ? ((Number(value) / stats.total) * 100).toFixed(1)
+              : "0";
+            return [`${value} patients (${percentage}%)`, "Patients"];
+          }}
+        />
+            <Bar
+                dataKey="value"
+                name="Patients"
+                radius={[0, 8, 8, 0]}
+            >
+                {stats.diseaseData.map((_, index) => (
+            <Cell key={index} fill="#1e3a8a" /> // dark blue bars
+          ))}
 
-                            <Bar
-                                dataKey="value"
-                                name="Patients"
-                                radius={[0, 4, 4, 0]}
-                            >
-                                {stats.diseaseData.map((_, i) => (
-                                    <Cell
-                                        key={i}
-                                        fill={
-                                            COLORS[
-                                                i % COLORS.length
-                                            ]
-                                        }
-                                    />
-                                ))}
-                            </Bar>
-                        </BarChart>
-                    </ResponsiveContainer>
-                </ChartCard>
+                <LabelList
+  dataKey="value"
+  position="right"
+  content={(props) => {
+    const { value, x, y, width } = props;
+    const percentage = stats.total
+      ? ((Number(value) / stats.total) * 100).toFixed(1)
+      : "0";
+    return (
+      <text
+        x={Number(x) + Number(width) + 12} // push label outside bar
+        y={Number(y) + 12}                 // center vertically
+        fill="#64748b"
+        fontSize={12}
+        fontWeight={600}
+        textAnchor="start"                 // align text to left edge
+      >
+        {`${value} (${percentage}%)`}
+      </text>
+    );
+  }}
+/>
 
-                <ChartCard
-                    title="Cancer Stage"
-                    empty={!stats.stageData.length}
-                >
-                    <ResponsiveContainer width="100%" height={260}>
-                        <BarChart
-                            data={stats.stageData}
-                            margin={{ bottom: 20 }}
-                        >
-                            <CartesianGrid
-                                strokeDasharray="3 3"
-                                vertical={false}
-                            />
 
-                            <XAxis
-                                dataKey="name"
-                                tick={{ fontSize: 11 }}
-                                angle={-25}
-                                textAnchor="end"
-                                interval={0}
-                            />
 
-                            <YAxis
-                                allowDecimals={false}
-                                tick={{ fontSize: 11 }}
-                            />
 
-                            <Tooltip content={<ChartTooltip />} />
+                
+            </Bar>
+        </BarChart>
+    </ResponsiveContainer>
+</ChartCard>
+                <ChartCard title="Cancer Stage" empty={!stats.stageData.length}>
+  <ResponsiveContainer width="100%" height={260}>
+    <BarChart data={stats.stageData} margin={{ bottom: 20 }}>
+      <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.3} />
 
-                            <Bar
-                                dataKey="value"
-                                name="Patients"
-                                radius={[4, 4, 0, 0]}
-                            >
-                                {stats.stageData.map((_, i) => (
-                                    <Cell
-                                        key={i}
-                                        fill={
-                                            COLORS[
-                                                (i + 2) %
-                                                    COLORS.length
-                                            ]
-                                        }
-                                    />
-                                ))}
-                            </Bar>
-                        </BarChart>
-                    </ResponsiveContainer>
-                </ChartCard>
+      <XAxis
+        dataKey="name"
+        tick={{ fontSize: 11 }}
+        angle={-25}
+        textAnchor="end"
+        interval={0}
+      />
+      <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+
+      <Tooltip
+        formatter={(value: any) => {
+          const percentage = stats.total
+            ? ((Number(value) / stats.total) * 100).toFixed(1)
+            : "0";
+          return [`${value} patients (${percentage}%)`, "Patients"];
+        }}
+      />
+
+      <Bar dataKey="value" name="Patients" radius={[4, 4, 0, 0]} fill="#3b82f6">
+        <LabelList
+          dataKey="value"
+          position="top"
+          content={(props) => {
+            const { value, x, y } = props;
+            const percentage = stats.total
+              ? ((Number(value) / stats.total) * 100).toFixed(1)
+              : "0";
+            return (
+              <text
+                x={Number(x) + 20}
+                y={Number(y) - 4}
+                fill="#1e40af"
+                fontSize={11}
+                fontWeight={600}
+                textAnchor="middle"
+              >
+                {`${value} (${percentage}%)`}
+              </text>
+            );
+          }}
+        />
+      </Bar>
+    </BarChart>
+  </ResponsiveContainer>
+</ChartCard>
+
+
             </div>
 
             {/* ── Row 3 ───────────────────────────── */}
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <ChartCard title="Insurance Coverage" empty={!stats.insuranceData.length}>
-                    <ResponsiveContainer width="100%" height={210}>
-                        <PieChart>
-                            <Pie
-                                data={stats.insuranceData}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={50}
-                                outerRadius={80}
-                                dataKey="value"
-                                labelLine={false}
-                                label={PieLabel}
-                            >
-                                {stats.insuranceData.map(
-                                    (_, i) => (
-                                        <Cell
-                                            key={i}
-                                            fill={
-                                                COLORS[
-                                                    (i + 4) %
-                                                        COLORS.length
-                                                ]
-                                            }
-                                        />
-                                    )
-                                )}
-                            </Pie>
+                <ChartCard title="Insurance Coverage">
+  <div className="flex flex-col items-center gap-4 md:flex-row md:items-center md:justify-between">
 
-                            <Tooltip content={<ChartTooltip />} />
+    {/* Donut */}
+    <div className="h-[250px] w-full md:w-[45%]">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <defs>
+            <linearGradient id="insuranceGradient" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#3b82f6" />
+              <stop offset="100%" stopColor="#1e3a8a" />
+            </linearGradient>
+          </defs>
 
-                            <Legend
-                                wrapperStyle={{ fontSize: 12 }}
-                            />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </ChartCard>
+          <Pie
+            data={stats.insuranceData}
+            cx="50%"
+            cy="50%"
+            innerRadius={70}
+            outerRadius={105}
+            paddingAngle={2}
+            dataKey="value"
+            stroke="none"
+          >
+            {stats.insuranceData.map((item, index) => (
+              <Cell
+                key={index}
+                fill={
+                  index === 0
+                    ? 'url(#insuranceGradient)' // Government
+                    : index === 1
+                      ? '#60a5fa' // None
+                      : '#93c5fd' // Private
+                }
+              />
+            ))}
+          </Pie>
 
-                <ChartCard title="Ration Card Type" empty={stats.rationData.every((d) => d.value === 0)}>
-                    <ResponsiveContainer width="100%" height={210}>
-                        <BarChart data={stats.rationData}>
-                            <CartesianGrid
-                                strokeDasharray="3 3"
-                                vertical={false}
-                            />
+          {/* Center Content */}
+          <text
+            x="50%"
+            y="47%"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill="currentColor"
+            fontSize="34"
+            fontWeight="700"
+          >
+            {stats.total}
+          </text>
 
-                            <XAxis
-                                dataKey="name"
-                                tick={{ fontSize: 12 }}
-                            />
+          <text
+            x="50%"
+            y="60%"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill="#94a3b8"
+            fontSize="13"
+          >
+            Total
+          </text>
 
-                            <YAxis
-                                allowDecimals={false}
-                                tick={{ fontSize: 11 }}
-                            />
+          <Tooltip />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
 
-                            <Tooltip content={<ChartTooltip />} />
+    {/* Coverage Summary */}
+    <div className="w-full space-y-2 md:w-[50%]">
+      {stats.insuranceData.map((item, index) => {
+        const percentage = stats.total
+          ? ((item.value / stats.total) * 100).toFixed(1)
+          : '0'
 
-                            <Bar
-                                dataKey="value"
-                                name="Patients"
-                                radius={[4, 4, 0, 0]}
-                            >
-                                <Cell fill="#f87171" />
-                                <Cell fill="#fbbf24" />
-                                <Cell fill="#94a3b8" />
-                            </Bar>
-                        </BarChart>
-                    </ResponsiveContainer>
-                </ChartCard>
+        const dotColor =
+          index === 0
+            ? '#2563eb' // Government
+            : index === 1
+              ? '#60a5fa' // None
+              : '#93c5fd' // Private
+
+        return (
+          <div
+            key={item.name}
+            className="
+              flex items-center justify-between
+              rounded-xl border
+              px-4 py-3
+              transition-all duration-200
+              hover:border-primary/40
+              hover:bg-muted/30
+              hover:shadow-sm
+            "
+          >
+            <div className="flex items-center gap-3">
+              <span
+                className="h-3 w-3 rounded-full"
+                style={{ backgroundColor: dotColor }}
+              />
+
+              <span className="font-medium">
+                {item.name}
+              </span>
+            </div>
+
+            <div className="text-right">
+              <div className="font-semibold">
+                {item.value}
+              </div>
+
+              <div className="text-xs text-muted-foreground">
+                {percentage}%
+              </div>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  </div>
+</ChartCard>
+
+
+
+
+
+                <ChartCard title="Ration Card Type">
+  <div className="flex flex-col items-center gap-4 md:flex-row md:items-center md:justify-between">
+
+    {/* Donut */}
+    <div className="h-[250px] w-full md:w-[45%]">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <defs>
+            <linearGradient id="rationGradient" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#3b82f6" />   {/* Blue gradient start */}
+              <stop offset="100%" stopColor="#1e3a8a" /> {/* Blue gradient end */}
+            </linearGradient>
+          </defs>
+
+          <Pie
+            data={stats.rationData}
+            cx="50%"
+            cy="50%"
+            innerRadius={70}
+            outerRadius={105}
+            paddingAngle={2}
+            dataKey="value"
+            stroke="none"
+          >
+            {stats.rationData.map((item, index) => (
+              <Cell
+                key={index}
+                fill={
+                  index === 0
+                    ? 'url(#rationGradient)' // First category
+                    : index === 1
+                      ? '#60a5fa'           // Second category
+                      : '#93c5fd'           // Third category
+                }
+              />
+            ))}
+          </Pie>
+
+          {/* Center Content */}
+          <text
+            x="50%"
+            y="47%"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill="currentColor"
+            fontSize="34"
+            fontWeight="700"
+          >
+            {stats.total}
+          </text>
+
+          <text
+            x="50%"
+            y="60%"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill="#94a3b8"
+            fontSize="13"
+          >
+            Total
+          </text>
+
+          <Tooltip />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+
+    {/* Ration Card Summary */}
+    <div className="w-full space-y-2 md:w-[50%]">
+      {stats.rationData.map((item, index) => {
+        const percentage = stats.total
+          ? ((item.value / stats.total) * 100).toFixed(1)
+          : '0'
+
+        const dotColor =
+          index === 0
+            ? '#3b82f6' // Gradient blue
+            : index === 1
+              ? '#60a5fa' // Light blue
+              : '#93c5fd' // Lighter blue
+
+        return (
+          <div
+            key={item.name}
+            className="
+              flex items-center justify-between
+              rounded-xl border
+              px-4 py-3
+              transition-all duration-200
+              hover:border-primary/40
+              hover:bg-muted/30
+              hover:shadow-sm
+            "
+          >
+            <div className="flex items-center gap-3">
+              <span
+                className="h-3 w-3 rounded-full"
+                style={{ backgroundColor: dotColor }}
+              />
+
+              <span className="font-medium">
+                {item.name}
+              </span>
+            </div>
+
+            <div className="text-right">
+              <div className="font-semibold">
+                {item.value}
+              </div>
+
+              <div className="text-xs text-muted-foreground">
+                {percentage}%
+              </div>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  </div>
+</ChartCard>
+
             </div>
 
             {/* ── Registration Trend ─────────────── */}
             <ChartCard title="New Registrations – Last 12 Months">
-                <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={stats.registrationTrend}>
-                        <CartesianGrid
-                            strokeDasharray="3 3"
-                            vertical={false}
-                        />
+  <ResponsiveContainer width="100%" height={220}>
+    <LineChart data={stats.registrationTrend} margin={{ top: 20, right: 20, bottom: 10, left: 0 }}>
+      <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.3} />
+      <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+      <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
 
-                        <XAxis
-                            dataKey="month"
-                            tick={{ fontSize: 11 }}
-                        />
+      <Tooltip />
 
-                        <YAxis
-                            allowDecimals={false}
-                            tick={{ fontSize: 11 }}
-                        />
+      {/* Blue gradient for line */}
+      <defs>
+        <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#3b82f6" />
+          <stop offset="100%" stopColor="#1e3a8a" />
+        </linearGradient>
+      </defs>
 
-                        <Tooltip content={<ChartTooltip />} />
+      <Line
+        type="monotone"
+        dataKey="count"
+        name="Registrations"
+        stroke="url(#lineGradient)"
+        strokeWidth={2}
+        dot={{ fill: '#3b82f6', r: 3 }}
+        activeDot={{ r: 6, stroke: '#1e3a8a', strokeWidth: 2 }}
+      >
+        {/* Labels at each point with larger, bold font */}
+        <LabelList
+          dataKey="count"
+          position="top"
+          style={{
+            fontSize: 16,          // bigger font
+            fontWeight: 700,       // bold
+            fill: "#ffffff",       // white text for contrast
+            stroke: "#1e3a8a",     // dark blue outline
+            strokeWidth: 2,        // outline thickness
+          }}
+        />
+      </Line>
+    </LineChart>
+  </ResponsiveContainer>
+</ChartCard>
 
-                        <Line
-                            type="monotone"
-                            dataKey="count"
-                            name="Registrations"
-                            stroke="#4ade80"
-                            strokeWidth={2}
-                            dot={{ fill: '#4ade80', r: 3 }}
-                            activeDot={{ r: 5 }}
-                        />
-                    </LineChart>
-                </ResponsiveContainer>
-            </ChartCard>
+
         </div>
     )
 }
