@@ -1,5 +1,4 @@
 import Navbar from '@/components/layout/Navbar'
-import SustainabilityTip from '@/components/layout/SustainabilityTip'
 import { ReactNode } from 'react'
 
 export const metadata = {
@@ -11,7 +10,6 @@ export const metadata = {
 export default function PuduCanLayout({ children }: { children: ReactNode }) {
     return (
         <div>
-            <SustainabilityTip/>
             <Navbar />
             {children}
         </div>

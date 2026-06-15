@@ -8,7 +8,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog'
-import { Plus, Pencil } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import GenericUserForm from './GenericUserForm'
 
@@ -49,7 +49,7 @@ export default function GenericUserDialog({
     const onSubmit = async (data: UserFormInputs) => {
         try {
             if (mode === 'add') {
-                await addDoc(collection(db, 'users'), data)
+                const docRef = await addDoc(collection(db, 'users'), data)
                 toast.success(`${userType?.slice(0, -1)} added successfully.`)
             } else if (mode === 'edit' && userData?.id) {
                 await updateDoc(doc(db, 'users', userData.id), data)
@@ -60,7 +60,6 @@ export default function GenericUserDialog({
             setIsOpen(false)
             onSuccess?.()
         } catch (err) {
-            console.error(`Error saving ${userType}:`, err)
             toast.error(`Failed to save ${userType?.slice(0, -1)}. Please try again.`)
         }
     }

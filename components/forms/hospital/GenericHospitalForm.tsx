@@ -1,7 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
+import { useForm, FieldErrors } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import {
     Form,
@@ -14,6 +14,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { HospitalFormInputs, HospitalSchema } from '@/schema/hospital'
 import { PhoneInput } from '@/components/ui/phone-input'
+import { toast } from 'sonner'
 
 interface GenericHospitalFormProps {
     initialData?: HospitalFormInputs
@@ -42,9 +43,26 @@ export default function GenericHospitalForm({
         form.reset()
     }
 
+    const onInvalidSubmit = (errors: FieldErrors<HospitalFormInputs>) => {
+        const currentPayload = form.getValues();
+        console.error('[HospitalForm:ValidationErrors] Form submission blocked by validation errors:', errors);
+        console.log('[HospitalForm:ValidationErrors] Current form payload state:', currentPayload);
+        
+        const errorMessages = Object.entries(errors)
+            .map(([field, err]) => {
+                const message = err?.message || 'Invalid input';
+                return `${field}: ${message}`;
+            });
+
+        toast.error(`Form validation failed. Please check:`, {
+            description: errorMessages.slice(0, 3).join(', '),
+            duration: 6000
+        });
+    }
+
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(handleSubmit, onInvalidSubmit)} className="space-y-4">
                 <FormField
                     control={form.control}
                     name="name"
