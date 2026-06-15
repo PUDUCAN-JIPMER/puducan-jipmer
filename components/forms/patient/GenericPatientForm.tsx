@@ -7,13 +7,16 @@ import { Button } from '@/components/ui/button'
 import { PatientFormInputs } from '@/schema/patient'
 import { Form } from '@/components/ui/form'
 import { ColumnOne, ColumnTwo, ColumnThree, ColumnFour, ColumnFive } from '.'
+import { toast } from 'sonner'
 
 interface PatientFormProps {
     form: UseFormReturn<PatientFormInputs, any>
     reset: UseFormReset<PatientFormInputs>
     handleSubmit: UseFormHandleSubmit<PatientFormInputs, any>
     onSubmit: (data: PatientFormInputs) => Promise<void>
+    onClear?: () => void
     isEdit?: boolean
+    isSaving?: boolean
 }
 
 const STEPS = [
@@ -30,7 +33,9 @@ export default function GenericPatientForm({
     reset,
     handleSubmit,
     onSubmit,
+    onClear,
     isEdit = false,
+    isSaving = false,
 }: PatientFormProps) {
     const steps = isEdit ? EDIT_STEPS : STEPS
 
@@ -76,6 +81,20 @@ export default function GenericPatientForm({
         }
     }
 
+    const collectErrorMessages = (value: unknown, out: string[]) => {
+        if (!value || typeof value !== 'object') return
+
+        // react-hook-form stores message on leaf FieldError
+        const maybe = value as { message?: unknown; types?: unknown }
+        if (typeof maybe.message === 'string' && maybe.message.trim()) {
+            out.push(maybe.message.trim())
+        }
+
+        for (const v of Object.values(value as Record<string, unknown>)) {
+            if (v && typeof v === 'object') collectErrorMessages(v, out)
+        }
+    }
+
     return (
         <Form {...form}>
             <form
@@ -83,7 +102,25 @@ export default function GenericPatientForm({
                     e.preventDefault()
 
                     if (currentStep === totalSteps) {
-                        handleSubmit(onSubmit)(e)
+                        handleSubmit(
+                            onSubmit,
+                            (invalid) => {
+                                const fields = Object.keys(invalid ?? {})
+                                const messages: string[] = []
+                                collectErrorMessages(invalid, messages)
+                                const uniqueMessages = Array.from(new Set(messages)).slice(0, 5)
+
+                                const description =
+                                    uniqueMessages.length > 0
+                                        ? uniqueMessages.join('\n')
+                                        : 'Please check the highlighted fields and try again.'
+
+                                toast.error(`Missing/invalid details (${fields.length || 0})`, {
+                                    description,
+                                    duration: 7000,
+                                })
+                            }
+                        )(e)
                     }
                 }}
                 className="py-4 select-none"
@@ -181,9 +218,10 @@ export default function GenericPatientForm({
                                 ) : (
                                     <Button
                                         type="submit"
+                                        disabled={isSaving}
                                         className="h-10 bg-green-600 px-6 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800"
                                     >
-                                        {isEdit ? 'Update Patient' : 'Save Patient'}
+                                        {isSaving ? (isEdit ? 'Updating...' : 'Saving...') : isEdit ? 'Update Patient' : 'Save Patient'}
                                     </Button>
                                 )}
                             </div>
@@ -192,7 +230,13 @@ export default function GenericPatientForm({
                         <div className="mt-4 flex justify-end">
                             <Button
                                 variant="outline"
-                                onClick={() => reset()}
+                                onClick={() => {
+                                    if (onClear) {
+                                        onClear()
+                                    } else {
+                                        reset()
+                                    }
+                                }}
                                 type="button"
                                 className="border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
                             >
