@@ -8,7 +8,7 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
             <HomeNavbar />
             <NavigationLoading />
 
-            <main className="flex-1 p-4">
+            <main>
                 {children}
             </main>
 
