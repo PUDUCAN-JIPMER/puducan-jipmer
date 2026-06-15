@@ -40,7 +40,7 @@ export function GenericToolbar({
 }) {
     const pathname = usePathname()
     const queryClient = useQueryClient()
-    const { role } = useAuth()
+    const { role, orgName } = useAuth()
 
     const [mobileFilterOpen, setMobileFilterOpen] = useState(false)
     const [mobileAddOpen, setMobileAddOpen] = useState(false)
@@ -59,12 +59,19 @@ export function GenericToolbar({
         },
     })
 
-    const dashboardTitleContent = pathname.includes('/admin') ? (
-        <h1 className="hidden text-2xl font-bold sm:block">Admin Dashboard</h1>
-    ) : pathname.includes('/nurse') ? (
-        <h1 className="hidden text-2xl font-bold sm:block">Nurse Dashboard</h1>
-    ) : (
-        <h1 className="hidden text-2xl font-bold sm:block">Doctor Dashboard</h1>
+    const getDashboardTitle = () => {
+        if (pathname.includes('/admin')) return 'Admin Dashboard'
+        if (pathname.includes('/nurse')) return 'Nurse Dashboard'
+        return 'Doctor Dashboard'
+    }
+
+    const dashboardTitleContent = (
+        <div className="hidden sm:block">
+            <h1 className="text-2xl font-bold">{getDashboardTitle()}</h1>
+            {orgName && (
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">{orgName}</p>
+            )}
+        </div>
     )
 
     const handleExportCSV = () => exportToCSV(getExportData(), activeTab)

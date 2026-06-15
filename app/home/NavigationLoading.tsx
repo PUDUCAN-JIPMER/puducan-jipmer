@@ -16,6 +16,17 @@ export default function NavigationLoading() {
     useEffect(() => {
         const handleAnchorClick = (event: Event) => {
             const target = event.currentTarget as HTMLAnchorElement
+
+            if(!target.href) return
+
+            if(target.target === '_blank') return
+
+            const targetUrl = new URL(target.href , window.location.href)
+            if(targetUrl.hostname !== window.location.hostname) return
+
+            if(targetUrl.pathname === window.location.pathname && targetUrl.hash) return
+
+            
             if (target.href) {
                 setIsLoading(true)
             }
