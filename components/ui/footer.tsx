@@ -1,23 +1,66 @@
 'use client'
 
-import { FOOTER_GROUPS } from '@/constants/footer'
 import { auth } from '@/firebase'
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth'
 import { useEffect, useState } from 'react'
 import { getPaperSavedCount, calculateSheetsSaved } from '@/lib/papersaved'
+import Link from 'next/link'
+
+type FooterColumn =
+    | { label: string; links: { text: string; href: string; external?: boolean }[]; lines?: never }
+    | { label: string; lines: string[]; links?: never }
+
+const FOOTER_COLUMNS: FooterColumn[] = [
+    {
+        label: 'Quick Links',
+        links: [
+            { text: 'Home', href: '/home' },
+            { text: 'About PuduCan', href: '/home/about' },
+            { text: 'Access Dashboard', href: '/login' },
+            { text: 'Reports', href: '/dashboard/reports' },
+            { text: 'Data Entry', href: '/dashboard/data-entry' },
+        ],
+    },
+    {
+        label: 'Support',
+        links: [
+            { text: 'Contact Us', href: '/home/contact' },
+            { text: 'Training Materials', href: '/home/training' },
+            { text: 'FAQs', href: '/home/faq' },
+            { text: 'Report an Issue', href: '/home/report' },
+            { text: 'User Guide', href: '/home/guide' },
+        ],
+    },
+    {
+        label: 'Study Info',
+        links: [
+            { text: 'Study Protocol', href: '/home/about#protocol' },
+            { text: 'JIPMER Website', href: 'https://jipmer.edu.in', external: true },
+            { text: 'Ethics & Compliance', href: '/home/about#ethics' },
+            { text: 'Publications', href: '/home/publications' },
+            { text: 'Data Privacy', href: '/home/privacy' },
+        ],
+    },
+    {
+        label: 'Contact',
+        lines: [
+            'Principal Investigator, JIPMER',
+            'Dhanvantri Nagar, Puducherry',
+            'India — 605 006',
+            'puducan@jipmer.edu.in',
+            'Mon–Fri, 09:00–17:00 IST',
+        ],
+    },
+]
 
 export default function Footer() {
     const [sheetsSaved, setSheetsSaved] = useState<number | null>(null)
 
     useEffect(() => {
-        // Only run the aggregation query once we know there is an
-        // authenticated user to avoid Firestore permission-denied errors.
         const unsubscribe = onAuthStateChanged(auth, (user: FirebaseUser | null) => {
             if (user) {
                 getPaperSavedCount().then((count) => {
-                    if (count > 0) {
-                        setSheetsSaved(calculateSheetsSaved(count))
-                    }
+                    if (count > 0) setSheetsSaved(calculateSheetsSaved(count))
                 })
             } else {
                 setSheetsSaved(null)
@@ -27,71 +70,112 @@ export default function Footer() {
     }, [])
 
     return (
-        <footer className="border-t border-gray-200 bg-gradient-to-b from-gray-100 to-gray-50 text-sm text-gray-700 dark:border-gray-800 dark:from-[#111827] dark:to-[#0f172a] dark:text-gray-200">
-            <div className="mx-auto max-w-7xl px-6 py-8 sm:px-8 lg:px-10">
+        <footer className="border-border bg-card/30 border-t backdrop-blur-sm">
+            <div className="mx-auto max-w-7xl px-6 py-12 sm:px-8 lg:px-10">
+                {/* Top — brand + tagline */}
+                <div className="mb-10 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p className="text-foreground text-xl font-extrabold tracking-tight">
+                            PUDUCAN
+                        </p>
+                        <p className="text-muted-foreground mt-0.5 text-xs">
+                            A JIPMER Collaborative Oncology Initiative
+                        </p>
+                    </div>
+                    <p className="text-muted-foreground text-sm sm:text-right">
+                        Improving lives through data-driven cancer care.
+                    </p>
+                </div>
 
-                {/* Top Links Section */}
-                <div className="flex flex-col items-center justify-center gap-4 text-center md:flex-row md:flex-wrap md:gap-6">
-                    {FOOTER_GROUPS.map((group, groupIdx) => (
-                        <div
-                            key={group.label}
-                            className="flex flex-col items-center gap-1 md:flex-row md:items-center"
-                        >
-                            {groupIdx > 0 && (
-                                <span
-                                    aria-hidden="true"
-                                    className="hidden text-gray-400 md:inline"
-                                >
-                                    •
-                                </span>
+                {/* Columns */}
+                <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+                    {FOOTER_COLUMNS.map((col) => (
+                        <div key={col.label}>
+                            <p className="text-foreground mb-3 text-xs font-semibold tracking-widest uppercase">
+                                {col.label}
+                            </p>
+
+                            {col.links && (
+                                <ul className="space-y-2">
+                                    {col.links.map((link) => (
+                                        <li key={link.text}>
+                                            {link.external ? (
+                                                <a
+                                                    href={link.href}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-muted-foreground hover:text-foreground text-sm transition-colors duration-150"
+                                                >
+                                                    {link.text} ↗
+                                                </a>
+                                            ) : (
+                                                <Link
+                                                    href={link.href}
+                                                    className="text-muted-foreground hover:text-foreground text-sm transition-colors duration-150"
+                                                >
+                                                    {link.text}
+                                                </Link>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
                             )}
 
-                            <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-300">
-                                <span className="font-medium">
-                                    {group.label}
-                                </span>{' '}
-                                {group.links.map((link, linkIdx) => (
-                                    <span key={link.href}>
-                                        {linkIdx > 0 && ' and '}
-                                        <a
-                                            href={link.href}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            title={link.title}
-                                            className="ml-1 inline-block font-semibold italic text-blue-700 transition-all duration-200 hover:-translate-y-0.5 hover:text-blue-500 hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
-                                        >
-                                            {link.text}
-                                        </a>
-                                    </span>
-                                ))}
-                            </p>
+                            {col.lines && (
+                                <ul className="space-y-2">
+                                    {col.lines.map((line) => (
+                                        <li key={line} className="text-muted-foreground text-sm">
+                                            {line}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                         </div>
                     ))}
                 </div>
 
                 {/* Badges */}
-                <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                <div className="text-muted-foreground mt-10 flex flex-wrap gap-3 text-xs">
                     <a
                         href="https://www.websitecarbon.com/website/cancer-tracker-jipmer-vercel-app-home/"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 rounded-full border border-green-300 bg-green-50 px-4 py-2 text-xs font-medium text-green-700 transition-all duration-200 hover:scale-105 dark:border-green-700 dark:bg-green-950 dark:text-green-300"
+                        className="hover:text-foreground transition-colors duration-150"
                     >
                         🌿 93% cleaner than other websites
                     </a>
 
                     {sheetsSaved !== null && sheetsSaved > 0 && (
-                        <span className="inline-flex items-center gap-2 rounded-full border border-green-300 bg-green-50 px-4 py-2 text-xs font-medium text-green-700 dark:border-green-700 dark:bg-green-950 dark:text-green-300">
-                            🌿 {sheetsSaved.toLocaleString()} sheets saved
-                        </span>
+                        <>
+                            <span>·</span>
+                            <span>🌿 {sheetsSaved.toLocaleString()} sheets saved</span>
+                        </>
                     )}
                 </div>
 
-                {/* Bottom Section */}
-                <div className="mt-6 border-t border-gray-300 pt-4 text-center text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400">
-                    <p>
-                        &copy; {new Date().getFullYear()} PUDUCAN. All rights reserved.
-                    </p>
+                {/* Bottom bar */}
+                <div className="border-border text-muted-foreground mt-8 flex flex-col gap-2 border-t pt-6 text-xs sm:flex-row sm:items-center sm:justify-between">
+                    <p>&copy; {new Date().getFullYear()} PUDUCAN · JIPMER. All rights reserved.</p>
+                    <div className="flex gap-4">
+                        <Link
+                            href="/home/privacy"
+                            className="hover:text-foreground transition-colors duration-150"
+                        >
+                            Privacy Policy
+                        </Link>
+                        <Link
+                            href="/home/terms"
+                            className="hover:text-foreground transition-colors duration-150"
+                        >
+                            Terms of Use
+                        </Link>
+                        <Link
+                            href="/home/about#ethics"
+                            className="hover:text-foreground transition-colors duration-150"
+                        >
+                            Ethics
+                        </Link>
+                    </div>
                 </div>
             </div>
         </footer>

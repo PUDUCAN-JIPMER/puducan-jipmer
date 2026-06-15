@@ -1,7 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
+import { useForm, FieldErrors } from 'react-hook-form'
 import { PhoneInput } from '@/components/ui/phone-input'
 import { Button } from '@/components/ui/button'
 import {
@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select'
 import HospitalSearch from '@/components/search/HospitalSearch'
 import { UserFormInputs, UserSchema, UserDoc } from '@/schema/user'
+import { toast } from 'sonner'
 
 interface GenericUserFormProps {
     user: string
@@ -57,9 +58,25 @@ export default function GenericUserForm({
         form.reset()
     }
 
+    const onInvalidSubmit = (errors: FieldErrors<UserFormInputs>) => {
+        const currentPayload = form.getValues();
+        
+        
+        const errorMessages = Object.entries(errors)
+            .map(([field, err]) => {
+                const message = err?.message || 'Invalid input';
+                return `${field}: ${message}`;
+            });
+
+        toast.error(`Form validation failed. Please check:`, {
+            description: errorMessages.slice(0, 3).join(', '),
+            duration: 6000
+        });
+    }
+
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(handleSubmit, onInvalidSubmit)} className="space-y-4">
                 {/* Email */}
                 <FormField
                     control={form.control}

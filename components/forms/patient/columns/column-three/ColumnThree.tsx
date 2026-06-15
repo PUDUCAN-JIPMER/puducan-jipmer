@@ -16,7 +16,19 @@ export function ColumnThree({ form, isAsha }: RightColumnProps) {
 
     return (
         <div className={clsx('flex w-full flex-col gap-4 md:w-1/2 lg:w-1/3', isAsha && 'md:w-2/3 lg:w-full px-2 mx-auto')}>
-            <DiseaseMultiSelect sex={watch('sex')} />
+            {/* Wrapped inside FormField for showing required alert messages. */}
+            <FormField
+                control={form.control}
+                name="diseases"
+                render={() => (
+                    <FormItem>
+                        <FormControl>
+                            <DiseaseMultiSelect sex={watch('sex')} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
 
             <RationCardSelect control={control} />
 

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { PatientFormInputs } from '@/schema/patient'
 import { Form } from '@/components/ui/form'
 import { ColumnOne, ColumnTwo, ColumnThree, ColumnFour, ColumnFive } from '.'
+import { toast } from 'sonner'
 
 interface PatientFormProps {
     form: UseFormReturn<PatientFormInputs, any>
@@ -80,6 +81,20 @@ export default function GenericPatientForm({
         }
     }
 
+    const collectErrorMessages = (value: unknown, out: string[]) => {
+        if (!value || typeof value !== 'object') return
+
+        // react-hook-form stores message on leaf FieldError
+        const maybe = value as { message?: unknown; types?: unknown }
+        if (typeof maybe.message === 'string' && maybe.message.trim()) {
+            out.push(maybe.message.trim())
+        }
+
+        for (const v of Object.values(value as Record<string, unknown>)) {
+            if (v && typeof v === 'object') collectErrorMessages(v, out)
+        }
+    }
+
     return (
         <Form {...form}>
             <form
@@ -87,7 +102,25 @@ export default function GenericPatientForm({
                     e.preventDefault()
 
                     if (currentStep === totalSteps) {
-                        handleSubmit(onSubmit)(e)
+                        handleSubmit(
+                            onSubmit,
+                            (invalid) => {
+                                const fields = Object.keys(invalid ?? {})
+                                const messages: string[] = []
+                                collectErrorMessages(invalid, messages)
+                                const uniqueMessages = Array.from(new Set(messages)).slice(0, 5)
+
+                                const description =
+                                    uniqueMessages.length > 0
+                                        ? uniqueMessages.join('\n')
+                                        : 'Please check the highlighted fields and try again.'
+
+                                toast.error(`Missing/invalid details (${fields.length || 0})`, {
+                                    description,
+                                    duration: 7000,
+                                })
+                            }
+                        )(e)
                     }
                 }}
                 className="py-4 select-none"

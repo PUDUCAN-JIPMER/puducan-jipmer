@@ -84,7 +84,10 @@ function StatsPageContent() {
                         ({role === 'admin' ? 'All hospitals' : 'Your hospital'})
                     </span>
                 </h2>
-                <PatientStatsSection stats={patientStats} patients={patients} />
+                <PatientStatsSection
+    stats={patientStats}
+    role={role ??''}
+/>
             </section>
 
             {/* Admin-only section */}
