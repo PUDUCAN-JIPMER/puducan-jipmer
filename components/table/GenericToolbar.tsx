@@ -41,7 +41,7 @@ export function GenericToolbar({
 }) {
     const pathname = usePathname()
     const queryClient = useQueryClient()
-    const { role } = useAuth()
+    const { role, orgName } = useAuth()
 
     // ✅ ORIGINAL STATE — mobile states preserved
     const [mobileFilterOpen, setMobileFilterOpen] = useState(false)

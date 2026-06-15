@@ -45,10 +45,22 @@ export function ColumnTwo({ form, isAsha }: MiddleColumnProps) {
             <DobOrAgeField form={form} />
 
             {/* Sex */}
-            <SexSelect control={control} />
+            {/* wrapped inside formfield for showing required alert messages.*/}
+            <FormField
+                control={control}
+                name="sex"
+                render={() => (
+                    <FormItem>
+                        <FormControl>
+                            <SexSelect control={control} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
 
             {/* Status */}
-            <PatientStatusSelect control={control} form={form}/>
+            <PatientStatusSelect control={control} form={form} />
         </div>
     )
 }
