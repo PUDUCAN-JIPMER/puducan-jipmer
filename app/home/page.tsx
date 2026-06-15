@@ -1,16 +1,5 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import {
-    Activity,
-    ArrowRight,
-    HeartPulse,
-    FileText,
-    Users,
-    PhoneCall,
-    Sparkles,
-    ShieldAlert,
-    BookmarkCheck,
-} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import bgImage from '@/assets/homepage-1.jpg'
 
@@ -59,8 +48,7 @@ export default function HomePage() {
                             <Button
                                 asChild
                                 size="lg"
-                                variant="outline"
-                                className="rounded-md border-white/30 text-white transition-colors duration-200 hover:bg-white/10"
+                                className="rounded-md border border-white/30 bg-white/10 text-white transition-colors duration-200 hover:bg-white/20"
                             >
                                 <Link href="/home/about">About PuduCan</Link>
                             </Button>
