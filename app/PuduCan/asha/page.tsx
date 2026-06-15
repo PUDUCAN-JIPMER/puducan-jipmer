@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 
 
 function AshaPageContent() {
-    const { user, userId, isLoadingAuth } = useAuth()
+    const { user, userId, orgName, isLoadingAuth } = useAuth()
 
     // 🔹 Build queryProps like the doctor page
     const queryProps = {
@@ -56,9 +56,12 @@ function AshaPageContent() {
             <WelcomeBanner />
         </div>
 
-        <h1 className="mb-4 text-center text-xl font-bold">
+        <h1 className="mb-1 text-center text-xl font-bold">
             Your Assigned Patients
         </h1>
+        {orgName && (
+            <p className="mb-4 text-center text-sm text-zinc-500 dark:text-zinc-400">{orgName}</p>
+        )}
 
         {patients.length === 0 ? (
             <p className="text-center text-sm">

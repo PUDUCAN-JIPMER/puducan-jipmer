@@ -30,19 +30,31 @@ export const PatientSchema = z
         createdAt: z.any().optional(),
         phoneNumber: z.array(z.string().optional()).optional(),
         sex: z.enum(['male', 'female', 'other'], {
-            message: 'Please select a sex.',
+            error: 'Please select a sex.',
         }),
-        dob: z.string().optional(),
+        dob: z
+            .string()
+            .min(1, 'Either age or date of birth is required.')
+            .optional(),
         bloodGroup: z.string().optional(),
         address: z.string().min(1, 'Address is required.'),
         religion: z.string().optional(),
         aadhaarId: z.string().optional(),
         rationCardColor: z.enum(['red', 'yellow', 'none']).optional(),
-        diseases: z.array(z.string()).optional(),
+        diseases: z
+            .array(z.string())
+            .min(1, 'Atleast one disease is required.')
+            .optional(),
         assignedHospital: z.object({
-            id: z.string().min(1, 'Hospital is required'),
-            name: z.string().min(1, 'Hospital name is required'),
-        }),
+            id: z.string(),
+            name: z.string(),
+        }).refine(
+            (data) => data.id && data.name,
+            {
+                message: 'Hospital is required',
+                path: [],
+            }
+        ),
         assignedAsha: z.string().optional(),
         gpsLocation: z
             .object({
@@ -69,7 +81,11 @@ export const PatientSchema = z
             ),
         diagnosedDate: z.string().optional(),
         diagnosedYearsAgo: z.string().optional(),
-        hospitalRegistrationDate: z.string().optional(),
+        // new fields after second meet
+        hospitalRegistrationDate: z
+            .string()
+            .min(1, 'Hospital registration date is required.')
+            .optional(),
         treatmentStartDate: z.string().nullable().optional(),
         treatmentEndDate: z.string().nullable().optional(),
         biopsyNumber: z.string().nullable().optional(),
@@ -111,6 +127,9 @@ export const PatientSchema = z
     .refine((data) => !!data.dob, {
         message: 'Date of birth is required.',
         path: ['dob'],
+    .refine((data) => data.dob, {
+        message: 'Either age or date of birth is required.',
+        path: ['age', 'dob'],
     })
     // Require cancer stage if cancer markers are present
     .refine(

@@ -58,6 +58,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const isLoadingAuth = Boolean(initialAuthLoading || (firebaseUser && isLoadingUserRole))
     const role = userDocData?.data.role || null
     const orgId = userDocData?.data.orgId || null
+    const orgName = userDocData?.data.orgName || null
     const userId = userDocData?.id || null
     const error = isErrorUserRole ? userRoleError : null
 
@@ -85,6 +86,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         userId, // ✅ Firestore document ID
         role,
         orgId,
+        orgName,
         isLoadingAuth,
         error,
     }
