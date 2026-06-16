@@ -81,7 +81,6 @@ export const PatientSchema = z
             ),
         diagnosedDate: z.string().optional(),
         diagnosedYearsAgo: z.string().optional(),
-        // new fields after second meet
         hospitalRegistrationDate: z
             .string()
             .min(1, 'Hospital registration date is required.')
@@ -93,7 +92,6 @@ export const PatientSchema = z
         transferredFrom: z.string().optional(),
         hasAadhaar: z.boolean(),
         suspectedCase: z.boolean().optional(),
-        // Resolved conflict: Keeping preprocessed logic for safety
         hbcrID: z
             .preprocess((val) => {
                 if (typeof val === 'string') {
@@ -124,9 +122,6 @@ export const PatientSchema = z
             .nullable(),
     })
     // Ensure DOB is provided
-    .refine((data) => !!data.dob, {
-        message: 'Date of birth is required.',
-        path: ['dob'],
     .refine((data) => data.dob, {
         message: 'Either age or date of birth is required.',
         path: ['age', 'dob'],
@@ -190,7 +185,6 @@ export const PatientSchema = z
 
 export type PatientFormInputs = z.infer<typeof PatientSchema>
 
-// Fixed Patient Type with Firebase/Firestore metadata safety
 export type Patient = PatientFormInputs & {
     id: string
     _hasPendingWrites?: boolean
