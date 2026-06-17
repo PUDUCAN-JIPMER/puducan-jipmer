@@ -23,16 +23,16 @@ const PRESET_CONFIG: Record<
   Exclude<RegistrationRange, 'custom'>,
   { label: string; months?: number; interval: Interval }
 > = {
-  '1m':  { label: 'Last 1 Month',   months: 1,  interval: 'month'   },
-  '3m':  { label: 'Last 3 Months',  months: 3,  interval: 'month'   },
-  '6m':  { label: 'Last 6 Months',  months: 6,  interval: 'month'   },
-  '12m': { label: 'Last 12 Months', months: 12, interval: 'month'   },
-  '3y':  { label: 'Last 3 Years',   months: 36, interval: 'quarter' },
-  '5y':  { label: 'Last 5 Years',   months: 60, interval: 'year'    },
-  all:   { label: 'All Time',                   interval: 'year'    },
+  '1m': { label: 'Last 1 Month', months: 1, interval: 'month' },
+  '3m': { label: 'Last 3 Months', months: 3, interval: 'month' },
+  '6m': { label: 'Last 6 Months', months: 6, interval: 'month' },
+  '12m': { label: 'Last 12 Months', months: 12, interval: 'month' },
+  '3y': { label: 'Last 3 Years', months: 36, interval: 'quarter' },
+  '5y': { label: 'Last 5 Years', months: 60, interval: 'year' },
+  all: { label: 'All Time', interval: 'year' },
 }
 
-export function useRegistrationAnalytics(patients: Patient[]) {
+export function useRegistrationAnalytics(patients: Patient[] = []) {
   const [selectedRange, setSelectedRange] = useState<RegistrationRange>('12m')
   const [chartType, setChartType] = useState<RegistrationChartType>('bar')
   const [customStartDate, setCustomStartDate] = useState<Date>(() =>
@@ -64,7 +64,7 @@ export function useRegistrationAnalytics(patients: Patient[]) {
       return customRangeValid ? startOfDay(customStartDate) : null
     }
 
-    const now    = new Date()
+    const now = new Date()
     const config = PRESET_CONFIG[selectedRange as Exclude<RegistrationRange, 'custom'>]
 
     if (selectedRange === 'all') {
@@ -116,13 +116,13 @@ export function useRegistrationAnalytics(patients: Patient[]) {
 
     // Merge bucket descriptors with their counts (defaulting to 0).
     const data: RegistrationPoint[] = buckets.map((bucket) => ({
-      key:   bucket.key,
+      key: bucket.key,
       label: bucket.label,
       count: counts[bucket.key] ?? 0,
     }))
 
     const total = data.reduce((sum, entry) => sum + entry.count, 0)
-    const peak  = data.reduce(
+    const peak = data.reduce(
       (best, current) => (current.count > (best?.count ?? -1) ? current : best),
       null as RegistrationPoint | null,
     )
@@ -184,13 +184,13 @@ export function useRegistrationAnalytics(patients: Patient[]) {
     setCustomEndDate,
     rangeLabel,
     aggregationLabel,
-    chartData:            registrationData.data,
-    totalRegistrations:   registrationData.summary.total,
-    peakPeriod:           registrationData.summary.peak,
+    chartData: registrationData.data,
+    totalRegistrations: registrationData.summary.total,
+    peakPeriod: registrationData.summary.peak,
     averageRegistrations,
     trend,
     isEmpty,
-    isCustomRangeValid:   customRangeValid,
+    isCustomRangeValid: customRangeValid,
     validationMessage,
   }
 }
