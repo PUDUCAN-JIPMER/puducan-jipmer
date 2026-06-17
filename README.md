@@ -142,7 +142,7 @@ Different user roles have tailored dashboards and permissions:
 ### Prerequisites
 Ensure you have the following installed:
 - **Node.js** (v18 or higher)
-- **npm** or **yarn**
+- **pnpm** or **yarn**
 - Git account for version control
 
 ### Installation
@@ -155,7 +155,7 @@ Ensure you have the following installed:
 
 2. **Install dependencies**
    ```bash
-   npm install
+   pnpm install
    ```
 
 3. **Set up environment variables**
@@ -171,14 +171,14 @@ Ensure you have the following installed:
 
 4. **Run the development server**
    ```bash
-   npm run dev
+   pnpm run dev
    ```
    Open [http://localhost:3000](http://localhost:3000) in your browser
 
 5. **Build for production**
    ```bash
-   npm run build
-   npm start
+   pnpm run build
+   pnpm start
    ```
 
 ### Sample Data
@@ -257,13 +257,13 @@ The codebase is designed to be modular, maintainable, and scalable following mod
 ### Running Tests
 ```bash
 # Run all tests
-npm run test
+pnpm run test
 
 # Watch mode
-npm run test:watch
+pnpm run test:watch
 
 # Coverage report
-npm run test:coverage
+pnpm run test:coverage
 ```
 
 ### 🚄 Performance Optimizations and Caching
