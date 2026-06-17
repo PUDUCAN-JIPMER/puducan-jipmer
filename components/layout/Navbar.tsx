@@ -25,7 +25,7 @@ export default function Navbar() {
         <div>
             <nav className="bg-background flex items-center justify-between border-b px-4 py-3 shadow md:px-8">
                 {/* Logo + Sustainability Tip */}
-                <div className="flex items-end gap-3">
+                <div className="flex items-center gap-3">
                     <Link href="/" className="text-2xl font-bold text-green-600">
                         PuduCan
                     </Link>
