@@ -20,7 +20,7 @@ export function AnalyticsSummaryCard({ title, value, detail, icon: Icon, tone = 
   }
 
   return (
-    <Card className="border border-border bg-background p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+    <Card className="h-full border border-border bg-background p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-muted-foreground">{title}</p>

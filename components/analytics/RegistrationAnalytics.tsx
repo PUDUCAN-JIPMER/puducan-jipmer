@@ -9,6 +9,8 @@ import { AnalyticsSummaryCard } from './AnalyticsSummaryCard'
 import { EmptyAnalyticsState } from './EmptyAnalyticsState'
 import { useRegistrationAnalytics } from '@/hooks/stats/useRegistrationAnalytics'
 import { Activity, ArrowDownRight, ArrowUpRight, BarChart3, CalendarDays, TrendingUp } from 'lucide-react'
+import { motion, useReducedMotion } from 'framer-motion'
+import { modernItemVariant, staggerContainer, VIEWPORT } from '@/components/stats/animations'
 import type { Patient } from '@/schema/patient'
 
 interface RegistrationAnalyticsProps {
@@ -69,33 +71,55 @@ export function RegistrationAnalytics({ patients }: RegistrationAnalyticsProps) 
         />
       </div>
 
-      <div className="mt-6 grid gap-4 xl:grid-cols-4">
-        <AnalyticsSummaryCard
-          title="Total registrations"
-          value={totalRegistrations}
-          detail={`${aggregationLabel} totals across selected range`}
-          icon={BarChart3}
-        />
-        <AnalyticsSummaryCard
-          title="Peak period"
-          value={peakPeriod?.label ?? 'No data'}
-          detail={peakPeriod ? `${peakPeriod.count} registrations` : 'Expand the range to reveal peaks'}
-          icon={TrendingUp}
-        />
-        <AnalyticsSummaryCard
-          title="Average per interval"
-          value={averageRegistrations}
-          detail={`Average ${aggregationLabel.toLowerCase()} registrations`}
-          icon={CalendarDays}
-        />
-        <AnalyticsSummaryCard
-          title="Trend"
-          value={trend.direction === 'flat' ? 'Stable' : trend.direction === 'up' ? 'Growing' : 'Declining'}
-          detail={`${trend.percent}% ${trend.direction === 'flat' ? 'change' : trend.direction === 'up' ? 'increase' : 'decrease'}`}
-          icon={trend.direction === 'up' ? ArrowUpRight : trend.direction === 'down' ? ArrowDownRight : Activity}
-          tone={trend.direction === 'up' ? 'positive' : trend.direction === 'down' ? 'negative' : 'default'}
-        />
-      </div>
+      {(() => {
+        const reduce = useReducedMotion()
+        return (
+          <motion.div
+            className="mt-6 grid gap-4 xl:grid-cols-4 items-stretch"
+            variants={reduce ? undefined : staggerContainer}
+            initial={reduce ? undefined : 'hidden'}
+            whileInView={reduce ? undefined : 'visible'}
+            viewport={VIEWPORT}
+          >
+            <motion.div variants={reduce ? undefined : modernItemVariant} className="h-full" style={{ display: 'block' }}>
+              <AnalyticsSummaryCard
+                title="Total registrations"
+                value={totalRegistrations}
+                detail={`${aggregationLabel} totals across selected range`}
+                icon={BarChart3}
+              />
+            </motion.div>
+
+            <motion.div variants={reduce ? undefined : modernItemVariant} className="h-full" style={{ display: 'block' }}>
+              <AnalyticsSummaryCard
+                title="Peak period"
+                value={peakPeriod?.label ?? 'No data'}
+                detail={peakPeriod ? `${peakPeriod.count} registrations` : 'Expand the range to reveal peaks'}
+                icon={TrendingUp}
+              />
+            </motion.div>
+
+            <motion.div variants={reduce ? undefined : modernItemVariant} className="h-full" style={{ display: 'block' }}>
+              <AnalyticsSummaryCard
+                title="Average per interval"
+                value={averageRegistrations}
+                detail={`Average ${aggregationLabel.toLowerCase()} registrations`}
+                icon={CalendarDays}
+              />
+            </motion.div>
+
+            <motion.div variants={reduce ? undefined : modernItemVariant} className="h-full" style={{ display: 'block' }}>
+              <AnalyticsSummaryCard
+                title="Trend"
+                value={trend.direction === 'flat' ? 'Stable' : trend.direction === 'up' ? 'Growing' : 'Declining'}
+                detail={`${trend.percent}% ${trend.direction === 'flat' ? 'change' : trend.direction === 'up' ? 'increase' : 'decrease'}`}
+                icon={trend.direction === 'up' ? ArrowUpRight : trend.direction === 'down' ? ArrowDownRight : Activity}
+                tone={trend.direction === 'up' ? 'positive' : trend.direction === 'down' ? 'negative' : 'default'}
+              />
+            </motion.div>
+          </motion.div>
+        )
+      })()}
 
       <div className="mt-6 rounded-3xl border border-border bg-background p-4 shadow-sm">
         {selectedRange === 'custom' && !isCustomRangeValid ? (
