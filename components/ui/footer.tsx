@@ -15,7 +15,7 @@ const FOOTER_COLUMNS: FooterColumn[] = [
         label: 'Quick Links',
         links: [
             { text: 'Home', href: '/home' },
-            { text: 'About PuduCan', href: '/home/about' },
+            { text: 'About PuduCan', href: '/home#about' },
             { text: 'Access Dashboard', href: '/login' },
             { text: 'Reports', href: '/dashboard/reports' },
             { text: 'Data Entry', href: '/dashboard/data-entry' },
@@ -34,9 +34,9 @@ const FOOTER_COLUMNS: FooterColumn[] = [
     {
         label: 'Study Info',
         links: [
-            { text: 'Study Protocol', href: '/home/about#protocol' },
+            { text: 'Study Protocol', href: '/home#about' },
             { text: 'JIPMER Website', href: 'https://jipmer.edu.in', external: true },
-            { text: 'Ethics & Compliance', href: '/home/about#ethics' },
+            { text: 'Ethics & Compliance', href: '/home#about' },
             { text: 'Publications', href: '/home/publications' },
             { text: 'Data Privacy', href: '/home/privacy' },
         ],
@@ -70,19 +70,19 @@ export default function Footer() {
     }, [])
 
     return (
-        <footer className="border-slate-200 bg-slate-100/90 border-t backdrop-blur-sm">
+        <footer className="border-border bg-card/30 border-t backdrop-blur-sm">
             <div className="mx-auto max-w-7xl px-6 py-12 sm:px-8 lg:px-10">
                 {/* Top — brand + tagline */}
                 <div className="mb-10 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <p className="text-slate-950 text-xl font-extrabold tracking-tight">
+                        <p className="text-foreground text-xl font-extrabold tracking-tight">
                             PUDUCAN
                         </p>
-                        <p className="text-slate-600 mt-0.5 text-xs">
+                        <p className="text-muted-foreground mt-0.5 text-xs">
                             A JIPMER Collaborative Oncology Initiative
                         </p>
                     </div>
-                    <p className="text-slate-600 text-sm sm:text-right">
+                    <p className="text-muted-foreground text-sm sm:text-right">
                         Improving lives through data-driven cancer care.
                     </p>
                 </div>
@@ -91,7 +91,7 @@ export default function Footer() {
                 <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
                     {FOOTER_COLUMNS.map((col) => (
                         <div key={col.label}>
-                            <p className="text-slate-950 mb-3 text-xs font-semibold tracking-widest uppercase">
+                            <p className="text-foreground mb-3 text-xs font-semibold tracking-widest uppercase">
                                 {col.label}
                             </p>
 
@@ -104,14 +104,14 @@ export default function Footer() {
                                                     href={link.href}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="text-slate-600 hover:text-slate-950 text-sm transition-colors duration-150"
+                                                    className="text-muted-foreground hover:text-foreground text-sm transition-colors duration-150"
                                                 >
                                                     {link.text} ↗
                                                 </a>
                                             ) : (
                                                 <Link
                                                     href={link.href}
-                                                    className="text-slate-600 hover:text-slate-950 text-sm transition-colors duration-150"
+                                                    className="text-muted-foreground hover:text-foreground text-sm transition-colors duration-150"
                                                 >
                                                     {link.text}
                                                 </Link>
@@ -124,7 +124,7 @@ export default function Footer() {
                             {col.lines && (
                                 <ul className="space-y-2">
                                     {col.lines.map((line) => (
-                                        <li key={line} className="text-slate-600 text-sm">
+                                        <li key={line} className="text-muted-foreground text-sm">
                                             {line}
                                         </li>
                                     ))}
@@ -135,7 +135,7 @@ export default function Footer() {
                 </div>
 
                 {/* Badges */}
-                <div className="text-slate-600 mt-10 flex flex-wrap gap-3 text-xs">
+                <div className="text-muted-foreground mt-10 flex flex-wrap gap-3 text-xs">
                     <a
                         href="https://www.websitecarbon.com/website/cancer-tracker-jipmer-vercel-app-home/"
                         target="_blank"
@@ -154,24 +154,24 @@ export default function Footer() {
                 </div>
 
                 {/* Bottom bar */}
-                <div className="border-slate-200 text-slate-600 mt-8 flex flex-col gap-2 border-t pt-6 text-xs sm:flex-row sm:items-center sm:justify-between">
+                <div className="border-border text-muted-foreground mt-8 flex flex-col gap-2 border-t pt-6 text-xs sm:flex-row sm:items-center sm:justify-between">
                     <p>&copy; {new Date().getFullYear()} PUDUCAN · JIPMER. All rights reserved.</p>
                     <div className="flex gap-4">
                         <Link
                             href="/home/privacy"
-                            className="hover:text-slate-950 transition-colors duration-150"
+                            className="hover:text-foreground transition-colors duration-150"
                         >
                             Privacy Policy
                         </Link>
                         <Link
                             href="/home/terms"
-                            className="hover:text-slate-950 transition-colors duration-150"
+                            className="hover:text-foreground transition-colors duration-150"
                         >
                             Terms of Use
                         </Link>
                         <Link
-                            href="/home/about#ethics"
-                            className="hover:text-slate-950 transition-colors duration-150"
+                            href="/home#about"
+                            className="hover:text-foreground transition-colors duration-150"
                         >
                             Ethics
                         </Link>

@@ -9,18 +9,61 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { useAuth } from '@/contexts/AuthContext'
 
+// NEW: 1. Import your scroll spy hook
+import { useScrollSpy } from '@/hooks/useScrollSpy' 
+
 export default function HomeNavbar() {
     const pathname = usePathname()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [mobileDataEntryOpen, setMobileDataEntryOpen] = useState(false)
     const { user } = useAuth()
 
-    const navItem = (label: string, href: string, exact = false) => {
-        const isActive = exact ? pathname === href : pathname.startsWith(href)
+    // NEW: 2. Initialize the scroll spy specifically for the home page sections
+    const activeSection = useScrollSpy(['home', 'about'], 80)
+
+    // NEW: 3. Add a smooth scroll handler so clicking links feels native
+    const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
+        // Only override default behavior if we are ALREADY on the home page
+        if (pathname === '/home' || pathname === '/') {
+            e.preventDefault()
+            const element = document.getElementById(targetId)
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' })
+                setMobileOpen(false) // Close mobile menu if open
+            }
+        } else {
+            // If on another page (like /home/reports), let Next.js handle the normal routing
+            setMobileOpen(false)
+        }
+    }
+
+    // NEW: 4. Added an optional 'sectionId' parameter to separate scroll links from routed links
+    const navItem = (label: string, href: string, sectionId?: string, exact = false) => {
+        const cleanHref = href.split('#')[0]
+        
+        let isActive = false;
+
+        if (sectionId) {
+            // SCROLL LOGIC: If it has a sectionId, only highlight it based on the spy 
+            // (and ensure we are actually on the home page)
+            isActive = (pathname === '/home' || pathname === '/') ? activeSection === sectionId : false;
+        } else {
+            // ROUTING LOGIC: Standard behavior for pages like Reports or Contact
+            isActive = exact
+                ? pathname === cleanHref
+                : pathname.startsWith(cleanHref)
+        }
+
         return (
             <Link
                 href={href}
-                onClick={() => setMobileOpen(false)}
+                onClick={(e) => {
+                    if (sectionId) {
+                        handleScroll(e, sectionId)
+                    } else {
+                        setMobileOpen(false)
+                    }
+                }}
                 className={`group relative block w-full px-4 py-3 text-sm text-white transition-all duration-200 sm:w-auto sm:rounded sm:px-2 sm:py-1 md:px-3 md:py-2 lg:px-4 ${
                     isActive ? 'bg-white/20 font-semibold' : 'hover:bg-white/10'
                 }`}
@@ -49,8 +92,11 @@ export default function HomeNavbar() {
                 </div>
 
                 <div className="hidden items-center space-x-1 text-nowrap sm:flex md:space-x-2 lg:space-x-3">
-                    {navItem('Home', '/home', true)}
-                    {navItem('About', '/home/about')}
+                    {/* NEW: 5. Pass the sectionId string as the 3rd argument for Home and About */}
+                    {navItem('Home', '/home', 'home')}
+                    {navItem('About', '/home#about', 'about')}
+                    
+                    {/* Leave the rest exactly as they were (no sectionId passed) */}
                     {user && navItem('Reports', '/home/reports')}
 
                     {/* Desktop Data Entry — plain div, no Radix */}
@@ -80,10 +126,6 @@ export default function HomeNavbar() {
                     </div>
 
                     {navItem('Contact', '/home/contact')}
-
-                    {/* <div className="text-foreground ml-2">
-                        <ModeToggle />
-                    </div> */}
                 </div>
 
                 {/* Mobile Hamburger */}
@@ -102,8 +144,10 @@ export default function HomeNavbar() {
                 }`}
             >
                 <div className="flex flex-col border-t border-white/10 bg-pink-950/60 backdrop-blur-md">
-                    {navItem('Home', '/home', true)}
-                    {navItem('About', '/home/about')}
+                    {/* NEW: 6. Update mobile links to use the sectionId too */}
+                    {navItem('Home', '/home', 'home')}
+                    {navItem('About', '/home#about', 'about')}
+                    
                     {user && navItem('Reports', '/home/reports')}
 
                     {/* Mobile Data Entry */}

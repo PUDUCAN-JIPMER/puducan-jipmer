@@ -85,9 +85,10 @@ function StatsPageContent() {
                     </span>
                 </h2>
                 <PatientStatsSection
-    stats={patientStats}
-    role={role ??''}
-/>
+                    stats={patientStats}
+                    patients={patients}
+                    role={role ?? ''}
+                />
             </section>
 
             {/* Admin-only section */}
