@@ -45,7 +45,7 @@ const tips = [
 ]
 
 export default function SustainabilityTip() {
-    const [tip, setTip] = useState('')
+    const [tip, setTip] = useState(tips[0])
     const [expanded, setExpanded] = useState(false)
 
     useEffect(() => {

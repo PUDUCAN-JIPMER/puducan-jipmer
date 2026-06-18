@@ -46,11 +46,10 @@ export default function HomePage() {
                                 </Link>
                             </Button>
                             <Button
-                                asChild
-                                size="lg"
-                                className="rounded-md border border-white/30 bg-white/10 text-white transition-colors duration-200 hover:bg-white/20"
-                            >
-                                <Link href="/home/about">About PuduCan</Link>
+                                    asChild
+                                    size="lg"
+                                    className="rounded-md border border-white/30 bg-white/10 text-white transition-colors duration-200 hover:bg-white/20">
+                                    <Link href="/home/about">About PuduCan</Link>
                             </Button>
                         </div>
                     </div>
