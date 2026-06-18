@@ -16,25 +16,41 @@ export function DiseasesCell({ diseases }: DiseasesCellProps) {
   }
 
   return (
-    <div className="space-y-1">
+   <div className="flex items-start gap-2"> 
       <div className="capitalize">{diseases[0]}</div>
 
-      {!expanded ? (
+            {!expanded ? (
         <button
           type="button"
-          onClick={() => setExpanded(true)}
+          onClick={(e) => {
+            e.stopPropagation()
+            setExpanded(true)
+          }}
           className="text-muted-foreground text-sm hover:underline"
         >
           +{diseases.length - 1} more...
         </button>
       ) : (
-        <ul className="list-inside list-disc space-y-1">
-          {diseases.slice(1).map((disease, i) => (
-            <li key={i} className="capitalize">
-              {disease}
-            </li>
-          ))}
-        </ul>
+        <div className="flex flex-col">
+          <ul className="list-inside list-disc space-y-1">
+            {diseases.slice(1).map((disease, i) => (
+              <li key={i} className="capitalize">
+                {disease}
+              </li>
+            ))}
+          </ul>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              setExpanded(false)
+            }}
+            className="text-muted-foreground text-sm hover:underline"
+          >
+            Show Less
+          </button>
+        </div>
       )}
     </div>
   )
