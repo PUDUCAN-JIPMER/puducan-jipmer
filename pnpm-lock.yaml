@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@hookform/resolvers':
         specifier: ^5.2.0
-        version: 5.2.2(react-hook-form@7.77.0(react@19.2.4))
+        version: 5.2.2(react-hook-form@7.79.0(react@19.2.4))
       '@radix-ui/react-alert-dialog':
         specifier: ^1.1.15
         version: 1.1.15(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -126,8 +126,8 @@ importers:
         specifier: ^19.2.4
         version: 19.2.4(react@19.2.4)
       react-hook-form:
-        specifier: ^7.77.0
-        version: 7.77.0(react@19.2.4)
+        specifier: ^7.79.0
+        version: 7.79.0(react@19.2.4)
       react-phone-number-input:
         specifier: ^3.4.12
         version: 3.4.16(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -5252,8 +5252,8 @@ packages:
     peerDependencies:
       react: ^19.2.4
 
-  react-hook-form@7.77.0:
-    resolution: {integrity: sha512-Sslh9YDYc0GDlWT/lxasnIduNo4v3yyvqRGvmGKUre5AFjDs/HV9/OafHGD8d+sB2yoL4UIL9L8X9i0WlZZebg==}
+  react-hook-form@7.79.0:
+    resolution: {integrity: sha512-mhYp/MTmXvzYX6AJcJVko0rktoIhhmRnEouObj4wF5i/tCttgJvnp1+9wRkpITZjDTqpo4IOSJqu0dBlPlV/Lw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
@@ -7818,10 +7818,10 @@ snapshots:
       yargs: 17.7.2
     optional: true
 
-  '@hookform/resolvers@5.2.2(react-hook-form@7.77.0(react@19.2.4))':
+  '@hookform/resolvers@5.2.2(react-hook-form@7.79.0(react@19.2.4))':
     dependencies:
       '@standard-schema/utils': 0.3.0
-      react-hook-form: 7.77.0(react@19.2.4)
+      react-hook-form: 7.79.0(react@19.2.4)
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -11773,7 +11773,7 @@ snapshots:
       react: 19.2.4
       scheduler: 0.27.0
 
-  react-hook-form@7.77.0(react@19.2.4):
+  react-hook-form@7.79.0(react@19.2.4):
     dependencies:
       react: 19.2.4
 
