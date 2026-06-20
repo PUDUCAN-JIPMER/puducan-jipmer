@@ -9,20 +9,20 @@ export function StatusCell({ status }: StatusCellProps) {
 
     const colorClass =
         statusLower === 'alive'
-            ? 'bg-green-100 text-green-800'
+            ? 'bg-primary/10 text-primary border border-primary/20'
             : statusLower === 'not alive'
-              ? 'bg-red-100 text-red-800'
+              ? 'bg-destructive/10 text-destructive border border-destructive/20'
               : statusLower === 'ongoing'
-                ? 'bg-blue-100 text-blue-800'
+                ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
                 : statusLower === 'followup'
-                  ? 'bg-yellow-100 text-yellow-800'
+                  ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
                   : statusLower === 'not available'
-                    ? 'bg-blue-100 text-blue-800'
-                    : 'text-muted-foreground'
+                    ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
+                    : 'text-muted-foreground border border-border'
                    
 
     return (
-        <span className={`rounded px-2 py-1 font-medium tracking-wider capitalize ${colorClass}`}>
+        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium select-none capitalize ${colorClass}`}>
             {status || 'None'}
         </span>
     )
