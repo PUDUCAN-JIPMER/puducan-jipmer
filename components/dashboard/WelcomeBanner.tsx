@@ -82,15 +82,16 @@ export default function WelcomeBanner() {
     }, [])
 
    return (
-    <div className="flex items-center gap-2 rounded-lg border border-zinc-300 bg-white/80 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/60">
-        <span className="text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            {greeting},{' '}
-            <span className="text-green-600 dark:text-green-500">
-                {userData?.name || 'User'}
-            </span>
-        </span>
-
-        <span>{getGreetingIcon()}</span>
-    </div>
+    // <div className="flex items-center gap-2 rounded-lg border border-zinc-300 bg-white/80 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/60">
+    //     <span className="text-xs sm:text-sm font-medium text-zinc-700 dark:text-zinc-300">
+    //         {greeting},{' '}
+    //         <span className="text-green-600 dark:text-green-500">
+    //             {userData?.name || 'User'}
+    //         </span>
+    //     </span>
+    // 
+    //     <span>{getGreetingIcon()}</span>
+    // </div>
+    null
 )
 }
