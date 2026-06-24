@@ -16,12 +16,18 @@ interface LeftColumnProps {
 
 export function ColumnOne({ form, isAsha = false }: LeftColumnProps) {
     return (
-        <div className={clsx('flex w-full flex-col gap-4 md:w-1/2 lg:w-1/3', isAsha && 'md:w-2/3 lg:w-full px-2 mx-auto')}>
-            <NameField form={form} />
-            <ReligionDropdown form={form} />
-
-            <AadhaarField form={form} />
-            <PhoneNumbersField form={form} />
+        <div className={clsx(
+            'grid w-full grid-cols-1 gap-6 md:grid-cols-2',
+            isAsha && 'px-2 mx-auto'
+        )}>
+            <div className="space-y-4">
+                <NameField form={form} />
+                <ReligionDropdown form={form} />
+            </div>
+            <div className="space-y-4">
+                <AadhaarField form={form} />
+                <PhoneNumbersField form={form} />
+            </div>
         </div>
     )
 }

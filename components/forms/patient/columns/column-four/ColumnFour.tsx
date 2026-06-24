@@ -25,135 +25,132 @@ export function ColumnFour({ form, isAsha = false }: RightColumnProps) {
 
     return (
         !suspectedCase && (
-            <div className={clsx('flex w-full flex-col sm:border-l-2 md:pl-4 gap-4 md:w-1/2 lg:w-1/3', isAsha && 'md:w-2/3 lg:w-full border-none px-2 mx-auto')} >
-                <TreatmentPeriodField form={form} />
-                <FormField
-                    control={control}
-                    name="hospitalRegistrationNumber"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormControl>
-                                <FloatingLabelInput
-                                    id="hospital-registration-number"
-                                    label="Hospital Registration Number"
-                                    autoComplete="off"
-                                    {...field}
-                                />
-                                {/* <Input
-                                    placeholder="Hospital Registration Number"
-                                    autoComplete="off"
-                                    {...field}
-                                /> */}
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={control}
-                    name="hbcrID"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormControl>
-                                <FloatingLabelInput
-                                    label="Enter HBCR ID"
-                                    autoComplete="off"
-                                    {...field}
-                                />
-                                {/* <Input placeholder="Enter HBCR ID" autoComplete="off" {...field} /> */}
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <div className="flex flex-col gap-2">
-                    <FormLabel className="text-muted-foreground text-sm">Stage of the Cancer</FormLabel>
-
+            <div className={clsx(
+                'grid w-full grid-cols-1 gap-6 md:grid-cols-2',
+                isAsha && 'px-2 mx-auto'
+            )}>
+                <div className="space-y-4">
+                    <TreatmentPeriodField form={form} />
                     <FormField
                         control={control}
-                        name="stageOfTheCancer.stage"
-                        defaultValue="Stage I"
+                        name="hospitalRegistrationNumber"
                         render={({ field }) => (
                             <FormItem>
                                 <FormControl>
-                                    <Select value={field.value ?? ''} onValueChange={(v) => field.onChange(v === '' ? undefined : v)}>
-                                        <SelectTrigger className="w-full" required>
-                                            <SelectValue>
-                                                {field.value ? (
-                                                    <span className="font-medium">{field.value}</span>
-                                                ) : (
-                                                    'Select cancer stage'
-                                                )}
-                                            </SelectValue>
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="Stage 0">Stage 0</SelectItem>
-                                            <SelectItem value="Stage I">Stage I</SelectItem>
-                                            <SelectItem value="Stage II">Stage II</SelectItem>
-                                            <SelectItem value="Stage III">Stage III</SelectItem>
-                                            <SelectItem value="Stage IV">Stage IV</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <FloatingLabelInput
+                                        id="hospital-registration-number"
+                                        label="Hospital Registration Number"
+                                        autoComplete="off"
+                                        {...field}
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
-
                     <FormField
                         control={control}
-                        name="stageOfTheCancer.subStage"
-                        defaultValue="None"
+                        name="hbcrID"
                         render={({ field }) => (
                             <FormItem>
                                 <FormControl>
-                                    <Select value={field.value ?? ''} onValueChange={(v) => field.onChange(v === '' || v === 'None' ? undefined : v)}>
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue>
-                                                {field.value ? (
-                                                    <span className="font-medium">{field.value}</span>
-                                                ) : (
-                                                    'Select sub-stage (optional)'
-                                                )}
-                                            </SelectValue>
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="None">None</SelectItem>
-                                            <SelectItem value="A">A</SelectItem>
-                                            <SelectItem value="B">B</SelectItem>
-                                            <SelectItem value="C">C</SelectItem>
-                                            <SelectItem value="D">D</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <FloatingLabelInput
+                                        label="Enter HBCR ID"
+                                        autoComplete="off"
+                                        {...field}
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
                 </div>
-                <FormField
-                    control={control}
-                    name="biopsyNumber"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormControl>
-                                <FloatingLabelInput
-                                    label="Biopsy Number (If Applicable)"
-                                    autoComplete="off"
-                                    {...field}
-                                />
-                                {/* <Input
-                                    placeholder="Biopsy Number (If Applicable)"
-                                    autoComplete="off"
-                                    {...field}
-                                /> */}
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
 
-                <TreatmentDropdown form={form} />
+                <div className="space-y-4">
+                    <div className="flex flex-col gap-2">
+                        <FormLabel className="text-muted-foreground text-sm">Stage of the Cancer</FormLabel>
+
+                        <FormField
+                            control={control}
+                            name="stageOfTheCancer.stage"
+                            defaultValue="Stage I"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <Select value={field.value ?? ''} onValueChange={(v) => field.onChange(v === '' ? undefined : v)}>
+                                            <SelectTrigger className="w-full" required>
+                                                <SelectValue>
+                                                    {field.value ? (
+                                                        <span className="font-medium">{field.value}</span>
+                                                    ) : (
+                                                        'Select cancer stage'
+                                                    )}
+                                                </SelectValue>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Stage 0">Stage 0</SelectItem>
+                                                <SelectItem value="Stage I">Stage I</SelectItem>
+                                                <SelectItem value="Stage II">Stage II</SelectItem>
+                                                <SelectItem value="Stage III">Stage III</SelectItem>
+                                                <SelectItem value="Stage IV">Stage IV</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={control}
+                            name="stageOfTheCancer.subStage"
+                            defaultValue="None"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <Select value={field.value ?? ''} onValueChange={(v) => field.onChange(v === '' || v === 'None' ? undefined : v)}>
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue>
+                                                    {field.value ? (
+                                                        <span className="font-medium">{field.value}</span>
+                                                    ) : (
+                                                        'Select sub-stage (optional)'
+                                                    )}
+                                                </SelectValue>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="None">None</SelectItem>
+                                                <SelectItem value="A">A</SelectItem>
+                                                <SelectItem value="B">B</SelectItem>
+                                                <SelectItem value="C">C</SelectItem>
+                                                <SelectItem value="D">D</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                    <FormField
+                        control={control}
+                        name="biopsyNumber"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormControl>
+                                    <FloatingLabelInput
+                                        label="Biopsy Number (If Applicable)"
+                                        autoComplete="off"
+                                        {...field}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <TreatmentDropdown form={form} />
+                </div>
             </div>
         )
     )

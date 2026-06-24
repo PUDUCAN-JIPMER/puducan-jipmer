@@ -168,8 +168,8 @@ export function ColumnFive({ form, isAsha }: { form: any; isAsha?: boolean }) {
     return (
         <div
             className={clsx(
-                'flex w-full flex-col gap-4 sm:border-l-2 md:w-1/2 md:pl-4 lg:w-1/3',
-                isAsha && 'mx-auto border-none px-2 md:w-2/3 lg:w-full'
+                'grid w-full grid-cols-1 gap-6 md:grid-cols-2',
+                isAsha && 'mx-auto px-2'
             )}
         >
             {/* --- Follow-Ups Section --- */}
