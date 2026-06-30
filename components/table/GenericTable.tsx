@@ -16,7 +16,7 @@ import DeleteEntityDialog from '@/components/dialogs/DeleteEntityDialog'
 import { hospitalFields, patientFields, SEARCH_FIELDS, userFields } from '@/constants'
 import { useSearch, useStats, useTableData } from '@/hooks'
 import { Hospital, Patient, UserDoc } from '@/schema'
-import { use, useCallback, useEffect, useMemo } from 'react'
+import { use, useCallback, useEffect, useMemo, useState } from 'react'
 import ViewDetailsDialog from '../dialogs/ViewDetailsDialog'
 import { GenericPagination, GenericRow, GenericToolbar } from './'
 import { useTableStore } from '@/store'
@@ -58,12 +58,22 @@ export function GenericTable({
     const { selectedIds, toggleRow, selectAll, clearSelection, isSelected, selectedIdsArray, selectionCount } = useBulkSelectionStore()
     const { exportSelected } = useBulkExport()
 
-    const queryProps = {
+    // Search term used for the server-side (Firestore) debounced query.
+    const [firestoreSearchTerm, setFirestoreSearchTerm] = useState('')
+
+    const queryProps: {
+        orgId: string | null
+        ashaId: string | null
+        enabled: boolean
+        requiredData: 'ashas' | 'doctors' | 'nurses' | 'hospitals' | 'patients' | 'removedPatients' | undefined
+        searchTerm: string
+    } = {
         // Admins should see all patients (no org filter).
         orgId: role === 'admin' ? null : orgId,
-        ashaId: role === 'asha' ? user?.id : null,
+        ashaId: role === 'asha' ? user?.id ?? null : null,
         enabled: !isLoadingAuth,
         requiredData: activeTab,
+        searchTerm: firestoreSearchTerm,
     }
 
     const fieldsMap = {
@@ -85,7 +95,7 @@ export function GenericTable({
     const patients = (data as Patient[]) ?? []
     const filteredPatients = useFilteredPatients(isPatientTab ? patients : [])
 
-    // ✅ Choose correct baseData (patients → filtered first, others → raw data)
+    // Ã¢Å“â€¦ Choose correct baseData (patients Ã¢â€ â€™ filtered first, others Ã¢â€ â€™ raw data)
     const baseData = isPatientTab ? filteredPatients : (data ?? [])
     type ActiveDataType = TabDataMap[typeof activeTab] // infer based on activeTab
 
@@ -95,10 +105,15 @@ export function GenericTable({
         setSearchTerm,
     } = useSearch<ActiveDataType>(baseData, searchFields)
 
-    // ✅ Apply sorting after search
+    // Sync the local search term into the debounced Firestore query term.
+    useEffect(() => {
+        setFirestoreSearchTerm(searchTerm)
+    }, [searchTerm])
+
+    // Ã¢Å“â€¦ Apply sorting after search
     const { sorting, toggle, sortedData } = useSorting(searchedData)
 
-    // ✅ Use searchedData for pagination
+    // Ã¢Å“â€¦ Use searchedData for pagination
     const dataToPaginate = useMemo(() => sortedData, [sortedData])
 
     const tableData = usePagination<(typeof dataToPaginate)[number]>(dataToPaginate, rowsPerPage)
@@ -282,10 +297,10 @@ export function GenericTable({
                                                 <TooltipContent>
                                                     {
                                                         !isActive
-                                                            ? 'Sort ascending' // not sorted yet → first click = asc
+                                                            ? 'Sort ascending' // not sorted yet Ã¢â€ â€™ first click = asc
                                                             : direction === 'asc'
-                                                                ? 'Sort descending' // currently asc → next click = desc
-                                                                : 'Sort ascending' // currently desc → next click = asc
+                                                                ? 'Sort descending' // currently asc Ã¢â€ â€™ next click = desc
+                                                                : 'Sort ascending' // currently desc Ã¢â€ â€™ next click = asc
                                                     }
                                                 </TooltipContent>
                                             </Tooltip>
@@ -342,7 +357,7 @@ export function GenericTable({
                 </TableBody>
             </Table>
 
-            {/* ✅ Mobile rows outside table */}
+            {/* Ã¢Å“â€¦ Mobile rows outside table */}
             <div className="sm:hidden">
                 {paginatedData.map((data, index) => (
                     <GenericMobileRow
@@ -417,3 +432,5 @@ export function GenericTable({
         </div>
     )
 }
+
+
