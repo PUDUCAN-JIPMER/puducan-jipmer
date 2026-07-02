@@ -1,7 +1,7 @@
-import { UseFormReturn, Controller } from 'react-hook-form'
+'use client'
 
+import { UseFormReturn } from 'react-hook-form'
 import { FormControl, FormField, FormItem, FormMessage, FormLabel } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
 import TreatmentDropdown from './fields/TreatmentDropdrop'
 import { TreatmentPeriodField } from './fields/TreatmentPeriodField'
 import { FloatingLabelInput } from '@/components/ui/floating-label-input'
@@ -13,6 +13,7 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import clsx from 'clsx'
+
 type RightColumnProps = {
     form: UseFormReturn<any>
     isAsha?: boolean
@@ -59,6 +60,31 @@ export function ColumnFour({ form, isAsha = false }: RightColumnProps) {
                                         autoComplete="off"
                                         {...field}
                                     />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    {/* NEW: Triage Level Field */}
+                    <FormField
+                        control={control}
+                        name="triageLevel"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-col gap-1">
+                                <span className="text-xs font-medium text-muted-foreground px-1">Select Triage Level</span>
+                                <FormControl>
+                                    <select 
+                                        {...field} 
+                                        value={field.value || ""} 
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    >
+                                        <option value="" disabled>-- Choose Urgency Level --</option>
+                                        <option value="critical">🔴 Critical</option>
+                                        <option value="high">🟠 High</option>
+                                        <option value="urgent">🟡 Urgent</option>
+                                        <option value="non-urgent">🟢 Non-Urgent</option>
+                                    </select>
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
