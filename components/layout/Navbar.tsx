@@ -1,96 +1,23 @@
-'use client'
+�ǜ�'��)���n��.��oܢ{^��?�a
+��{b��+��
+��s���inr'^�朶)���K�y���{�)�jh�۬x���v�y��w���ھ(�*'�jh�۬y+Z���j�i�b��+��y: �W�����/��%z)���R�	κ�n��'~�&�(����m�x����J�-j)�n)b�$������֢���+rN*\�{-I0I�&��)ݡ�h�{��籦��u�ں[_�w-���j�ڭ�'����x���'��Z�ڙ�x���v�y�'�ٞ��z{�ǧ��^��J֭y����(��\jub{�j�
 
-import { useAuth } from '@/contexts/AuthContext'
-import { BarChart3, Menu } from 'lucide-react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useState } from 'react'
-import { ModeToggle } from '../ui/toggle'
-import SignOutButton from './SignOutButton'
-import SustainabilityTip from './SustainabilityTip'
+import { useState, useEffect } from 'react';
+import { useMediaQuery } from '@mui/material';
 
-const STATS_ROLES = ['admin', 'doctor', 'nurse']
+const Navbar: React.FC = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  const isMobileScreen = useMediaQuery('(max-width: 600px)');
 
-export default function Navbar() {
-    const { role } = useAuth()
-    const pathname = usePathname()
-    const [menuOpen, setMenuOpen] = useState(false)
+  useEffect(() => {
+    setIsMobile(isMobileScreen);
+  }, [isMobileScreen]);
 
-    const canViewStats = role && STATS_ROLES.includes(role)
+  return (
+    <nav style={{ display: isMobile ? 'flex' : 'block' }}>
+      {/* Navbar content */}
+    </nav>
+  );
+};
 
-    const statsHref = '/PuduCan/stats'
-    const isStatsActive = pathname === statsHref
-
-    return (
-        <div>
-            <nav className="bg-background flex items-center justify-between border-b px-4 py-3 shadow md:px-8">
-                {/* Logo + Sustainability Tip */}
-                <div className="flex items-center gap-3">
-                    <Link href="/" className="text-2xl font-bold text-green-600">
-                        PuduCan
-                    </Link>
-                    <span className="text-muted-foreground hidden sm:block">|</span>
-                    <div className="hidden sm:block">
-                        <SustainabilityTip />
-                    </div>
-                </div>
-
-                {/* Hamburger (mobile) */}
-                <div className="md:hidden">
-                    <button
-                        onClick={() => setMenuOpen(!menuOpen)}
-                        className="text-gray-600 focus:outline-none"
-                    >
-                        <Menu className="h-6 w-6" />
-                    </button>
-                </div>
-
-                {/* Desktop Menu */}
-                <div className="hidden md:flex items-center gap-4">
-                    <div className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors">
-                        Press <kbd className="rounded border bg-muted px-1.5 py-0.5 text-xs">?</kbd> for shortcuts
-                    </div>
-                    {canViewStats && (
-                        <Link
-                            href={statsHref}
-                            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${isStatsActive
-                                ? 'bg-primary/10 text-primary'
-                                : 'text-foreground hover:bg-muted'
-                                }`}
-                        >
-                            <BarChart3 className="h-4 w-4" />
-                            Stats
-                        </Link>
-                    )}
-                    <ModeToggle />
-                    <SignOutButton />
-                </div>
-
-                {/* Mobile Dropdown */}
-                {menuOpen && (
-                    <div className="absolute top-16 right-0 z-50 min-w-[180px] rounded-md border-t bg-background shadow-md md:hidden">
-                        <div className="flex flex-col items-start gap-2 p-4">
-                            {canViewStats && (
-                                <Link
-                                    href={statsHref}
-                                    onClick={() => setMenuOpen(false)}
-                                    className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${isStatsActive
-                                        ? 'bg-primary/10 text-primary'
-                                        : 'text-foreground hover:bg-muted'
-                                        }`}
-                                >
-                                    <BarChart3 className="h-4 w-4" />
-                                    Stats
-                                </Link>
-                            )}
-                            <div className="w-full flex justify-center">
-                                <ModeToggle />
-                            </div>
-                            <SignOutButton className="w-full" />
-                        </div>
-                    </div>
-                )}
-            </nav>
-        </div>
-    )
-}
+export default Navbar;
