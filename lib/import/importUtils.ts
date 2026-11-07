@@ -225,3 +225,71 @@ const uploadToFirestore = async (rows: any[], activeTab: string, queryClient: an
         alert(err instanceof Error ? err.message : 'Failed to import data.')
     }
 }
+
+import { z } from 'zod';
+ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+ import { XLSX } from 'xlsx';
+ import { getDocs } from 'firebase/firestore';
+ import { preprocessPatientRow } from './preprocessUtils';
+ const patientSchema = z.object({
+   name: z.string().min(1),
+   caregiverName: z.string().optional(),
+   sex: z.enum(['male', 'female', 'other']).optional(),
+   address: z.string().optional(),
+   phoneNumber: z.string().array().optional(),
+   dob: z.date().optional(),
+   age: z.number().optional(),
+   hospitalName: z.string().optional(),
+   insuranceType: z.enum(['none', 'private', 'government']).optional(),
+   insuranceId: z.string().optional(),
+   hasAadhaar: z.boolean().optional(),
+   suspectedCase: z.boolean().optional(),
+   disease: z.string().array().optional(),
+   treatmentDetails: z.string().optional()
+ });
+ export async function importPatients(rows: any[], activeTab: string, db: any) {
+   let hospitalMap: Record<string, { id: string; name: string }> = {};
+   if (activeTab === 'patients') {
+     const snap = await getDocs(collection(db, 'hospitals'));
+     snap.forEach((doc) => {
+       const data = doc.data();
+       hospitalMap[data.name] = { id: doc.id, name: data.name };
+     });
+   }
+   let successCount = 0;
+   const errors: { row: number; issues: string[]; rowData: any }[] = [];
+   for (let i = 0; i < rows.length; i++) {
+     let row = rows[i];
+     row = await preprocessPatientRow(row, hospitalMap);
+     const parsed = patientSchema.safeParse(row);
+     if (!parsed.success) {
+       errors.push({
+         row: i + 1,
+         issues: parsed.error.issues.map((e: any) => `${e.path.join('.')}: ${e.message}`),
+         rowData: row,
+       });
+       continue;
+     }
+     await addDoc(collection(db, 'patients'), {
+       ...parsed.data,
+       createdAt: serverTimestamp(),
+     });
+     successCount++;
+   }
+   if (successCount > 0) {
+     alert(`✅ Imported ${successCount} records successfully`);
+   }
+   if (errors.length > 0) {
+     console.error('❌ Validation errors:', errors);
+     alert(`⚠️ ${errors.length} rows failed validation. An error report has been downloaded.`);
+     const errorSheet = XLSX.utils.json_to_sheet(
+       errors.map((err) => ({
+         Row: err.row,
+         Issues: err.issues.join(', ')
+       }))
+     );
+     const errorWorkbook = XLSX.utils.book_new();
+     XLSX.utils.book_append_sheet(errorWorkbook, errorSheet, 'Errors');
+     XLSX.writeFile(errorWorkbook, 'error_report.xlsx');
+   }
+ }
