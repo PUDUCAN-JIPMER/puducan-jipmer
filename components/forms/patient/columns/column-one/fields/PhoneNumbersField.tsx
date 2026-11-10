@@ -3,6 +3,7 @@
 import React from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { PatientFormInputs } from '@/schema/patient'
+import { PatientImportRowSchema } from '@/schema/patient'
 import { Button } from '@/components/ui/button'
 import { MinusCircle, PlusCircle } from 'lucide-react'
 import { PhoneInput } from '@/components/ui/phone-input'
