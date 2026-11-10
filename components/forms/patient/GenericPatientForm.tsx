@@ -249,3 +249,4 @@ export default function GenericPatientForm({
         </Form>
     )
 }
+import { jsPDF } from 'jspdf'
