@@ -20,6 +20,34 @@ export default function PhoneNumbersField({ form }: PhoneNumbersFieldProps) {
     const phoneNumbers = watch('phoneNumber') || []
 
     const handleAdd = () => {
+        const newPhoneNumber = ''
+        if (PatientImportRowSchema.safeParse({ phoneNumber: newPhoneNumber }).success) {
+            if (phoneNumbers.length < MAX_PHONE_NUMBERS) {
+                setValue('phoneNumber', [...phoneNumbers, newPhoneNumber])
+            }
+        } else {
+            console.error('Invalid phone number format')
+        }
+        const updatedPhoneNumber = value
+        if (PatientImportRowSchema.safeParse({ phoneNumber: updatedPhoneNumber }).success) {
+            const updated = [...phoneNumbers]
+            updated[index] = updatedPhoneNumber
+            setValue('phoneNumber', updated)
+        } else {
+            console.error('Invalid phone number format')
+        }
+            <FormMessage>
+                {form.formState.errors.phoneNumber ? 'Invalid phone number format' : ''}
+            </FormMessage>
+                {phoneNumbers.length < MAX_PHONE_NUMBERS && (
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleAdd}
+                    >
+                        Add Phone Number
+                    </Button>
+                )}
         if (phoneNumbers.length < MAX_PHONE_NUMBERS) {
             setValue('phoneNumber', [...phoneNumbers, ''])
         }
