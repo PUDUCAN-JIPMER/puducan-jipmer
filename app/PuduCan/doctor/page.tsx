@@ -3,6 +3,7 @@ import WelcomeBanner from '@/components/dashboard/WelcomeBanner'
 import { GenericTable } from '@/components/table'
 import { PATIENT_TABLE_HEADERS } from '@/constants'
 import { withAuth } from '@/components/hoc/withAuth'
+import { generatePdfReport } from '@/lib/patient/generatePdfReport'
 import { ROLE_CONFIG } from '@/constants/auth'
 
 function DoctorPageContent() {
@@ -21,5 +22,7 @@ function DoctorPageContent() {
 </main>
     )
 }
+
+new_line
 
 export default withAuth(DoctorPageContent, ROLE_CONFIG.doctor)
