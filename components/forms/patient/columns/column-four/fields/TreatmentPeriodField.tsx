@@ -117,5 +117,28 @@ export function TreatmentPeriodField({ form }: Props) {
                 )}
             />
         </div>
+export function PatientExportOptions({ form }: { form: any }) {
+    return (
+        <div>
+            <Button onClick={() => handleExportToPDF()}>Export to PDF</Button>
+            <Button onClick={() => handleExportToPDFWithSummary()}>Export to PDF with Summary</Button>
+function handleExportToPDFWithSummary() {
+    // Logic to generate and download PDF with summary
+}
+            <Button onClick={() => handleExportToCSV()}>Export to CSV</Button>
+        <div>
+            <Button onClick={() => handleExportToPDF()}>Export to PDF with Summary</Button>
+        </div>
+
+function handleExportToPDF() {
+    // Logic to generate and download PDF
+}
+
+function handleExportToCSV() {
+    // Logic to generate and download CSV
+}
+        </div>
+    );
+}
     )
 }
