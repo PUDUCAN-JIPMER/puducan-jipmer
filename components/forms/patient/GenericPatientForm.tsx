@@ -249,3 +249,6 @@ export default function GenericPatientForm({
         </Form>
     )
 }
+import { jsPDF } from 'jspdf'
+            case 5:
+                return <PDFExportButton patientId={form.getValues('id')} />;
