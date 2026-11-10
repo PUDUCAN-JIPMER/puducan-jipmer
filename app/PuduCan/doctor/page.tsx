@@ -23,3 +23,4 @@ function DoctorPageContent() {
 }
 
 export default withAuth(DoctorPageContent, ROLE_CONFIG.doctor)
+// added implementation
