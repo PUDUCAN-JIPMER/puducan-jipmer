@@ -1,6 +1,51 @@
 import HospitalSearch from '@/components/search/HospitalSearch'
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { useFormContext, UseFormReturn } from 'react-hook-form'
+import { useFormContext, UseFormReturn, useForm, FormProvider, SubmitHandler } from 'react-hook-form'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+
+/**
+ * GenericUserForm
+ * A reusable form wrapper that integrates react-hook-form with Zod validation.
+ *
+ * @template T - Shape of the form data.
+ * @param {{
+ *   schema: z.ZodSchema<T>;
+ *   defaultValues?: Partial<T>;
+ *   onSubmit: (data: T) => void;
+ *   children: React.ReactNode;
+ * }} props
+ * @returns JSX.Element
+ */
+export function GenericUserForm<T extends Record<string, any>>({
+  schema,
+  defaultValues,
+  onSubmit,
+  children,
+}: {
+  schema: z.ZodSchema<T>
+  defaultValues?: Partial<T>
+  onSubmit: (data: T) => void
+  children: React.ReactNode
+}) {
+  const methods = useForm<T>({
+    resolver: zodResolver(schema),
+    defaultValues,
+  })
+
+  const handleSubmit: SubmitHandler<T> = (data) => {
+    onSubmit(data)
+  }
+
+  return (
+    <FormProvider {...methods}>
+      <form onSubmit={methods.handleSubmit(handleSubmit)} noValidate>
+        {children}
+        <button type="submit" className="sr-only" />
+      </form>
+    </FormProvider>
+  )
+}
 import DiagnosisTimingField from './fields/DiagnosisTimingField'
 import DiseaseMultiSelect from './fields/DiseaseMultiSelect'
 import RationCardSelect from './fields/RationCardSelect'
