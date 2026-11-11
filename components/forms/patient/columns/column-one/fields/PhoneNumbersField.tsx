@@ -14,28 +14,25 @@ interface PhoneNumbersFieldProps {
     form: UseFormReturn<PatientFormInputs>
 }
 
+// Component uses stable callbacks (useCallback) to avoid unnecessary re‑renders
 export default function PhoneNumbersField({ form }: PhoneNumbersFieldProps) {
-    const { watch, setValue } = form
     const phoneNumbers = watch('phoneNumber') || []
 
-    const handleAdd = () => {
+    const handleAdd = useCallback(() => {
         if (phoneNumbers.length < MAX_PHONE_NUMBERS) {
-            setValue('phoneNumber', [...phoneNumbers, ''])
+            setValue('phoneNumber', [...phoneNumbers, '']);
         }
-    }
+    }, [phoneNumbers, setValue]);
 
-    const handleRemove = (index: number) => {
-        setValue(
-            'phoneNumber',
-            phoneNumbers.filter((_, i) => i !== index)
-        )
-    }
+    const handleRemove = useCallback((index: number) => {
+        setValue('phoneNumber', phoneNumbers.filter((_, i) => i !== index));
+    }, [phoneNumbers, setValue]);
 
-    const handleChange = (index: number, value: string) => {
-        const updated = [...phoneNumbers]
-        updated[index] = value
-        setValue('phoneNumber', updated)
-    }
+    const handleChange = useCallback((index: number, value: string) => {
+        const updated = [...phoneNumbers];
+        updated[index] = value;
+        setValue('phoneNumber', updated);
+    }, [phoneNumbers, setValue]);
 
     return (
         <FormItem>
@@ -70,7 +67,6 @@ export default function PhoneNumbersField({ form }: PhoneNumbersFieldProps) {
 
                 {phoneNumbers.length < MAX_PHONE_NUMBERS && (
                     <Button
-                        type="button"
                         variant="ghost"
                         className="text-muted-foreground w-fit px-2 text-sm"
                         onClick={handleAdd}
