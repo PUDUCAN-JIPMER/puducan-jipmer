@@ -45,6 +45,7 @@ export default function GenericPatientForm({
     const {
         formState: { errors },
     } = form
+    const { user } = useAuth(); // obtain current user for audit logging
     const goToStep = (step: number) => {
         setCurrentStep(step)
     }
@@ -102,11 +103,24 @@ export default function GenericPatientForm({
                     e.preventDefault()
 
                     if (currentStep === totalSteps) {
-                        handleSubmit(
-                            onSubmit,
-                            (invalid) => {
-                                const fields = Object.keys(invalid ?? {})
-                                const messages: string[] = []
+                    handleSubmit(
+                        async (data) => {
+                            // Execute the original submit logic
+                            const result = await onSubmit(data);
+                            // Record audit log entry
+                            const action = isEdit ? 'update' : 'create';
+                            await logMutation({
+                                action,
+                                resource: 'patients',
+                                resourceId: (data as any).id ?? '',
+                                userId: user?.uid ?? '',
+                                details: data,
+                            });
+                            return result;
+                        },
+                        (invalid) => {
+                            const fields = Object.keys(invalid ?? {})
+                            const messages: str
                                 collectErrorMessages(invalid, messages)
                                 const uniqueMessages = Array.from(new Set(messages)).slice(0, 5)
 
