@@ -36,6 +36,37 @@ interface AshaDialogProps {
     onAssigned?: (ashaId: string | null) => void
     trigger?: React.ReactNode
 }
+import React from 'react';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useAuth } from '../../hooks/useAuth';
+    // ----- Audit Log Types & Helper -----
+    /**
+     * Structure of an audit log entry stored in the "auditLogs" Firestore collection.
+     */
+    interface AuditLogEntry {
+        action: 'create' | 'update' | 'delete' | 'recover';
+        resource: string; // e.g. "patients"
+        resourceId: string;
+        userId: string;
+        timestamp?: any; // Firestore server timestamp
+        details?: Record<string, any>;
+    }
+
+    /**
+     * Persists an audit log entry to Firestore.
+     */
+    export const logMutation = async (entry: Omit<AuditLogEntry, 'timestamp'>) => {
+        const { action, resource, resourceId, userId, details } = entry;
+        await addDoc(collection(db, 'auditLogs'), {
+            action,
+            resource,
+            resourceId,
+            userId,
+            details: details ?? {},
+            timestamp: serverTimestamp(),
+        });
+    };
+
 export default function AshaSearchDialog({
     patientId,
     assignedAshaId,
