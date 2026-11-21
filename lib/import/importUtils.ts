@@ -4,6 +4,7 @@ import { collection, addDoc, getDocs, serverTimestamp } from 'firebase/firestore
 import { db } from '@/firebase'
 import { getCollectionName } from '@/lib/common/getCollectionName'
 import { PatientSchema } from '@/schema/patient'
+import { z } from 'zod'
 
 export const importData = async (e: React.ChangeEvent<HTMLInputElement>, queryClient: any) => {
     const file = e.target.files?.[0]
@@ -16,13 +17,26 @@ export const importData = async (e: React.ChangeEvent<HTMLInputElement>, queryCl
         const workbook = XLSX.read(data)
         const sheet = workbook.Sheets[workbook.SheetNames[0]]
         const json = XLSX.utils.sheet_to_json(sheet)
-        await uploadToFirestore(json, 'patients', queryClient)
+        // Validate rows before uploading
+        const report = await validateImportRows(json as any[], {})
+        if (report.errors.length) {
+            console.warn('Import validation errors:', report.errors)
+        }
+        await uploadToFirestore(report.validRows, 'patients', queryClient)
+        return report
     } else {
-        Papa.parse(file, {
-            header: true,
-            complete: async (results) => {
-                await uploadToFirestore(results.data as any[], 'patients', queryClient)
-            },
+        return new Promise((resolve) => {
+            Papa.parse(file, {
+                header: true,
+                complete: async (results) => {
+                    const report = await validateImportRows(results.data as any[], {})
+                    if (report.errors.length) {
+                        console.warn('Import validation errors:', report.errors)
+                    }
+                    await uploadToFirestore(report.validRows, 'patients', queryClient)
+                    resolve(report)
+                },
+            })
         })
     }
 
@@ -72,10 +86,9 @@ const preprocessPatientRow = async (
             id: row.insuranceId ?? '',
         }
     } else {
-        cleaned.insurance = { type: 'none' }
+    cleaned.insurance = { type: 'none' }
     }
-
-    // Booleans
+    // 
     cleaned.hasAadhaar = String(row.hasAadhaar).toLowerCase() === 'yes'
     cleaned.suspectedCase = String(row.suspectedCase).toLowerCase() === 'yes'
 
