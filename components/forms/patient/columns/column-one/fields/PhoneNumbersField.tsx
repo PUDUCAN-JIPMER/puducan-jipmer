@@ -3,12 +3,27 @@
 import React from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { PatientFormInputs } from '@/schema/patient'
+import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { MinusCircle, PlusCircle } from 'lucide-react'
 import { PhoneInput } from '@/components/ui/phone-input'
 import { FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 
 const MAX_PHONE_NUMBERS = 10
+
+/**
+ * Zod schema for validating an array of phone numbers within a patient import row.
+ * Each phone number must be a non‑empty string with a reasonable length.
+ * This schema can be reused by the import‑validation pipeline on the server.
+ */
+export const PhoneNumbersImportSchema = z.object({
+  phoneNumber: z.array(
+    z
+      .string()
+      .min(1, { message: 'Phone number cannot be empty' })
+      .max(15, { message: 'Phone number is too long' })
+  ),
+})
 
 interface PhoneNumbersFieldProps {
     form: UseFormReturn<PatientFormInputs>
