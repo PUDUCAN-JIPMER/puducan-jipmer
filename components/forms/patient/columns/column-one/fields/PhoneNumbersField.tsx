@@ -3,12 +3,72 @@
 import React from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { PatientFormInputs } from '@/schema/patient'
+import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { MinusCircle, PlusCircle } from 'lucide-react'
 import { PhoneInput } from '@/components/ui/phone-input'
 import { FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 
 const MAX_PHONE_NUMBERS = 10
+
+/**
+ * Zod schema for validating an array of phone numbers within a patient import row.
+ * Each phone number must be a non‑empty string with a reasonable length.
+ * This schema can be reused by the import‑validation pipeline on the server.
+ */
+export const PhoneNumbersImportSchema = z.object({
+  phoneNumber: z.array(
+    z
+      .string()
+      .min(1, { message: 'Phone number cannot be empty' })
+      .max(15, { message: 'Phone number is too long' })
+
+/**
+ * Report shape returned by the import validation pipeline.
+ */
+export interface PhoneNumbersImportReport {
+  /** Total number of rows supplied for import */
+  total: number
+  /** Number of rows that passed validation and can be imported */
+  imported: number
+  /** Number of rows that were skipped due to validation errors */
+  skipped: number
+  /** Detailed errors per row */
+  errors: Array<{ row: number; message: string }>
+}
+
+/**
+ * Validate an array of raw import rows against {@link PhoneNumbersImportSchema}.
+ * Returns a structured report that can be sent back to the frontend for a
+ * preview step before the actual write operation.
+ */
+export const validatePhoneNumbersImport = (
+  rows: unknown[]
+): PhoneNumbersImportReport => {
+  const report: PhoneNumbersImportReport = {
+    total: rows.length,
+    imported: 0,
+    skipped: 0,
+    errors: [],
+  }
+
+  rows.forEach((row, idx) => {
+    const result = PhoneNumbersImportSchema.safeParse(row)
+    if (result.success) {
+      report.imported += 1
+    } else {
+      report.skipped += 1
+      const message = result.error.errors
+        .map((e) => e.message)
+        .join(', ')
+      report.errors.push({ row: idx + 1, message })
+    }
+  })
+
+  return report
+}
+  ),
+})
 
 interface PhoneNumbersFieldProps {
     form: UseFormReturn<PatientFormInputs>
